@@ -24,7 +24,7 @@ class Window {
 public:
     // 생성자: 윈도우 크기와 제목을 받아 객체를 초기화.
     Window(Vec2u size, std::string_view title);
-    // 소멸자: Window 객체가 소멸될 때 리소스를 해제. 
+    // 소멸자: Window 객체가 소멸될 때 리소스를 해제.
     ~Window();
 
     // 복사 금지
@@ -52,13 +52,13 @@ public:
 
 private:
     struct Impl;
-    // Pimpl(pointer to implementation)패턴을 사용하여 구현 세부 사항을 숨김. Window의 실제 구현은 Impl 구조체에 존재.
-    // 현 파일 기준으로 Window 객체는 Impl 구조체를 unique_ptr로 소유한다.
+    // Pimpl(pointer to implementation)패턴을 사용하여 구현 세부 사항을 숨김. Window의 실제 구현은
+    // Impl 구조체에 존재. 현 파일 기준으로 Window 객체는 Impl 구조체를 unique_ptr로 소유한다.
     // Window 객체가 소멸될 때, Impl -> sf::Window 순으로 소멸하며 GPU 메모리가 해제된다.
     // 위 사안을 new/delete를 직접 호출하지 않고 unique_ptr가 자동으로 관리.
     std::unique_ptr<Impl> impl_;
 
     friend struct backend::WindowAccess;
-}
+};
 
 } // namespace meno
