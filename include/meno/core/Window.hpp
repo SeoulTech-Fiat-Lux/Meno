@@ -3,7 +3,7 @@
 #include <meno/math/Vec2.hpp>
 
 #include <memory>
-#include <string_view)
+#include <string_view>
 
 namespace meno {
 
