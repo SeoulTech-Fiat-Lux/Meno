@@ -5,9 +5,9 @@
 #ifndef GAMEOBJCECT_DEMO_GAMEOBJECT_H
 #define GAMEOBJCECT_DEMO_GAMEOBJECT_H
 
-#include "../../include/meno/math/Vec2.hpp"
-#include "collider.hpp"
-#include "component.hpp"
+#include <meno/math/Vec2.hpp>
+#include <meno/core/Collider.hpp>
+#include <meno/core/Component.hpp>
 
 #include <memory>
 #include <unordered_map>

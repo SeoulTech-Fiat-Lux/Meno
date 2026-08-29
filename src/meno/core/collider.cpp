@@ -1,4 +1,4 @@
-#include "collider.hpp"
+#include <meno/core/Collider.hpp>
 
 namespace {
 

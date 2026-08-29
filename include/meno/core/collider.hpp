@@ -1,8 +1,8 @@
 #ifndef GAMEOBJCECT_DEMO_COLLIDER_H
 #define GAMEOBJCECT_DEMO_COLLIDER_H
 
-#include "../../include/meno/math/Vec2.hpp"
-#include "component.hpp"
+#include <meno/math/Vec2.h>
+#include <meno/core/Component.hpp>
 
 namespace meno {
 

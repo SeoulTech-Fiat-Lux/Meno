@@ -2,7 +2,7 @@
 // Created by 최상준 on 26. 8. 6..
 //
 
-#include "GameObject.h"
+#include <meno/core/GameObject.hpp>
 
 template <typename T, typename... Args>
     requires std::derived_from<T, Component>
