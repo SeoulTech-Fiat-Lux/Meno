@@ -1,4 +1,5 @@
 #include <meno/core/Collider.hpp>
+#include <meno/core/GameObject.hpp>
 
 #include <typeinfo>
 
