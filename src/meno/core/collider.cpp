@@ -1,16 +1,20 @@
 #include <meno/core/Collider.hpp>
 
+#include <typeinfo>
+
 namespace {
 
-bool intersects_(const Collider& a, const Collider& b) {
-        if (a.type() == ColliderType::Box && b.type() == ColliderType::Box) {
-            // Box-Box intersection logic
-        } else if (a.type() == ColliderType::Circle && b.type() == ColliderType::Circle) {
-            // Circle-Circle intersection logic
-        } else {
-            // Mixed intersection logic
-        }
-        return false;
+template <typename A, typename B>
+    requires std::derived_from<A, meno::Collider> && 
+        std::derived_from<B, meno::Collider>
+bool intersects_(const A& a, const B& b) {
+    if constexpr (std::is_same_v<A, BoxCollider> && std::is_same_v<B, BoxCollider>) {
+        // Box-Box
+    } else if constexpr (std::is_same_v<A, CircleCollider> && std::is_same_v<B, CircleCollider>) {
+        // Circle-Circle
+    } else {
+        // Box-Circle
+    }
 }
 
 }
