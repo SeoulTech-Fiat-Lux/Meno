@@ -49,10 +49,6 @@ Vec2u Window::size() const {
     return backend::fromSf(impl_->window.getSize());
 }
 
-void Window::setFramerateLimit(unsigned int fps) {
-    impl_->window.setFramerateLimit(fps);
-}
-
 namespace backend {
 
 sf::RenderWindow* WindowAccess::native(const Window& window) noexcept {
@@ -66,4 +62,4 @@ sf::RenderWindow* WindowAccess::native(const Window& window) noexcept {
 
 } // namespace backend
 
-} // namespace ember
+} // namespace meno

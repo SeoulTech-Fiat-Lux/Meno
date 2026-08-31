@@ -46,10 +46,6 @@ public:
 
     [[nodiscard]] Vec2u size() const;
 
-    // 0이면 무제한. 실제 시간 관리는 Clock이 담당할 것이므로 임시로 배치한 함수.
-    // 실제 Clock의 구현에 따라 변경할 수 있다.
-    void setFramerateLimit(unsigned int fps);
-
 private:
     struct Impl;
     // Pimpl(pointer to implementation)패턴을 사용하여 구현 세부 사항을 숨김. Window의 실제 구현은
