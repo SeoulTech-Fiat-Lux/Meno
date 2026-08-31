@@ -25,6 +25,9 @@
 #include <meno/graphics/Texture.hpp>
 
 // --- 코어 -----------------------------------------------------------------
+#include <meno/core/Collider.hpp>
+#include <meno/core/Component.hpp>
+#include <meno/core/GameObject.hpp>
 #include <meno/core/Window.hpp>
 
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
