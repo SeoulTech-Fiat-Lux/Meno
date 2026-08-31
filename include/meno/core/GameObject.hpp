@@ -2,8 +2,8 @@
 // Created by 최상준 on 26. 8. 6..
 //
 
-#ifndef GAMEOBJCECT_DEMO_GAMEOBJECT_H
-#define GAMEOBJCECT_DEMO_GAMEOBJECT_H
+#ifndef GAMEOBJECT_DEMO_GAMEOBJECT_H
+#define GAMEOBJECT_DEMO_GAMEOBJECT_H
 
 #include <meno/math/Vec2.hpp>
 #include <meno/core/Collider.hpp>

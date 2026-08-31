@@ -2,6 +2,8 @@
 
 #include <typeinfo>
 
+namespace meno {
+
 namespace {
 
 template <typename A, typename B>
@@ -18,8 +20,6 @@ bool intersects_(const A& a, const B& b) {
 }
 
 }
-
-namespace meno {
 
 bool intersects(const GameObject& a, const GameObject& b) {
     return intersects_(a.collider(), b.collider());

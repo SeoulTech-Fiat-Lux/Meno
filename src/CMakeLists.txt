@@ -14,6 +14,8 @@
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
 add_library(meno STATIC
         meno/core/Window.cpp
+        meno/core/Collider.cpp
+        meno/core/GameObject.cpp
         meno/graphics/Font.cpp
         meno/graphics/Renderer.cpp
         meno/graphics/Texture.cpp
