@@ -16,10 +16,10 @@
 namespace meno {
 
 struct Transform : public Component {
-    Vec2f pos;         // 2D 위치 (x, y), 좌상단부터 (0, 0)
-    int magnitude;     // 크기 배율
-    int rotation;      // 360도 기준 회전
-    int width, height; // 크기, 너비
+    Vec2f pos {0,0};       // 2D 위치 (x, y), 좌상단부터 (0, 0)
+    int magnitude{1};  // 크기 배율
+    int rotation{0};       // 360도 기준 회전
+    int width{0}, height{0}; // 크기, 너비
 };
 
 // 렌더링 파이프라인 참고해서 수정 필요
