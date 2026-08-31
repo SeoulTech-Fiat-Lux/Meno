@@ -52,7 +52,8 @@ jobs:
           sudo apt-get install -y \
             libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
             libfreetype-dev libgl1-mesa-dev libegl1-mesa-dev \
-            libflac-dev libvorbis-dev libogg-dev
+            libflac-dev libvorbis-dev libogg-dev \
+            libharfbuzz-dev
 
       # SFML과 그 의존성 빌드가 10분쯤 걸린다. 캐시하지 않으면 매 푸시마다 낸다.
       - name: SFML 빌드 캐시
