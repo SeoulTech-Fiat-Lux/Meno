@@ -12,6 +12,7 @@
 #include <memory>
 #include <unordered_map>
 #include <typeindex>
+#include <type_traits>
 
 namespace meno {
 
@@ -108,6 +109,17 @@ public:
     template <typename T>
         requires std::derived_from<T, Component>
     T* getComponent() noexcept {
+        auto it = components_.find(std::type_index(typeid(T)));
+
+        if (it == components_.end())
+            return nullptr;
+
+        return static_cast<T*>(it->second.get());
+    }
+
+    template <typename T>
+        requires std::derived_from<T, Component>
+    const T* getComponent() const noexcept {
         auto it = components_.find(std::type_index(typeid(T)));
 
         if (it == components_.end())
