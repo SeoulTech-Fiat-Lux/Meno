@@ -6,6 +6,7 @@
 // 이 파일에는 SFML이 한 번도 등장하지 않는다. 그게 이 설계의 목표다.
 
 #include <meno/core/Window.hpp>
+#include <meno/core/Clock.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
@@ -70,27 +71,27 @@ std::optional<meno::Font> findSystemFont() {
 
 int main() {
     meno::Window window{{960u, 540u}, "meno - 2D 렌더 기초"};
-    window.setFramerateLimit(60);
-
     meno::Renderer renderer{window};
 
     const meno::Texture checker = makeCheckerTexture();
     const std::optional<meno::Font> font = findSystemFont();
 
-    float elapsed = 0.f;
+    double elapsed = 0.0;
+    meno::Clock clock;
+    clock.setFramerateLimit(60);
 
     while (window.isOpen()) {
-        window.pollEvents();
+        elapsed += clock.restart();
 
-        // Clock 담당자가 델타 타임을 제공하기 전까지의 임시 계산.
-        elapsed += 1.f / 60.f;
+        window.pollEvents();
 
         renderer.beginFrame(meno::Color::fromHex(0x1E2430FF));
 
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
         meno::Camera2D camera;
         camera.center = {0.f, 0.f};
-        camera.zoom = 1.f + 0.15f * std::sin(elapsed * 0.7f);
+        camera.zoom =
+            1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7));
         renderer.setCamera(camera);
 
         // 기준선. 원점이 어디인지 보여준다.
@@ -114,7 +115,7 @@ int main() {
         renderer.draw(checker, {.position = {0.f, 0.f},
                                 .origin = textureSize / 2.f,
                                 .scale = {10.f, 10.f},
-                                .rotation = elapsed * 45.f});
+                                .rotation = static_cast<float>(elapsed * 45.0)});
 
         // 같은 텍스처를 tint와 반투명으로 재사용
         renderer.draw(checker, {.position = {200.f, -80.f},

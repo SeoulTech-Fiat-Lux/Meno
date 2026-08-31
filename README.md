@@ -12,7 +12,9 @@ int main() {
     meno::Window window{{960u, 540u}, "내 게임"};
     meno::Renderer renderer{window};
 
-    while (window.isOpen()) {
+    // 일반 게임은 meno::Application을 상속해 update/render만 구현한다.
+    // Application이 고정 timestep 루프와 시간 누적을 담당한다.
+    while (window.isOpen()) { // 렌더 API만 보여 주는 최소 예제
         window.pollEvents();
         renderer.beginFrame(meno::Color::fromHex(0x1E2430FF));
         renderer.drawCircle({480.f, 270.f}, 60.f, {.fill = meno::colors::Cyan});
@@ -47,12 +49,55 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+## 고정 timestep 게임 루프
+
+`Application`을 상속하면 사용자가 `while` 루프나 시간 누적을 직접 작성할
+필요가 없다. `update()`는 고정 간격으로 0회 이상 호출되고 `render()`는 프레임당
+한 번 호출된다. 렌더 인자는 직전/현재 게임 상태를 보간할 때 쓰는 0~1 사이의 비율이다.
+
+```cpp
+class Game final : public meno::Application {
+public:
+    using Application::Application;
+
+private:
+    meno::Window window{{960u, 540u}, "My game"};
+
+    void processEvents() override {
+        window.pollEvents();
+        if (!window.isOpen()) stop();
+    }
+
+    void update(double fixedDeltaTime) override {
+        // 게임 상태 갱신
+    }
+
+    void render(double interpolationAlpha) override {
+        // 보간해 렌더
+    }
+};
+
+int main() {
+    Game game({.framerateLimit = 60});
+    game.run();
+}
+```
+
+`Time::deltaTime()`, `Time::fixedDeltaTime()`, `Time::elapsedTime()`으로 fixed update 기준의
+시뮬레이션 시간을 읽을 수 있다. 프레임 기준의 가변 시간과 실제 누적 시간은
+`Time::frameDeltaTime()`, `Time::realElapsedTime()`으로 읽는다. `frameDeltaTime()`은
+`fixedTimeStep * maxUpdatesPerFrame`으로 제한되지만 `realElapsedTime()`은 제한되지 않는다.
+프레임 제한이 필요하면
+`ApplicationConfig::framerateLimit`을 사용하며 0이면 제한하지 않는다.
+`run(Clock&)`은 사용자 정의 또는 테스트용 `Clock`을 주입할 때 사용하며, 이 경우에도
+설정된 프레임 제한이 적용된다.
+
 ## 디렉터리 구조
 
 ```
 include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   Meno.hpp          통합 헤더
-  core/             Window, (Application, Clock)
+  core/             Window, Application, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
 src/meno/         구현 — 사용자에게 배포되지 않는다

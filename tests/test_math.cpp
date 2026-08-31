@@ -7,8 +7,9 @@
 #include <meno/math/Rect.hpp>
 #include <meno/math/Vec2.hpp>
 
+#include "check.hpp"
+
 #include <cmath>
-#include <cstdio>
 #include <type_traits>
 
 using namespace meno;
@@ -40,14 +41,7 @@ static_assert(Color::fromHex(0x2E3440FF).r == 0x2E);
 
 namespace {
 
-int failures = 0;
-
-void check(bool ok, const char* what) {
-    std::printf("%s  %s\n", ok ? "PASS" : "FAIL", what);
-    if (!ok) {
-        ++failures;
-    }
-}
+using meno::test::check;
 
 bool near(float a, float b) { return std::fabs(a - b) < 1e-5f; }
 
@@ -105,7 +99,5 @@ int main() {
     check(colors::White == Color{255, 255, 255, 255}, "기본값은 불투명 흰색");
     check(c.withAlpha(128).a == 128 && c.withAlpha(128).r == c.r, "withAlpha는 alpha만 바꾼다");
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
-    return failures == 0 ? 0 : 1;
+    return meno::test::report();
 }

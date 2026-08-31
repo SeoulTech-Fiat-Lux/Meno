@@ -13,6 +13,9 @@
 #   meno/graphics/   -- 2D 렌더러 담당
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
 add_library(meno STATIC
+        meno/core/Application.cpp
+        meno/core/Clock.cpp
+        meno/core/Time.cpp
         meno/core/Window.cpp
         meno/core/Collider.cpp
         meno/core/GameObject.cpp
