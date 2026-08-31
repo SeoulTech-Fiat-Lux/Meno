@@ -21,3 +21,18 @@ function(meno_add_test name)
 endfunction()
 
 meno_add_test(math)
+
+add_executable(meno_test_application
+        test_application.cpp
+        ../src/meno/core/Application.cpp
+        ../src/meno/core/Clock.cpp
+        ../src/meno/core/Time.cpp
+)
+target_include_directories(meno_test_application PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_compile_features(meno_test_application PRIVATE cxx_std_20)
+if(MSVC)
+    target_compile_options(meno_test_application PRIVATE /W4 /utf-8)
+else()
+    target_compile_options(meno_test_application PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_test(NAME application COMMAND meno_test_application)

@@ -4,12 +4,16 @@
 
 
 #include <SFML/Graphics.hpp>
+#include <meno/core/Clock.hpp>
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({800, 600}), "GameObjectDemo");
-    window.setFramerateLimit(60);
+    meno::Clock clock;
+    clock.setFramerateLimit(60);
 
     while (window.isOpen()) {
+        (void)clock.restart();
+
         while (const auto event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
