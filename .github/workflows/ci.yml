@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, 2D_Renderer, GameObject-Demo]
+    branches: [main]
   pull_request:
     branches: [main]
 
