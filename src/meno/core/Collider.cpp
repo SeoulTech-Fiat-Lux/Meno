@@ -1,5 +1,7 @@
 #include <meno/core/Collider.hpp>
 
+namespace meno {
+
 namespace {
 
 bool intersects_(const Collider& a, const Collider& b) {
@@ -14,8 +16,6 @@ bool intersects_(const Collider& a, const Collider& b) {
 }
 
 }
-
-namespace meno {
 
 bool intersects(const GameObject& a, const GameObject& b) {
     return intersects_(a.collider(), b.collider());
