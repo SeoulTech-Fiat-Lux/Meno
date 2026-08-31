@@ -2,7 +2,8 @@
 #include <meno/core/Clock.hpp>
 #include <meno/core/Time.hpp>
 
-#include <cassert>
+#include "check.hpp"
+
 #include <chrono>
 #include <cmath>
 #include <cstddef>
@@ -98,25 +99,25 @@ int main() {
                          .maxUpdatesPerFrame = 3});
     app.run(clock);
 
-    assert(app.renderCount == 3);
-    assert(app.interpolationAlphas.size() == 3);
-    assert(near(app.interpolationAlphas[0], 0.5));
-    assert(near(app.interpolationAlphas[1], 0.7));
-    assert(app.interpolationAlphas[2] >= 0.0 && app.interpolationAlphas[2] < 1.0);
+    MENO_CHECK(app.renderCount == 3);
+    MENO_CHECK(app.interpolationAlphas.size() == 3);
+    MENO_CHECK(near(app.interpolationAlphas[0], 0.5));
+    MENO_CHECK(near(app.interpolationAlphas[1], 0.7));
+    MENO_CHECK(app.interpolationAlphas[2] >= 0.0 && app.interpolationAlphas[2] < 1.0);
     // 첫 두 프레임에서 1회, 밀린 세 번째 프레임에서 상한인 3회.
-    assert(app.updateDeltas.size() == 4);
+    MENO_CHECK(app.updateDeltas.size() == 4);
     for (std::size_t index = 0; index < app.updateDeltas.size(); ++index) {
-        assert(near(app.updateDeltas[index], 0.01));
-        assert(near(app.observedDeltas[index], 0.01));
-        assert(near(app.observedElapsedTimes[index],
+        MENO_CHECK(near(app.updateDeltas[index], 0.01));
+        MENO_CHECK(near(app.observedDeltas[index], 0.01));
+        MENO_CHECK(near(app.observedElapsedTimes[index],
                     0.01 * static_cast<double>(index + 1)));
     }
-    assert(near(meno::Time::deltaTime(), 0.01));
-    assert(near(meno::Time::fixedDeltaTime(), 0.01));
-    assert(near(meno::Time::elapsedTime(), 0.04));
-    assert(near(meno::Time::frameDeltaTime(), 0.03));
-    assert(near(meno::Time::realElapsedTime(), 0.117));
-    assert(!app.isRunning());
+    MENO_CHECK(near(meno::Time::deltaTime(), 0.01));
+    MENO_CHECK(near(meno::Time::fixedDeltaTime(), 0.01));
+    MENO_CHECK(near(meno::Time::elapsedTime(), 0.04));
+    MENO_CHECK(near(meno::Time::frameDeltaTime(), 0.03));
+    MENO_CHECK(near(meno::Time::realElapsedTime(), 0.117));
+    MENO_CHECK(!app.isRunning());
 
     const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{} + 20ms,
                                             TimePoint{} + 40ms};
@@ -132,19 +133,19 @@ int main() {
         updateExceptionCaught = true;
     }
 
-    assert(updateExceptionCaught);
-    assert(!throwingApp.isRunning());
-    assert(throwingApp.onStopCount == 0);
+    MENO_CHECK(updateExceptionCaught);
+    MENO_CHECK(!throwingApp.isRunning());
+    MENO_CHECK(throwingApp.onStopCount == 0);
 
     throwingApp.run(retryClock);
-    assert(!throwingApp.isRunning());
-    assert(throwingApp.renderCount == 1);
-    assert(throwingApp.onStopCount == 1);
+    MENO_CHECK(!throwingApp.isRunning());
+    MENO_CHECK(throwingApp.renderCount == 1);
+    MENO_CHECK(throwingApp.onStopCount == 1);
 
     ReentrantApplication reentrantApp;
     reentrantApp.run();
-    assert(reentrantApp.rejectedReentry);
-    assert(!reentrantApp.isRunning());
+    MENO_CHECK(reentrantApp.rejectedReentry);
+    MENO_CHECK(!reentrantApp.isRunning());
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;
@@ -161,16 +162,18 @@ int main() {
         std::chrono::duration<double>(meno::Clock::Duration{1}).count();
     const double limitedDelta = limitedClock.restart();
 
-    assert(std::abs(limitedDelta - expectedFrameTime) <= clockTolerance);
-    assert(waitCount == 1);
-    assert(std::abs(limitedClock.elapsed() - expectedFrameTime) <= clockTolerance);
+    MENO_CHECK(std::abs(limitedDelta - expectedFrameTime) <= clockTolerance);
+    MENO_CHECK(waitCount == 1);
+    MENO_CHECK(std::abs(limitedClock.elapsed() - expectedFrameTime) <= clockTolerance);
 
     limitedNow += 20ms;
-    assert(near(limitedClock.restart(), 0.02));
-    assert(waitCount == 1);
+    MENO_CHECK(near(limitedClock.restart(), 0.02));
+    MENO_CHECK(waitCount == 1);
 
     limitedClock.setFramerateLimit(0);
     limitedNow += 5ms;
-    assert(near(limitedClock.restart(), 0.005));
-    assert(waitCount == 1);
+    MENO_CHECK(near(limitedClock.restart(), 0.005));
+    MENO_CHECK(waitCount == 1);
+
+    return meno::test::report();
 }
