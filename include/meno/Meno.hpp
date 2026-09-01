@@ -25,6 +25,9 @@
 #include <meno/graphics/Texture.hpp>
 
 // --- 코어 -----------------------------------------------------------------
+#include <meno/core/Collider.hpp>
+#include <meno/core/Component.hpp>
+#include <meno/core/GameObject.hpp>
 #include <meno/core/Application.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/core/Time.hpp>
