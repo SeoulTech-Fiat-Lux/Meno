@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_COLOR_HPP
+#define MENO_COLOR_HPP
 
 #include <cstdint>
 
@@ -58,3 +59,5 @@ inline constexpr Color Transparent{0, 0, 0, 0}; // 투명
 } // namespace colors
 
 } // namespace meno
+
+#endif  // MENO_COLOR_HPP

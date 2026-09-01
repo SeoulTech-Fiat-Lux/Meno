@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_DRAWPARAMS_HPP
+#define MENO_DRAWPARAMS_HPP
 
 #include <meno/math/Color.hpp>
 #include <meno/math/Rect.hpp>
@@ -69,3 +70,5 @@ struct TextParams {
 };
 
 } // namespace meno
+
+#endif  // MENO_DRAWPARAMS_HPP

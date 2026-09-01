@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_ACCESS_HPP
+#define MENO_ACCESS_HPP
 
 #include <meno/core/Window.hpp>
 #include <meno/graphics/Font.hpp>
@@ -30,3 +31,5 @@ struct WindowAccess {
 };
 
 } // namespace meno::backend
+
+#endif  // MENO_ACCESS_HPP

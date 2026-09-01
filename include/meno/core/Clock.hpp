@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_CLOCK_HPP
+#define MENO_CLOCK_HPP
 
 #include <chrono>
 #include <functional>
@@ -32,3 +33,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_CLOCK_HPP

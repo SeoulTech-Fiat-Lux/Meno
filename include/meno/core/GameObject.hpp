@@ -2,8 +2,8 @@
 // Created by 최상준 on 26. 8. 6..
 //
 
-#ifndef GAMEOBJECT_DEMO_GAMEOBJECT_H
-#define GAMEOBJECT_DEMO_GAMEOBJECT_H
+#ifndef MENO_GAMEOBJECT_HPP
+#define MENO_GAMEOBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
 #include <meno/core/Collider.hpp>
@@ -130,4 +130,5 @@ public:
 };
 
 } // namespace meno
-#endif //GAMEOBJCECT_DEMO_GAMEOBJECT_H
+
+#endif // MENO_GAMEOBJECT_HPP

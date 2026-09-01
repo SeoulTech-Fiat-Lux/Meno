@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_TEXTURE_HPP
+#define MENO_TEXTURE_HPP
 
 #include <meno/math/Vec2.hpp>
 
@@ -52,3 +53,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_TEXTURE_HPP

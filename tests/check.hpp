@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_CHECK_HPP
+#define MENO_CHECK_HPP
 
 // assert()는 사용하지 않는다.
 // CI가 -DCMAKE_BUILD_TYPE=Release로 빌드할 때 NDEBUG가 정의되므로, assert()가 전처리 단계에서 전부 사라진다.
@@ -30,3 +31,5 @@ inline void check(bool ok, const char* what) {
 
 // 식 안에 템플릿 인자와 같은 최상위 쉼표가 있어도 쪼개지지 않도록 가변인자로 받는다.
 #define MENO_CHECK(...) meno::test::check(static_cast<bool>(__VA_ARGS__), #__VA_ARGS__)
+
+#endif  // MENO_CHECK_HPP

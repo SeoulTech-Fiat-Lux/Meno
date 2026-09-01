@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_FONT_HPP
+#define MENO_FONT_HPP
 
 #include <filesystem>
 #include <memory>
@@ -35,3 +36,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_FONT_HPP

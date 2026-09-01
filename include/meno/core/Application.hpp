@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_APPLICATION_HPP
+#define MENO_APPLICATION_HPP
 
 #include <cstddef>
 
@@ -48,3 +49,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_APPLICAION_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_CAMERA2D_HPP
+#define MENO_CAMERA2D_HPP
 
 #include <meno/math/Vec2.hpp>
 
@@ -27,3 +28,5 @@ struct Camera2D {
 };
 
 } // namespace meno
+
+#endif  // MENO_CAMERA2D_HPP

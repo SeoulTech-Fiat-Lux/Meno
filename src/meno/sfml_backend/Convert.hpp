@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_CONVERT_HPP
+#define MENO_CONVERT_HPP
 
 #include <meno/math/Color.hpp>
 #include <meno/math/Rect.hpp>
@@ -50,3 +51,5 @@ template <typename T>
 }
 
 } // namespace meno::backend
+
+#endif  // MENO_CONVERT_HPP

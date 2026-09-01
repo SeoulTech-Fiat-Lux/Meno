@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_VEC2_HPP
+#define MENO_VEC2_HPP
 
 #include <cmath>
 #include <cstdint>
@@ -97,3 +98,5 @@ using Vec2i = Vec2<int>;    // 2D 벡터의 int 타입 정의. 텍스처 픽셀 
 using Vec2u = Vec2<unsigned int>;   // 2D 벡터의 unsigned int 타입 정의. 음수가 없는 크기 값에 사용.
 
 } // namespace meno
+
+#endif  // MENO_VEC2_HPP

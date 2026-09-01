@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_RENDERER_HPP
+#define MENO_RENDERER_HPP
 
 #include <meno/math/Camera2D.hpp>
 #include <meno/math/Color.hpp>
@@ -95,3 +96,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_RENDERER_HPP

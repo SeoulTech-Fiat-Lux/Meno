@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_WINDOW_HPP
+#define MENO_WINDOW_HPP
 
 #include <meno/math/Vec2.hpp>
 
@@ -58,3 +59,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_WINDOW_HPP

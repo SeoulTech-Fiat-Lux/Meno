@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_TIME_HPP
+#define MENO_TIME_HPP
 
 namespace meno {
 
@@ -33,3 +34,5 @@ private:
 };
 
 } // namespace meno
+
+#endif  // MENO_TIME_HPP

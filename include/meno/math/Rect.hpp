@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_RECT_HPP
+#define MENO_RECT_HPP
 
 #include <meno/math/Vec2.hpp>
 
@@ -64,3 +65,5 @@ using Rectf = Rect<float>; // float 타입의 Rect를 위한 별칭.
 using Recti = Rect<int>; // int 타입의 Rect를 위한 별칭.
 
 } // namespace meno
+
+#endif  // MENO_RECT_HPP

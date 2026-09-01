@@ -1,5 +1,5 @@
-#ifndef GAMEOBJCECT_DEMO_COLLIDER_H
-#define GAMEOBJCECT_DEMO_COLLIDER_H
+#ifndef MENO_COLLIDER_H
+#define MENO_COLLIDER_H
 
 #include <meno/math/Vec2.hpp>
 #include <meno/core/Component.hpp>

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MENO_HPP
+#define MENO_HPP
 
 /// meno 통합 헤더.
 ///
@@ -40,3 +41,5 @@
 //   #include <meno/input/Input.hpp>
 //   #include <meno/audio/Audio.hpp>
 //   #include <meno/resources/ResourceManager.hpp>
+
+#endif  // MENO_HPP
