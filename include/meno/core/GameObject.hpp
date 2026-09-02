@@ -29,6 +29,8 @@ struct Sprite : public Component {
     int* pixels;       // 픽셀 데이터
 };
 
+class Scene; // friend 선언을 위한 전방선언
+
 /**
  * @brief 게임 내 객체를 표현하는 기본 클래스입니다.
  *
@@ -40,32 +42,32 @@ struct Sprite : public Component {
  * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
  */
 class GameObject {
+    using GameObjectID = std::uint64_t;
+
+    friend class Scene;
 private:
     Transform transform_;
     Sprite sprite_;
 
     std::unordered_map<std::type_index, std::unique_ptr<Component>> components_;
 
-public:
-    GameObject() = default;
+    GameObjectID id_;
 
-
+protected:
+    GameObject() = delete;
     GameObject(const GameObject&) = delete;
-    GameObject& operator=(const GameObject&) = delete;
-
-
     GameObject(GameObject&& other) noexcept = default;
 
-    /**
-     * @brief 다른 GameObject의 자원 소유권을 현재 객체로 이전합니다.
-     *
-     * @param other 소유권을 이전할 GameObject입니다.
-     * @return 현재 GameObject에 대한 참조입니다.
-     */
-    GameObject& operator=(GameObject&& other) noexcept = default;
+    GameObject(GameObjectID id) : id_(id) {}
+
+public:
+    GameObject& operator=(const GameObject&) = delete;
+    GameObject& operator=(GameObject&&) = delete;
 
 
+public:
     Transform& transform() noexcept { return transform_; }
+    GameObjectID id() noexcept { return id_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.
