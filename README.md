@@ -92,6 +92,30 @@ int main() {
 `run(Clock&)`은 사용자 정의 또는 테스트용 `Clock`을 주입할 때 사용하며, 이 경우에도
 설정된 프레임 제한이 적용된다.
 
+## 오디오
+
+짧은 효과음은 파일 전체를 메모리에 올리는 `Sound`, 긴 배경음악은 파일에서
+스트리밍하는 `Music`을 사용한다. 둘 다 복사할 수 없고 이동할 수 있으며, 볼륨은
+`0.0f`(무음)부터 `1.0f`(최대)까지 지정한다.
+
+```cpp
+auto click = meno::Sound::loadFromFile("assets/click.wav");
+if (click) {
+    click->setVolume(0.7f);
+    click->play();
+}
+
+auto bgm = meno::Music::openFromFile("assets/bgm.ogg");
+if (bgm) {
+    bgm->setVolume(0.4f);
+    bgm->play();
+}
+```
+
+`Music`은 재생 중 파일을 계속 읽으므로 해당 객체가 살아 있는 동안 원본 파일을
+이동하거나 삭제하면 안 된다. 로딩 또는 열기에 실패하면 두 함수 모두
+`std::nullopt`를 반환한다.
+
 ## 디렉터리 구조
 
 ```
@@ -100,6 +124,7 @@ include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   core/             Window, Application, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
+  audio/            Sound, Music
 src/meno/         구현 — 사용자에게 배포되지 않는다
   sfml_backend/     SFML을 include하는 유일한 곳
 examples/         데모 게임
