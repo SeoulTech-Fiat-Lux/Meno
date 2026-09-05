@@ -41,11 +41,13 @@ class Scene; // friend 선언을 위한 전방선언
  * 등록된 컴포넌트는 GameObject가 독점적으로 소유하며,
  * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
  */
-class GameObject {
+class GameObject final {
     using GameObjectID = std::uint64_t;
 
     friend class Scene;
+
 private:
+// private 맴버변수 필드
     Transform transform_;
     Sprite sprite_;
 
@@ -53,8 +55,8 @@ private:
 
     GameObjectID id_;
 
-protected:
-    GameObject() = delete;
+// prvate 메서드 필드
+    GameObject() = default;
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&& other) noexcept = default;
 
@@ -64,8 +66,6 @@ public:
     GameObject& operator=(const GameObject&) = delete;
     GameObject& operator=(GameObject&&) = delete;
 
-
-public:
     Transform& transform() noexcept { return transform_; }
     GameObjectID id() noexcept { return id_; }
 

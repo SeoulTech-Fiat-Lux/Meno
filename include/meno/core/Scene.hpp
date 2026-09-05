@@ -63,13 +63,15 @@ public:
             exit_handler_();
     }
 
-    template <typename T = GameObject, typename... Args>
-        requires std::derived_from<T, GameObject>
-    T& createGameObject(Args&&... args) {
-        auto object = std::make_unique<T>(next_id_, std::forward<Args>(args)...);
+    GameObject& createGameObject() {
+        const GameObject::GameObjectID id = next_id_++;
 
-        T& ref = *object;
-        objects_.emplace(next_id_++, std::move(object));
+        std::unique_ptr<GameObject> object{
+            new GameObject(id)
+        };
+
+        GameObject& ref = *object;
+        objects_.emplace(id, std::move(object));
 
         return ref;
     }
