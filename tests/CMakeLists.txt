@@ -35,3 +35,11 @@ meno_add_test(application
         ${CMAKE_SOURCE_DIR}/src/meno/core/Clock.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/core/Time.cpp
 )
+
+meno_add_test(gameobject
+        ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp
+)
+
+meno_add_test(scene
+        ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp
+)
