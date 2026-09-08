@@ -51,11 +51,11 @@ private:
     GameObjectID id_;
 
 // prvate 메서드 필드
-    GameObject() : sprite_(this) {}
+    GameObject() : sprite_(this) { transform_.parent = this; }
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&& other) noexcept = default;
 
-    GameObject(GameObjectID id) : sprite_(this), id_(id) {}
+    GameObject(GameObjectID id) : sprite_(this), id_(id) { transform_.parent = this; }
 
 public:
     GameObject& operator=(const GameObject&) = delete;

@@ -45,6 +45,11 @@ struct CircleCollider : public Collider {
 
 /// <summary>
 /// 두 game object가 가지고 있는 collider 간 충돌 판정을 수행합니다
+/// 위치는 부모의 Transform::pos + offset이며, 사각형은 좌상단, 원은 중심 기준입니다.
+/// 사각형은 축 정렬이며 Transform의 회전과 배율은 적용하지 않습니다.
+/// 경계만 접하거나 크기/반지름이 0 이하인 경우 충돌하지 않습니다.
+/// 등록된 BoxCollider/CircleCollider 조합 중 하나라도 겹치면 true입니다.
+/// isTrigger와 layer는 이 기하 판정에서 필터링하지 않습니다.
 /// </summary>
 /// <returns>두 collider가 충돌될 시 true</returns>
 bool intersects(const GameObject& a, const GameObject& b);
