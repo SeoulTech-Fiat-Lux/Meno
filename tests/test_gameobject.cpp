@@ -1,3 +1,5 @@
+#include <meno/core/Component.hpp>
+#include <meno/core/Sprite.hpp>
 #include <meno/core/GameObject.hpp>
 #include <meno/core/Scene.hpp>
 
@@ -27,6 +29,9 @@ concept CanAddComponent = requires(meno::GameObject& object) {
 } // namespace
 
 int main() {
+    meno::Component detached;
+    MENO_CHECK(detached.parent == nullptr);
+
     static_assert(!std::is_copy_constructible_v<meno::GameObject>);
     static_assert(!std::is_copy_assignable_v<meno::GameObject>);
 
@@ -36,6 +41,9 @@ int main() {
 
     meno::Scene scene;
     meno::GameObject& object = scene.createGameObject();
+    MENO_CHECK(object.transform().parent == &object);
+    meno::Sprite sprite(&object);
+    MENO_CHECK(sprite.parent == &object);
 
     MENO_CHECK(object.id() == 1);
     MENO_CHECK(object.transform().pos == meno::Vec2f{0.f, 0.f});
@@ -59,11 +67,13 @@ int main() {
     MENO_CHECK(object.getComponent<Health>() == nullptr);
 
     Health& health = object.addComponent<Health>(10);
+    MENO_CHECK(health.parent == &object);
     MENO_CHECK(object.getComponent<Health>() == &health);
     MENO_CHECK(object.getComponent<Health>()->value == 10);
     MENO_CHECK(object.getComponent<Name>() == nullptr);
 
     Health& replacedHealth = object.addComponent<Health>(25);
+    MENO_CHECK(replacedHealth.parent == &object);
     MENO_CHECK(object.getComponent<Health>() == &replacedHealth);
     MENO_CHECK(object.getComponent<Health>()->value == 25);
 

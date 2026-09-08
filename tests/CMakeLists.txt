@@ -43,3 +43,8 @@ meno_add_test(gameobject
 meno_add_test(scene
         ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp
 )
+
+meno_add_test(collider
+        ${CMAKE_SOURCE_DIR}/src/meno/core/Collider.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp
+)
