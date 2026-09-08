@@ -6,11 +6,19 @@
 #define MENO_SPRITE_HPP
 
 #include <meno/core/Component.hpp>
+#include <meno/core/GameObject.hpp>
+#include <meno/graphics/DrawParams.hpp>
+#include <meno/graphics/Renderer.hpp>
+
 
 namespace meno {
 
 class Sprite : public Component {
+public:
+    Sprite(GameObject* parent) : parent_(parent) { }
+    void drawRect() {
 
+    }
 };
 
 }

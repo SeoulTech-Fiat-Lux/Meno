@@ -13,7 +13,7 @@ bool intersects_box_circle(const meno::BoxCollider& box, const meno::CircleColli
 }
 
 bool intersects_box_box(const meno::BoxCollider& a, const meno::BoxCollider& b) {
-    // ...
+    
     return false;
 }
 

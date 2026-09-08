@@ -8,7 +8,7 @@
 #include <meno/math/Vec2.hpp>
 #include <meno/core/Collider.hpp>
 #include <meno/core/Component.hpp>
-가#include <meno/core/Sprite.hpp>
+#include <meno/core/Sprite.hpp>
 
 #include <memory>
 #include <unordered_map>
@@ -51,11 +51,11 @@ private:
     GameObjectID id_;
 
 // prvate 메서드 필드
-    GameObject() = default;
+    GameObject() : sprite_(this) {}
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&& other) noexcept = default;
 
-    GameObject(GameObjectID id) : id_(id) {}
+    GameObject(GameObjectID id) : sprite_(this), id_(id) {}
 
 public:
     GameObject& operator=(const GameObject&) = delete;
@@ -86,6 +86,7 @@ public:
         (!std::is_same_v<T, Transform>) && (!std::is_same_v<T, Sprite>)
     T& addComponent(Args&&... args) {
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        ptr->parent = this;
 
         T& ref = *ptr;
 
