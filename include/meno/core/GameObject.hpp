@@ -8,6 +8,7 @@
 #include <meno/math/Vec2.hpp>
 #include <meno/core/Collider.hpp>
 #include <meno/core/Component.hpp>
+가#include <meno/core/Sprite.hpp>
 
 #include <memory>
 #include <unordered_map>
@@ -21,12 +22,6 @@ struct Transform : public Component {
     int magnitude{1};  // 크기 배율
     int rotation{0};       // 360도 기준 회전
     int width{0}, height{0}; // 크기, 너비
-};
-
-// 렌더링 파이프라인 참고해서 수정 필요
-struct Sprite : public Component {
-    int width, height; // 크기, 너비
-    int* pixels;       // 픽셀 데이터
 };
 
 class Scene; // friend 선언을 위한 전방선언
