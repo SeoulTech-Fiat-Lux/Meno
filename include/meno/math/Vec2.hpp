@@ -62,7 +62,7 @@ struct Vec2 {
         return {static_cast<R>(x) / len, static_cast<R>(y) / len};
     }
 
-};
+};  // struct Vec2
 
 // 전역 연산자 오버로딩. 벡터의 방향 전환, 벡터 간 덧셈, 뺄셈, 스칼라 곱셈, 스칼라 나눗셈을 지원.
 template <typename T>

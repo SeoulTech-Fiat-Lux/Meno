@@ -45,6 +45,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # SFML 3는 Linux에서 X11·udev·freetype 등의 개발 패키지를 요구한다.
+      # xvfb와 fonts-dejavu-core는 창이 필요한 렌더 테스트(render) 용이다.
       - name: 시스템 의존성 설치 (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -53,7 +54,8 @@ jobs:
             libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
             libfreetype-dev libgl1-mesa-dev libegl1-mesa-dev \
             libflac-dev libvorbis-dev libogg-dev \
-            libharfbuzz-dev
+            libharfbuzz-dev \
+            xvfb fonts-dejavu-core
 
       # SFML과 그 의존성 빌드가 10분쯤 걸린다. 캐시하지 않으면 매 푸시마다 낸다.
       - name: SFML 빌드 캐시
@@ -70,5 +72,14 @@ jobs:
         run: cmake --build build --config Release
 
       # 값 타입 테스트는 창을 열지 않으므로 헤드리스 러너에서도 돈다.
-      - name: Test
+      # render 테스트는 창과 GL 컨텍스트가 필요해서 MENO_DISPLAY_TESTS = 1일 때만 돈다.
+      # Linux는 xvfb-run으로 가상 디스플레이를 띄워 함께 돌리고, Windows에서는 건너뛴다.
+      - name: Test (Linux)
+        if: runner.os == 'Linux'
+        env:
+          MENO_DISPLAY_TESTS: "1"
+        run: xvfb-run -a ctest --test-dir build --build-config Release --output-on-failure
+
+      - name: Test (Windows)
+        if: runner.os != 'Linux'
         run: ctest --test-dir build --build-config Release --output-on-failure
