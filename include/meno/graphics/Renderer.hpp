@@ -97,7 +97,7 @@ public:
 
     // 로드되지 않거나 이동된 폰트라면 빈 사각형을 돌려준다.
     [[nodiscard]] Rectf measureTextBounds(const Font& font, std::string_view text,
-                                          const TextPrams& params = {}) const;
+                                          const TextParams& params = {}) const;
 
     // --- 카메라 -----------------------------------------------------------
 
