@@ -85,7 +85,7 @@ int main() {
 
         window.pollEvents();
 
-        renderer.beginFrame(meno::Color::fromHex(0x1E2430FF));
+        renderer.beginFrame(meno::Color::fromRgba(0x1E2430FF));
 
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
         meno::Camera2D camera;
@@ -100,12 +100,12 @@ int main() {
 
         // 도형: 채우기 + 외곽선
         renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
-                          {.fill = meno::Color::fromHex(0x4C6EF5FF),
+                          {.fill = meno::Color::fromRgba(0x4C6EF5FF),
                            .outline = meno::colors::White,
                            .outlineThickness = 2.f});
 
         renderer.drawCircle({-260.f, 120.f}, 45.f,
-                            {.fill = meno::Color::fromHex(0x51CF66FF),
+                            {.fill = meno::Color::fromRgba(0x51CF66FF),
                              .outline = meno::colors::Black,
                              .outlineThickness = 3.f});
 

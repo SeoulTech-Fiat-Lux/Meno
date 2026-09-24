@@ -35,7 +35,8 @@ static_assert(Vec2i{3, 4}.lengthSquared() == 25);
 
 // Rect / Color는 컴파일 타임에 계산 가능해야 한다.
 static_assert(Rectf{0.f, 0.f, 10.f, 10.f}.contains(Vec2f{5.f, 5.f}));
-static_assert(Color::fromHex(0x2E3440FF).r == 0x2E);
+static_assert(Color::fromRgba(0x2E3440FF).r == 0x2E);
+static_assert(Color::fromRgb(0x2E3440) ==  Color{0x2E, 0x34, 0x40, 0xFF});
 
 // --- 런타임 검사 ------------------------------------------------------------
 
@@ -94,10 +95,16 @@ int main() {
     check(a.center() == Vec2f{5.f, 5.f}, "중심점");
 
     // --- Color --------------------------------------------------------------
-    const Color c = Color::fromHex(0x2E3440FF);
+    const Color c = Color::fromRgba(0x2E3440FF);
     check(c.r == 0x2E && c.g == 0x34 && c.b == 0x40 && c.a == 0xFF, "fromHex 바이트 분해");
     check(colors::White == Color{255, 255, 255, 255}, "기본값은 불투명 흰색");
     check(c.withAlpha(128).a == 128 && c.withAlpha(128).r == c.r, "withAlpha는 alpha만 바꾼다");
+
+    // 6자리 리터럴은 fromRgb로 읽으며, 알파는 불투명(255)로 채운다.
+    const Color rgb = Color::fromRgb(0x2E3440);
+    check(rgb.r == 0x2E && rgb.g == 0x34 && rgb.b == 0x40 && rgb.a == 0xFF, "fromRgb 바이트 분해");
+    check(Color::fromRgb(0x1E2430) == Color::fromRgba(0x1E2430FF), "fromRgb(RRGGBB) == fromHex(RRGGBBAA)");
+    check(Color::fromRgb(0x000000) == colors::Black, "fromRgb(0x000000)은 불투명 검정");
 
     return meno::test::report();
 }
