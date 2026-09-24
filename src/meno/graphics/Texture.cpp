@@ -46,16 +46,25 @@ std::optional<Texture> Texture::fromPixels(Vec2u size, const std::uint8_t* rgba)
     return result;
 }
 
+// 아래 세 함수는 이동 후 빈 껍데기(impl_ == nullptr)에서도 불릴 수 있다.
+// 이동당한 텍스처는 크래시 없이 "빈 텍스처"처럼 행동한다는 것이 계약이다
+// draw는 TextureAccess::native가 지켜 주지만 이 함수들은 native를 거치지 않으므로 직접 확인한다.
 Vec2u Texture::size() const {
+    if (impl_ == nullptr) {
+        return {};
+    }
     return backend::fromSf(impl_->texture.getSize());
 }
 
 void Texture::setSmooth(bool smooth) {
+    if (impl_ == nullptr) {
+        return;
+    }
     impl_->texture.setSmooth(smooth);
 }
 
 bool Texture::isSmooth() const {
-    return impl_->texture.isSmooth();
+    return impl_ != nullptr && impl_->texture.isSmooth();
 }
 
 namespace backend {

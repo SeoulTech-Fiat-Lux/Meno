@@ -28,15 +28,23 @@ Window::Window(Window&&) noexcept = default;
 
 Window& Window::operator=(Window&&) noexcept = default;
 
+// 이동당한 빈 껍데기(impl_ == nullptr)에서는 아무런 동작도 하지 않는다.
+// isOpen()과 WindowAccess::native()가 이미 따르던 규칙을 나머지에도 맞추었다.
 bool Window::isOpen() const {
     return impl_ != nullptr && impl_->window.isOpen();
 }
 
 void Window::close() {
+    if (impl_ == nullptr) {
+        return;
+    }
     impl_->window.close();
 }
 
 void Window::pollEvents() {
+    if (impl_ == nullptr) {
+        return;
+    }
     // SFML 3의 pollEvent는 std::optional<sf::Event>를 돌려준다.
     while (const std::optional event = impl_->window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
@@ -46,6 +54,9 @@ void Window::pollEvents() {
 }
 
 Vec2u Window::size() const {
+    if (impl_ == nullptr) {
+        return {};
+    }
     return backend::fromSf(impl_->window.getSize());
 }
 

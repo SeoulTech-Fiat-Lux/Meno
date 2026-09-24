@@ -35,7 +35,8 @@ static_assert(Vec2i{3, 4}.lengthSquared() == 25);
 
 // Rect / Color는 컴파일 타임에 계산 가능해야 한다.
 static_assert(Rectf{0.f, 0.f, 10.f, 10.f}.contains(Vec2f{5.f, 5.f}));
-static_assert(Color::fromHex(0x2E3440FF).r == 0x2E);
+static_assert(Color::fromRgba(0x2E3440FF).r == 0x2E);
+static_assert(Color::fromRgb(0x2E3440) ==  Color{0x2E, 0x34, 0x40, 0xFF});
 
 // --- 런타임 검사 ------------------------------------------------------------
 
@@ -94,10 +95,22 @@ int main() {
     check(a.center() == Vec2f{5.f, 5.f}, "중심점");
 
     // --- Color --------------------------------------------------------------
-    const Color c = Color::fromHex(0x2E3440FF);
-    check(c.r == 0x2E && c.g == 0x34 && c.b == 0x40 && c.a == 0xFF, "fromHex 바이트 분해");
+    const Color c = Color::fromRgba(0x2E3440FF);
+    check(c.r == 0x2E && c.g == 0x34 && c.b == 0x40 && c.a == 0xFF, "fromRgba 바이트 분해");
     check(colors::White == Color{255, 255, 255, 255}, "기본값은 불투명 흰색");
     check(c.withAlpha(128).a == 128 && c.withAlpha(128).r == c.r, "withAlpha는 alpha만 바꾼다");
+
+    // 6자리 리터럴은 fromRgb로 읽으며, 알파는 불투명(255)로 채운다.
+    const Color rgb = Color::fromRgb(0x2E3440);
+    check(rgb.r == 0x2E && rgb.g == 0x34 && rgb.b == 0x40 && rgb.a == 0xFF, "fromRgb 바이트 분해");
+    check(Color::fromRgb(0x1E2430) == Color::fromRgba(0x1E2430FF), "fromRgb(RRGGBB) == fromRgba(RRGGBBAA)");
+    check(Color::fromRgb(0x000000) == colors::Black, "fromRgb(0x000000)은 불투명 검정");
+
+    // fromRgba는 8자리 리터럴만 받는다.
+    // 6자리 리터럴을 넣으면 0x001E2430으로 읽혀 R=0x00, G=0x1E, B=0x24, A=0x30이 된다.
+    // fromRgb를 따로 둔 이유이므로 동작을 고정해둔다.
+    const Color shifted = Color::fromRgba(0x1E2430);
+    check(shifted.r == 0x00 && shifted.a == 0x30, "fromRgba()에 6자리 리터럴을 넣으면 색이 한 칸씩 밀린다");
 
     return meno::test::report();
 }
