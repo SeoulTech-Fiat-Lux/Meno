@@ -85,7 +85,7 @@ int main() {
 
         window.pollEvents();
 
-        renderer.beginFrame(meno::Color::fromRgba(0x1E2430FF));
+        renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
 
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
         meno::Camera2D camera;
@@ -100,12 +100,12 @@ int main() {
 
         // 도형: 채우기 + 외곽선
         renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
-                          {.fill = meno::Color::fromRgba(0x4C6EF5FF),
+                          {.fill = meno::Color::fromRgb(0x4C6EF5),
                            .outline = meno::colors::White,
                            .outlineThickness = 2.f});
 
         renderer.drawCircle({-260.f, 120.f}, 45.f,
-                            {.fill = meno::Color::fromRgba(0x51CF66FF),
+                            {.fill = meno::Color::fromRgb(0x51CF66),
                              .outline = meno::colors::Black,
                              .outlineThickness = 3.f});
 
@@ -139,14 +139,17 @@ int main() {
                                           .outlineColor = meno::colors::Black};
             renderer.drawText(*font, "meno 2D 렌더 API", {16.f, 12.f}, title);
 
-            // measureText로 우측 정렬
+            // measureTextBounds()로 글자가 실제 차지하는 영역을 계산하여, 화면 오른쪽 아래에 붙인다. (우하단 정렬)
+            // 글자 잉크의 우하단이 화면 우하단으로부터 16픽셀 안쪽으로 떨어지도록 위치를 계산한다.
+            // {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는 아래쪽이 몇 픽셀 어긋난다.
             const meno::TextParams hint{.characterSize = 14,
                                          .color = meno::colors::Gray};
             const char* hintText = "카메라 줌이 자동으로 변합니다";
-            const meno::Vec2f hintSize = renderer.measureText(*font, hintText, hint);
+            const meno::Rectf hintBounds = renderer.measureTextBounds(*font, hintText, hint);
             const auto screen = static_cast<meno::Vec2f>(renderer.framebufferSize());
+            const meno::Vec2f inkBottomRight{hintBounds.right(), hintBounds.bottom()};
             renderer.drawText(*font, hintText,
-                              {screen.x - hintSize.x - 16.f, screen.y - hintSize.y - 16.f}, hint);
+                              screen - meno::Vec2f{16.f, 16.f} - inkBottomRight, hint);
         }
 
         renderer.endFrame();
