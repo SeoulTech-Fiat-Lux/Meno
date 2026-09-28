@@ -39,6 +39,7 @@ meno_add_test(application
 meno_add_test(gameobject
         ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp
 )
+target_link_libraries(meno_test_gameobject PRIVATE meno::meno)
 
 meno_add_test(scene
         ${CMAKE_SOURCE_DIR}/src/meno/core/Scene.cpp

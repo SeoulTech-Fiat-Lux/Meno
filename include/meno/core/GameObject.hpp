@@ -6,7 +6,6 @@
 #define MENO_GAMEOBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
-#include <meno/core/Collider.hpp>
 #include <meno/core/Component.hpp>
 #include <meno/core/Sprite.hpp>
 
@@ -62,6 +61,12 @@ public:
     GameObject& operator=(GameObject&&) = delete;
 
     Transform& transform() noexcept { return transform_; }
+    const Transform& transform() const noexcept { return transform_; }
+    Sprite& sprite() noexcept { return sprite_; }
+    const Sprite& sprite() const noexcept { return sprite_; }
+
+    /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
+    void draw(Renderer& renderer) const { sprite_.draw(renderer); }
     GameObjectID id() noexcept { return id_; }
 
     /**

@@ -44,6 +44,11 @@ int main() {
     MENO_CHECK(object.transform().parent == &object);
     meno::Sprite sprite(&object);
     MENO_CHECK(sprite.parent == &object);
+    MENO_CHECK(object.sprite().parent == &object);
+    MENO_CHECK(!object.sprite().texture());
+    meno::Sprite detachedSprite(nullptr);
+    MENO_CHECK(detachedSprite.drawParams().position == meno::Vec2f{0.f, 0.f});
+    MENO_CHECK(detachedSprite.drawParams().scale == meno::Vec2f{1.f, 1.f});
 
     MENO_CHECK(object.id() == 1);
     MENO_CHECK(object.transform().pos == meno::Vec2f{0.f, 0.f});
@@ -64,6 +69,26 @@ int main() {
     MENO_CHECK(object.transform().width == 64);
     MENO_CHECK(object.transform().height == 32);
 
+    object.sprite().origin = {8.f, 16.f};
+    object.sprite().tint = meno::colors::Red;
+    object.sprite().source = meno::Recti{{16, 32}, {16, 16}};
+    object.sprite().flipX = true;
+    object.sprite().flipY = true;
+    const auto params = object.sprite().drawParams();
+    MENO_CHECK(params.position == meno::Vec2f{12.f, 34.f});
+    MENO_CHECK(params.scale == meno::Vec2f{2.f, 2.f});
+    MENO_CHECK(params.rotation == 90.f);
+    MENO_CHECK(params.origin == meno::Vec2f{8.f, 16.f});
+    MENO_CHECK(params.tint == meno::colors::Red);
+    MENO_CHECK(params.source.has_value());
+    MENO_CHECK(params.source->position == meno::Vec2i{16, 32});
+    MENO_CHECK(params.source->size == meno::Vec2i{16, 16});
+    MENO_CHECK(params.flipX && params.flipY);
+
+    // 변환을 캐싱하지 않아 다음 프레임에 변경된 위치가 반영되어야 한다.
+    object.transform().pos = {56.f, 78.f};
+    MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{56.f, 78.f});
+
     MENO_CHECK(object.getComponent<Health>() == nullptr);
 
     Health& health = object.addComponent<Health>(10);
@@ -83,6 +108,8 @@ int main() {
 
     const meno::GameObject* constObject = scene.getGameObject(object.id());
     MENO_CHECK(constObject != nullptr);
+    MENO_CHECK(&constObject->sprite() == &object.sprite());
+    MENO_CHECK(&constObject->transform() == &object.transform());
     MENO_CHECK(constObject->getComponent<Health>() != nullptr);
     MENO_CHECK(constObject->getComponent<Health>()->value == 25);
 
