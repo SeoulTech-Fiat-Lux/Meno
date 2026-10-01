@@ -6,6 +6,7 @@
 #include "check.hpp"
 
 #include <type_traits>
+#include <cmath>
 
 namespace {
 
@@ -88,6 +89,23 @@ int main() {
     // 변환을 캐싱하지 않아 다음 프레임에 변경된 위치가 반영되어야 한다.
     object.transform().pos = {56.f, 78.f};
     MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{56.f, 78.f});
+
+    // offset은 부모 기준 위치이고 origin/flip은 그 위치를 바꾸지 않는다.
+    object.transform().pos = {100.f, 100.f};
+    object.transform().rotation = 0;
+    object.transform().magnitude = 1;
+    object.sprite().offset = {10.f, 10.f};
+    MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{110.f, 110.f});
+    MENO_CHECK(object.transform().pos == meno::Vec2f{100.f, 100.f});
+
+    object.transform().rotation = 90;
+    object.transform().magnitude = 2;
+    const auto rotated = object.sprite().drawParams();
+    MENO_CHECK(std::abs(rotated.position.x - 80.f) < 0.0001f);
+    MENO_CHECK(std::abs(rotated.position.y - 120.f) < 0.0001f);
+
+    detachedSprite.offset = {-10.f, 20.f};
+    MENO_CHECK(detachedSprite.drawParams().position == meno::Vec2f{-10.f, 20.f});
 
     MENO_CHECK(object.getComponent<Health>() == nullptr);
 

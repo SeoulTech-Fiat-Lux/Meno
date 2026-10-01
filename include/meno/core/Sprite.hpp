@@ -25,6 +25,8 @@ private:
     std::shared_ptr<const Texture> texture_;
 
 public:
+    /// GameObject 기준 상대 위치. 부모의 배율과 회전을 적용한다.
+    Vec2f offset{0.f, 0.f};
     Vec2f origin{0.f, 0.f};
     Color tint{colors::White};
     std::optional<Recti> source{};
@@ -45,8 +47,8 @@ public:
 
     [[nodiscard]] const std::shared_ptr<const Texture>& texture() const noexcept { return texture_; }
 
-    /// 위치/회전/배율은 부모 Transform에서 가져온다. width/height는 사용하지 않는다.
-    /// 부모가 없으면 기본 변환을 사용한다.
+    /// 부모 Transform에 offset을 적용한다. width/height는 사용하지 않는다.
+    /// 부모가 없으면 offset을 위치로 사용하고 회전/배율은 기본값이다.
     [[nodiscard]] SpriteParams drawParams() const;
 
     /// 파일 로딩 없이 기존 텍스처를 그린다. 텍스처가 없으면 건너뛴다.
