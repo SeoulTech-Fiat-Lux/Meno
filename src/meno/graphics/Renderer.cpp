@@ -14,18 +14,35 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <cmath>
-#include <utility>
+#include <stdexcept>
 
 namespace meno {
 namespace {
 
-/// UTF-8 std::string_view를 SFML 문자열로. 한글이 깨지지 않게 하는 지점이다.
-/// sf::String에 std::string을 그냥 넘기면 Latin-1로 해석해서 한글이 깨진다.
+// UTF-8 std::string_view를 SFML 문자열로. 한글이 깨지지 않게 하는 지점이다.
+// sf::String에 std::string을 그냥 넘기면 Latin-1로 해석해서 한글이 깨진다.
 [[nodiscard]] sf::String toSfString(std::string_view text) {
     return sf::String::fromUtf8(text.begin(), text.end());
 }
 
-/// 도형 3종이 공유하는 변환 설정.
+// drawText와  measureText가 쓰는 sf::Text를 조립하는 유일한 지점.
+// 둘이 따로 조립하면 한쪽에만 옵션이 빠져 잰 크기와 그린 크기가 어긋난다.
+// 실제로 measureText에 외곽선이 빠져 있어서 외곽선 t짜리 텍스트가 축마다 2 * ceil(t)만큼 작게 측정되었다.
+[[nodiscard]] sf::Text makeText(const sf::Font& font, std::string_view text,
+                                const TextParams& params) {
+    // TextParams에 필드를 추가하면 여기에만 반영할 수 있도록 한다.
+    // position은 그릴 때만 필요하므로 drawText가 따로 넣는다.
+    sf::Text drawable{font, toSfString(text), params.characterSize};
+    drawable.setFillColor(backend::toSf(params.color));
+    drawable.setOutlineColor(backend::toSf(params.outlineColor));
+    drawable.setOutlineThickness(params.outlineThickness);
+    drawable.setOrigin(backend::toSf(params.origin));
+    drawable.setRotation(backend::toSfAngle(params.rotation));
+    return drawable;
+}
+
+
+// 도형 3종이 공유하는 변환 설정.
 template <typename Shape>
 void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setFillColor(backend::toSf(params.fill));
@@ -37,19 +54,24 @@ void applyShapeParams(Shape& shape, const ShapeParams& params) {
 } // namespace
 
 struct Renderer::Impl {
-    /// 소유하지 않는다. Window가 Renderer보다 오래 산다는 것이 계약이다.
+    // 소유하지 않는다. Window가 Renderer보다 오래 산다는 것이 계약이다.
+
+    // Renderer가 살아있는 동안, impl_과 target은 절대 nullptr이 아니다.
+    // 생성자가 nullptr을 거부하며, 동시에 이동을 막아 Renderer의 빈 껍데기는 생기지 않기 때문이다.
+    // 그래서 아래 맴버 함수들은 검사 없이 역참조한다. (impl_이 nullptr이면 target도 nullptr이므로, 둘 중 하나만 검사해도 된다.)
     sf::RenderWindow* target{nullptr};
 };
 
 Renderer::Renderer(Window& window) : impl_(std::make_unique<Impl>()) {
     impl_->target = backend::WindowAccess::native(window);
+    if (impl_->target == nullptr) {
+        // 이동당한 Window를 넘겼거나, Window가 이미 소멸되어 렌더 타깃이 없는 경우.
+        // 여기에서 막지 않으면 첫 draw에서 nullptr 역참조가 일어나고, 그때는 어디서 잘못된 건지 알기 어렵다.
+        throw std::invalid_argument{"Renderer: window has no render target"};
+    }
 }
 
 Renderer::~Renderer() = default;
-
-Renderer::Renderer(Renderer&&) noexcept = default;
-
-Renderer& Renderer::operator=(Renderer&&) noexcept = default;
 
 // --- 프레임 ---------------------------------------------------------------
 
@@ -152,26 +174,27 @@ void Renderer::drawText(const Font& font, std::string_view text, Vec2f position,
         return;
     }
 
-    sf::Text drawable{*native, toSfString(text), params.characterSize};
-    drawable.setFillColor(backend::toSf(params.color));
-    drawable.setOutlineColor(backend::toSf(params.outlineColor));
-    drawable.setOutlineThickness(params.outlineThickness);
-    drawable.setOrigin(backend::toSf(params.origin));
+    sf::Text drawable = makeText(*native, text, params);
     drawable.setPosition(backend::toSf(position));
-    drawable.setRotation(backend::toSfAngle(params.rotation));
 
     impl_->target->draw(drawable);
 }
 
 Vec2f Renderer::measureText(const Font& font, std::string_view text,
                             const TextParams& params) const {
+    return measureTextBounds(font, text, params).size;
+}
+
+Rectf Renderer::measureTextBounds(const Font& font, std::string_view text,
+                                  const TextParams& params) const {
     const sf::Font* native = backend::FontAccess::native(font);
     if (native == nullptr) {
         return {};
     }
 
-    const sf::Text drawable{*native, toSfString(text), params.characterSize};
-    return backend::fromSf(drawable.getLocalBounds().size);
+    // getLocalBounds()는 origin/position/rotation을 적용하기 전의 로컬 좌표를 반환한다.
+    // SFML은 외곽선이 있으면 이 영역을 축마다 ceil(|t|)씩 양쪽으로 넓힌다.
+    return backend::fromSf(makeText(*native, text, params).getLocalBounds());
 }
 
 // --- 카메라 ---------------------------------------------------------------
@@ -210,7 +233,16 @@ Rectf Renderer::visibleWorldBounds() const {
     const sf::View& view = impl_->target->getView();
     const Vec2f size = backend::fromSf(view.getSize());
     const Vec2f center = backend::fromSf(view.getCenter());
-    return Rectf{center - size / 2.f, size};
+
+    // 뷰가 θ만큼 회전하면, 화면에 보이는 영역은 size짜리의 사각형을 center 기준으로 돌린 모양이 된다.
+    // 이때 그 사각형을 감싸는 축 정렬 사각형의 크기를 계산하면 아래와 같이 폭과 넓이가 나온다.
+    // θ == 0이면 cosAbs == 1, sinAbs == 0이므로 size 그대로 나온다.
+    const float radians = view.getRotation().asRadians();
+    const float cosAbs = std::abs(std::cos(radians));
+    const float sinAbs = std::abs(std::sin(radians));
+    const Vec2f extent{size.x * cosAbs + size.y * sinAbs, size.x * sinAbs + size.y * cosAbs};
+
+    return Rectf{center - extent / 2.f, extent};
 }
 
 // --- 정보 -----------------------------------------------------------------
