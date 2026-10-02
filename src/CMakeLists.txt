@@ -13,6 +13,8 @@
 #   meno/graphics/   -- 2D 렌더러 담당
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
 add_library(meno STATIC
+        meno/audio/Music.cpp
+        meno/audio/Sound.cpp
         meno/core/Application.cpp
         meno/core/Clock.cpp
         meno/core/Time.cpp
@@ -42,9 +44,9 @@ target_include_directories(meno
 # 사용자가 실수로 <SFML/...>을 include할 수 있게 된다 -> pimpl·friend 실현한 encapsulation이 무용지물이 됨.
 #
 # SFML::Graphics는 SFML::Window와 SFML::System을 전이 의존으로 끌고 온다.
-# 오디오는 렌더 라이브러리의 의존이 아니므로 여기서 링크하지 않는다.
-# (Audio 담당자가 자기 소스를 추가할 때 SFML::Audio를 붙이면 된다.)
-target_link_libraries(meno PRIVATE SFML::Graphics)
+# Sound와 Music 구현은 SFML::Audio를 사용한다. 둘 다 PRIVATE이므로 공개 헤더와
+# 사용자 타깃에는 SFML 헤더 경로가 전파되지 않는다.
+target_link_libraries(meno PRIVATE SFML::Graphics SFML::Audio)
 
 target_compile_features(meno PUBLIC cxx_std_20)
 
