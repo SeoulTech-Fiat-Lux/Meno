@@ -1,6 +1,7 @@
 #ifndef MENO_COLOR_HPP
 #define MENO_COLOR_HPP
 
+#include <cassert>
 #include <cstdint>
 
 namespace meno {
@@ -21,8 +22,11 @@ struct Color {
     constexpr Color(std::uint8_t inR, std::uint8_t inG, std::uint8_t inB, std::uint8_t inA = 255)
         : r(inR), g(inG), b(inB), a(inA) {} // r, g, b, a 값을 인자로 받아 Color 객체를 초기화.
 
-    // 0xRRGGBBAA 형태의 리터럴에서 Color 객체를 생성하는 정적 멤버 함수.
-    [[nodiscard]] static constexpr Color fromHex(std::uint32_t rgba) {
+    // 0xRRGGBBAA 형태의 리터럴(8자리 16진수)에서 Color 객체를 생성하는 정적 멤버 함수.
+    // 알파까지 8자리를 모두 적어야 하며, 웹에서 흔한 6자리(0x1E2430)를 넣으면
+    // 0x001E2430으로 읽혀 R=0x00, G=0x1E, B=0x24, A=0x30이 된다. (색이 한 칸씩 밀리고 거의 투명해진다.)
+    // 6자리는 fromRgb를 쓴다. 두 리터럴 모두 std::uint32_t라 오버로드로는 구분할 수 없어서 이름을 나눴다.
+    [[nodiscard]] static constexpr Color fromRgba(std::uint32_t rgba) {
         // 비트 마스킹과 시프트 연산을 통해 32비트 정수에서 각 색상 성분을 추출하여 Color 객체를 생성한다.
         return Color{static_cast<std::uint8_t>((rgba >> 24 & 0xFF)), // 상위 8비트(R) 추출
                      static_cast<std::uint8_t>((rgba >> 16 & 0xFF)), // 중간 8비트(G) 추출
@@ -30,7 +34,17 @@ struct Color {
                      static_cast<std::uint8_t>(rgba & 0xFF)};        // 알파 값 추출
     }
 
-    // 현재 Color 객체의 RGB 값은 그대로 유지하면서, 알파 값만 변경된 새로운 Color 객체를 반환.
+    // 0xRRGGBB 형태(6자리)의 리터럴에서 불투명한 Color 객체를 생성하는 정적 멤버 함수.
+    // consteval이라 컴파일할 때만 계산된다. 8자리 리터럴을 넣으면 빌드 설정과 상관없이 컴파일 에러가 발생한다.
+    [[nodiscard]] static consteval Color fromRgb(std::uint32_t rgb) {
+        if (rgb > 0xFFFFFFu) {
+            throw "fromRgb() takes 0xRRGGBB; use fromRgba() for 0xRRGGBBAA"; // 컴파일 에러 메시지 출력.
+        }
+        return Color{static_cast<std::uint8_t>((rgb >> 16 & 0xFF)), // 상위 8비트(R) 추출
+                     static_cast<std::uint8_t>((rgb >> 8 & 0xFF)),  // 중간 8비트(G) 추출
+                     static_cast<std::uint8_t>(rgb & 0xFF)};         // 하위 8비트(B) 추출
+    }
+
     [[nodiscard]] constexpr Color withAlpha(std::uint8_t alpha) const {
         return Color{r, g, b, alpha};
     }
