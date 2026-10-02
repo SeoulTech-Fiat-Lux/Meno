@@ -31,6 +31,8 @@ meno_add_test(math)
 meno_add_test(umbrella)
 
 meno_add_test(audio)
+target_include_directories(meno_test_audio PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+target_link_libraries(meno_test_audio PRIVATE meno::meno)
 
 meno_add_test(application
         ${CMAKE_SOURCE_DIR}/src/meno/core/Application.cpp

@@ -1,9 +1,10 @@
 #include <meno/audio/Sound.hpp>
 
+#include "audio/Volume.hpp"
+
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 
-#include <algorithm>
 #include <utility>
 
 namespace meno {
@@ -50,13 +51,14 @@ void Sound::stop() {
 }
 
 void Sound::setVolume(float volume) {
-    if (impl_ != nullptr) {
-        impl_->sound.setVolume(std::clamp(volume, 0.0F, 1.0F) * 100.0F);
+    // 잘못된 계산에서 전달된 NaN으로 현재 음량 상태가 오염되지 않게 한다.
+    if (impl_ != nullptr && audio_detail::isValidVolume(volume)) {
+        impl_->sound.setVolume(audio_detail::toBackendVolume(volume));
     }
 }
 
 float Sound::volume() const {
-    return impl_ == nullptr ? 0.0F : impl_->sound.getVolume() / 100.0F;
+    return impl_ == nullptr ? 0.0F : audio_detail::fromBackendVolume(impl_->sound.getVolume());
 }
 
 bool Sound::isPlaying() const {

@@ -1,8 +1,9 @@
 #include <meno/audio/Music.hpp>
 
+#include "audio/Volume.hpp"
+
 #include <SFML/Audio/Music.hpp>
 
-#include <algorithm>
 #include <utility>
 
 namespace meno {
@@ -48,13 +49,14 @@ void Music::stop() {
 }
 
 void Music::setVolume(float volume) {
-    if (impl_ != nullptr) {
-        impl_->music.setVolume(std::clamp(volume, 0.0F, 1.0F) * 100.0F);
+    // 잘못된 계산에서 전달된 NaN으로 현재 음량 상태가 오염되지 않게 한다.
+    if (impl_ != nullptr && audio_detail::isValidVolume(volume)) {
+        impl_->music.setVolume(audio_detail::toBackendVolume(volume));
     }
 }
 
 float Music::volume() const {
-    return impl_ == nullptr ? 0.0F : impl_->music.getVolume() / 100.0F;
+    return impl_ == nullptr ? 0.0F : audio_detail::fromBackendVolume(impl_->music.getVolume());
 }
 
 bool Music::isPlaying() const {

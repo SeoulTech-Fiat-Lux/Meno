@@ -112,6 +112,21 @@ if (bgm) {
 }
 ```
 
+`Sound`와 `Music` 객체가 소멸하면 재생도 즉시 중단된다. 따라서 다음처럼 임시
+객체에서 바로 `play()`를 호출하지 말고, 재생이 끝날 때까지 지역 변수나 게임 객체의
+멤버로 보관해야 한다.
+
+```cpp
+// 잘못된 예: 문장이 끝날 때 임시 객체가 소멸하여 소리가 재생되지 않는다.
+meno::Sound::loadFromFile("assets/click.wav")->play();
+
+// 올바른 예: 재생 중에도 click이 유지된다.
+auto click = meno::Sound::loadFromFile("assets/click.wav");
+if (click) {
+    click->play();
+}
+```
+
 `Music`은 재생 중 파일을 계속 읽으므로 해당 객체가 살아 있는 동안 원본 파일을
 이동하거나 삭제하면 안 된다. 로딩 또는 열기에 실패하면 두 함수 모두
 `std::nullopt`를 반환한다.
