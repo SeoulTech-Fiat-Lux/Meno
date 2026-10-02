@@ -16,7 +16,7 @@ int main() {
     // Application이 고정 timestep 루프와 시간 누적을 담당한다.
     while (window.isOpen()) { // 렌더 API만 보여 주는 최소 예제
         window.pollEvents();
-        renderer.beginFrame(meno::Color::fromHex(0x1E2430FF));
+        renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
         renderer.drawCircle({480.f, 270.f}, 60.f, {.fill = meno::colors::Cyan});
         renderer.endFrame();
     }
