@@ -16,6 +16,7 @@ add_library(meno STATIC
         meno/audio/Music.cpp
         meno/audio/Sound.cpp
         meno/core/Application.cpp
+        meno/core/Audio.cpp
         meno/core/Clock.cpp
         meno/core/Time.cpp
         meno/core/Window.cpp
