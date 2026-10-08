@@ -19,6 +19,10 @@
 #include <meno/math/Rect.hpp>
 #include <meno/math/Vec2.hpp>
 
+// --- 오디오 ---------------------------------------------------------------
+#include <meno/audio/Music.hpp>
+#include <meno/audio/Sound.hpp>
+
 // --- 그래픽 ---------------------------------------------------------------
 #include <meno/graphics/DrawParams.hpp>
 #include <meno/graphics/Font.hpp>
@@ -39,7 +43,6 @@
 //   #include <meno/scene/GameObject.hpp>
 //   #include <meno/collision/Collision.hpp>
 //   #include <meno/input/Input.hpp>
-//   #include <meno/audio/Audio.hpp>
 //   #include <meno/resources/ResourceManager.hpp>
 
 #endif  // MENO_HPP

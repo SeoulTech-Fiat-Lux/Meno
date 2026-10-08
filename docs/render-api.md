@@ -46,6 +46,29 @@ renderer.endFrame();
 
 `SpriteParams` / `ShapeParams` / `TextParams`는 전부 기본값을 가지므로 필요한 필드만 쓴다.
 
+### 색상 리터럴
+
+| 함수 | 받는 형태 | 예 |
+|---|---|---|
+| `Color::fromRgb` | 6자리 `0xRRGGBB` (불투명) | `Color::fromRgb(0x1E2430)` |
+| `Color::fromHex` | 8자리 `0xRRGGBBAA` | `Color::fromHex(0x1E2430FF)` |
+
+두 리터럴은 모두 `std::uint32_t`라서 오버로드로는 구분할 수 없다. 그래서 이름을 나눴다.
+`fromHex`에 6자리를 넣으면 `0x001E2430`으로 읽혀 색이 한 칸씩 밀리고 거의 투명해진다.
+반대로 `fromRgb`에 8자리를 넣으면 디버그 빌드에서 assert로 멈춘다.
+
+### 텍스트 크기 재기
+
+`measureText`는 같은 `TextParams`로 `drawText`했을 때의 크기(외곽선 포함)를 돌려준다.
+다만 글자 잉크는 `drawText`의 position에서 바로 시작하지 않는다. 윗여백(글리프 베어링)과
+외곽선만큼 어긋나 있으므로, 픽셀 단위로 정렬하려면 원점까지 주는 `measureTextBounds`를 쓴다.
+
+```cpp
+meno::TextParams params{.characterSize = 32};
+params.origin = renderer.measureTextBounds(font, "GAME OVER", params).center();
+renderer.drawText(font, "GAME OVER", screenCenter, params);  // 정확히 가운데. 회전해도 제자리
+```
+
 > ⚠️ **C++20 지정 초기화는 선언 순서를 지켜야 한다.** `SpriteParams`의 필드 순서를 바꾸면
 > 사용자 코드가 컴파일 에러를 낸다. 필드 순서 변경 = API 변경으로 취급할 것. 새 필드는
 > 항상 끝에 추가한다.
@@ -79,6 +102,13 @@ UI는 항상 `resetCamera()` 뒤에 그린다.
 - `Renderer`는 `const Texture&`만 받고 수명에 관여하지 않는다. 텍스처가 살아 있는지는
   호출자가 보장한다.
 - 이동당한(moved-from) 텍스처를 그리면 조용히 건너뛴다. 크래시는 나지 않는다.
+  그리기뿐 아니라 조회도 마찬가지다. `size()`는 `{0, 0}`, `isSmooth()`는 `false`를 돌려주고
+  `setSmooth()`는 무시된다. 이동당한 폰트로 그리면 건너뛰고, 재면 `{0, 0}`이 나온다.
+
+`Renderer`는 반대로 **복사도 이동도 불가**다. Window를 빌려 쓰는 타입이라 옮길 이유가 없고,
+막아 두면 "살아 있는 Renderer는 언제나 그릴 수 있다"가 타입으로 보장된다. 여러 곳에서 쓰려면
+`Renderer&`로 넘기고, 생성을 미뤄야 하면 `std::optional<Renderer>::emplace`나
+`std::unique_ptr<Renderer>`를 쓴다.
 
 ### 충돌 판정 담당자에게
 
@@ -108,6 +138,14 @@ UI는 항상 `resetCamera()` 뒤에 그린다.
 2. `size()`
 
 이 둘만 유지되면 이벤트 큐든 Config 연동이든 자유롭게 설계해도 렌더 쪽은 영향받지 않는다.
+
+`Renderer`는 생성 시점에 위 1번의 `sf::RenderWindow*`를 꺼내 붙잡아 둔다. 그래서 알아둘 점이 둘 있다.
+
+- `native()`가 `nullptr`을 돌려주면(이동당한 Window) `Renderer` 생성자가
+  `std::invalid_argument`를 던진다.
+- Window에 다른 Window를 **이동 대입**하면 기존 렌더 타깃이 파괴되어 붙잡은 포인터가
+  허공을 가리킨다. 창을 다시 만드는 기능(전체 화면 전환 등)을 넣는다면 Renderer도 함께
+  다시 만들거나, Window를 이동 불가로 바꾸는 쪽을 검토해 달라.
 
 현재 스텁의 `pollEvents()`는 닫기 버튼만 처리한다. 입력 처리는 Input 서비스 담당 영역이다.
 
@@ -144,4 +182,4 @@ MSVC는 `/utf-8` 옵션을 줘야 한글 리터럴과 주석이 안전하다. CM
 - 배치 렌더링 / 드로우콜 병합 — 즉시 모드라 스프라이트 하나당 드로우콜 하나다.
   W6 성능 벤치에서 병목으로 나오면 그때 `sf::VertexArray` 배칭을 넣는 게 순서다.
 - 렌더 타깃(오프스크린), 셰이더, 블렌드 모드
-- 텍스트 정렬(`TextAlign`) — 지금은 `measureText`로 직접 계산한다
+- 텍스트 정렬(`TextAlign`) — 지금은 `measureTextBounds`로 직접 계산한다
