@@ -32,6 +32,7 @@
 // --- 코어 -----------------------------------------------------------------
 #include <meno/core/Collider.hpp>
 #include <meno/core/Component.hpp>
+#include <meno/core/Audio.hpp>
 #include <meno/core/GameObject.hpp>
 #include <meno/core/Application.hpp>
 #include <meno/core/Clock.hpp>
