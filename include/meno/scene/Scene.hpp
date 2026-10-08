@@ -80,9 +80,14 @@ public:
     GameObject* getGameObject(GameObject::GameObjectID) noexcept;
     [[nodiscard]]
     const GameObject* getGameObject(GameObject::GameObjectID) const noexcept;
-
     [[nodiscard]]
     bool deleteGameObject(GameObject::GameObjectID) noexcept;
+
+    void drawScene(Renderer& renderer) { 
+        for (const auto& obj : objects_) {
+            obj.second->draw(renderer);
+        }
+    }
 };
 
 } // namespace meno
