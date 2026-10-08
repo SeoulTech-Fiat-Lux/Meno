@@ -1,7 +1,7 @@
-#include <meno/core/Component.hpp>
-#include <meno/core/Sprite.hpp>
-#include <meno/core/GameObject.hpp>
-#include <meno/core/Scene.hpp>
+#include <meno/scene/Component.hpp>
+#include <meno/scene/Sprite.hpp>
+#include <meno/scene/GameObject.hpp>
+#include <meno/scene/Scene.hpp>
 
 #include "check.hpp"
 

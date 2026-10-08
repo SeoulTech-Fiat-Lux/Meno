@@ -30,19 +30,18 @@
 #include <meno/graphics/Texture.hpp>
 
 // --- 코어 -----------------------------------------------------------------
-#include <meno/core/Collider.hpp>
-#include <meno/core/Component.hpp>
-#include <meno/core/Audio.hpp>
-#include <meno/core/GameObject.hpp>
 #include <meno/core/Application.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/core/Time.hpp>
 #include <meno/core/Window.hpp>
 
+// --- 씬 -----------------------------------------------------------------
+#include <meno/scene/Collider.hpp>
+#include <meno/scene/Component.hpp>
+#include <meno/scene/Audio.hpp>
+#include <meno/scene/GameObject.hpp>
+
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
-//   #include <meno/scene/Scene.hpp>
-//   #include <meno/scene/GameObject.hpp>
-//   #include <meno/collision/Collision.hpp>
 //   #include <meno/input/Input.hpp>
 //   #include <meno/resources/ResourceManager.hpp>
 

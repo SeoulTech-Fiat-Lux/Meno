@@ -2,7 +2,7 @@
 #define MENO_COLLIDER_H
 
 #include <meno/math/Vec2.hpp>
-#include <meno/core/Component.hpp>
+#include <meno/scene/Component.hpp>
 
 namespace meno {
 

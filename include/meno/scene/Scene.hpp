@@ -1,7 +1,7 @@
 #ifndef MENO_SCENE
 #define MENO_SCENE
 
-#include <meno/core/GameObject.hpp>
+#include <meno/scene/GameObject.hpp>
 
 #include <vector>
 #include <memory>

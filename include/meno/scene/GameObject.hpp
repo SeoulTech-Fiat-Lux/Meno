@@ -6,8 +6,8 @@
 #define MENO_GAMEOBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
-#include <meno/core/Component.hpp>
-#include <meno/core/Sprite.hpp>
+#include <meno/scene/Component.hpp>
+#include <meno/scene/Sprite.hpp>
 
 #include <memory>
 #include <unordered_map>

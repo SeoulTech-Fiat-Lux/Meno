@@ -5,7 +5,7 @@
 #ifndef MENO_SPRITE_HPP
 #define MENO_SPRITE_HPP
 
-#include <meno/core/Component.hpp>
+#include <meno/scene/Component.hpp>
 #include <meno/graphics/DrawParams.hpp>
 #include <meno/graphics/Texture.hpp>
 #include <meno/graphics/Renderer.hpp>

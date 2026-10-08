@@ -1,5 +1,5 @@
-#include <meno/core/Collider.hpp>
-#include <meno/core/GameObject.hpp>
+#include <meno/scene/Collider.hpp>
+#include <meno/scene/GameObject.hpp>
 
 #include <meno/math/Rect.hpp>
 

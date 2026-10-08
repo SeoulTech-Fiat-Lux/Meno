@@ -1,5 +1,5 @@
-#include <meno/core/Scene.hpp>
-#include <meno/core/GameObject.hpp>
+#include <meno/scene/Scene.hpp>
+#include <meno/scene/GameObject.hpp>
 
 namespace meno {
 

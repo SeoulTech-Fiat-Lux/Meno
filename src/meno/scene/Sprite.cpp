@@ -2,9 +2,9 @@
 // Created by 최상준 on 26. 9. 7..
 //
 
-#include <meno/core/Sprite.hpp>
+#include <meno/scene/Sprite.hpp>
 
-#include <meno/core/GameObject.hpp>
+#include <meno/scene/GameObject.hpp>
 #include <meno/graphics/Renderer.hpp>
 
 #include <cmath>

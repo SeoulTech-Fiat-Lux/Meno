@@ -1,4 +1,4 @@
-#include <meno/core/Audio.hpp>
+#include <meno/scene/Audio.hpp>
 
 #include <algorithm>
 #include <cmath>

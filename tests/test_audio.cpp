@@ -1,6 +1,6 @@
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
-#include <meno/core/Audio.hpp>
+#include <meno/scene/Audio.hpp>
 
 #include "audio/Volume.hpp"
 

@@ -2,7 +2,7 @@
 #define MENO_AUDIO_HPP
 
 #include <meno/audio/Sound.hpp>
-#include <meno/core/Component.hpp>
+#include <meno/scene/Component.hpp>
 
 #include <filesystem>
 #include <optional>

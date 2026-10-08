@@ -1,5 +1,5 @@
-#include <meno/core/Audio.hpp>
-#include <meno/core/Scene.hpp>
+#include <meno/scene/Audio.hpp>
+#include <meno/scene/Scene.hpp>
 
 #include "check.hpp"
 

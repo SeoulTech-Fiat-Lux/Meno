@@ -12,19 +12,20 @@
 #   meno/math/       -- 공용 값 타입 (헤더 전용이라 여기 없음)
 #   meno/graphics/   -- 2D 렌더러 담당
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
+#   meno/scene/      -- 게임 화면에 나타나는 객체들 및 그 객체를 포함한 장면을 추상화 한 객체
 add_library(meno STATIC
         meno/audio/Music.cpp
         meno/audio/Sound.cpp
         meno/core/Application.cpp
-        meno/core/Audio.cpp
+        meno/scene/Audio.cpp
         meno/core/Clock.cpp
         meno/core/Time.cpp
         meno/core/Window.cpp
-        meno/core/Component.cpp
-        meno/core/Collider.cpp
-        meno/core/Scene.cpp
-        meno/core/Sprite.cpp
-        meno/core/GameObject.cpp
+        meno/scene/Component.cpp
+        meno/scene/Collider.cpp
+        meno/scene/Scene.cpp
+        meno/scene/Sprite.cpp
+        meno/scene/GameObject.cpp
         meno/graphics/Font.cpp
         meno/graphics/Renderer.cpp
         meno/graphics/Texture.cpp
