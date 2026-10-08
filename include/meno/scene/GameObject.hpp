@@ -6,8 +6,8 @@
 #define MENO_GAMEOBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
-#include <meno/core/Collider.hpp>
-#include <meno/core/Component.hpp>
+#include <meno/scene/Component.hpp>
+#include <meno/scene/Sprite.hpp>
 
 #include <memory>
 #include <unordered_map>
@@ -23,11 +23,7 @@ struct Transform : public Component {
     int width{0}, height{0}; // 크기, 너비
 };
 
-// 렌더링 파이프라인 참고해서 수정 필요
-struct Sprite : public Component {
-    int width, height; // 크기, 너비
-    int* pixels;       // 픽셀 데이터
-};
+class Scene; // friend 선언을 위한 전방선언
 
 /**
  * @brief 게임 내 객체를 표현하는 기본 클래스입니다.
@@ -39,33 +35,39 @@ struct Sprite : public Component {
  * 등록된 컴포넌트는 GameObject가 독점적으로 소유하며,
  * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
  */
-class GameObject {
+class GameObject final {
+    using GameObjectID = std::uint64_t;
+
+    friend class Scene;
+
 private:
+// private 맴버변수 필드
     Transform transform_;
     Sprite sprite_;
 
     std::unordered_map<std::type_index, std::unique_ptr<Component>> components_;
 
-public:
-    GameObject() = default;
+    GameObjectID id_;
 
-
+// prvate 메서드 필드
+    GameObject() : sprite_(this) { transform_.parent = this; }
     GameObject(const GameObject&) = delete;
-    GameObject& operator=(const GameObject&) = delete;
-
-
     GameObject(GameObject&& other) noexcept = default;
 
-    /**
-     * @brief 다른 GameObject의 자원 소유권을 현재 객체로 이전합니다.
-     *
-     * @param other 소유권을 이전할 GameObject입니다.
-     * @return 현재 GameObject에 대한 참조입니다.
-     */
-    GameObject& operator=(GameObject&& other) noexcept = default;
+    GameObject(GameObjectID id) : sprite_(this), id_(id) { transform_.parent = this; }
 
+public:
+    GameObject& operator=(const GameObject&) = delete;
+    GameObject& operator=(GameObject&&) = delete;
 
     Transform& transform() noexcept { return transform_; }
+    const Transform& transform() const noexcept { return transform_; }
+    Sprite& sprite() noexcept { return sprite_; }
+    const Sprite& sprite() const noexcept { return sprite_; }
+
+    /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
+    void draw(Renderer& renderer) const { sprite_.draw(renderer); }
+    GameObjectID id() noexcept { return id_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.
@@ -89,6 +91,7 @@ public:
         (!std::is_same_v<T, Transform>) && (!std::is_same_v<T, Sprite>)
     T& addComponent(Args&&... args) {
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        ptr->parent = this;
 
         T& ref = *ptr;
 

@@ -34,6 +34,12 @@ meno_add_test(audio)
 target_include_directories(meno_test_audio PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_audio PRIVATE meno::meno)
 
+# Sound 테스트 대역으로 컴포넌트 동작과 GameObject 수명을 장치 없이 검증한다.
+meno_add_test(audio_component
+        ${CMAKE_SOURCE_DIR}/src/meno/scene/Audio.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
+)
+
 meno_add_test(application
         ${CMAKE_SOURCE_DIR}/src/meno/core/Application.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/core/Clock.cpp
