@@ -1,5 +1,6 @@
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
+#include <meno/core/Audio.hpp>
 
 #include "audio/Volume.hpp"
 
@@ -41,6 +42,16 @@ MusicCommand volatile      musicPlayFunction  = &meno::Music::play;
 } // namespace
 
 int main() {
+    // 빈 컴포넌트는 실제 Sound 구현과 링크하되 장치를 생성하지 않는다.
+    meno::Audio audio;
+    audio.play();
+    audio.pause();
+    audio.stop();
+    MENO_CHECK(!audio.hasSound());
+    MENO_CHECK(!audio.isPlaying());
+    audio.setVolume(0.25F);
+    MENO_CHECK(audio.volume() == 0.25F);
+
     // 오디오 객체를 만들지 않아 장치가 없는 CI에서도 실행할 수 있다.
     constexpr float nan = std::numeric_limits<float>::quiet_NaN();
     MENO_CHECK(!meno::audio_detail::isValidVolume(nan));
