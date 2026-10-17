@@ -10,7 +10,7 @@ class GameObject; //전방선언
 
 
 /// <summary>
-/// Collider 기본 골격의 구조체입니다. 본 구조체를 상속받아 새로운 Collider를 만들 수 있습니다.
+/// Collider 기본 골격의 구조체입니다.
 /// </summary>
 struct Collider : public Component {
     Vec2f offset{};
@@ -26,7 +26,7 @@ struct Collider : public Component {
 /// <summary>
 /// 기본 사각형 Collider 입니다
 /// </summary>
-struct BoxCollider : public Collider {    
+struct BoxCollider final : public Collider {    
     Vec2f size{};
 
     BoxCollider() = default;
@@ -36,7 +36,7 @@ struct BoxCollider : public Collider {
 /// <summary>
 /// 기본 원형 Collider 입니다
 /// </summary>
-struct CircleCollider : public Collider {
+struct CircleCollider final : public Collider {
     float radius{};
 
     CircleCollider() = default;
