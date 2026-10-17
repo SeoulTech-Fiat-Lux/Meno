@@ -19,7 +19,7 @@ private:
     GameObject::GameObjectID next_id_{1};
 
     using EnterHandler  = std::function<void()>;
-    using UpdateHandler = std::function<void(float)>;
+    using UpdateHandler = std::function<void(double)>;
     using ExitHandler   = std::function<void()>;
 
     EnterHandler enter_handler_;
@@ -83,7 +83,7 @@ public:
     [[nodiscard]]
     bool deleteGameObject(GameObject::GameObjectID) noexcept;
 
-    void drawScene(Renderer& renderer) { 
+    void drawScene(Renderer& renderer) const { 
         for (const auto& obj : objects_) {
             obj.second->draw(renderer);
         }
