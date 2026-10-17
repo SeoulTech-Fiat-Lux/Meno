@@ -6,28 +6,40 @@
 #define MENO_GAMEOBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
-#include <meno/core/Collider.hpp>
-#include <meno/core/Component.hpp>
+#include <meno/scene/Component.hpp>
+#include <meno/scene/Sprite.hpp>
 
 #include <memory>
 #include <unordered_map>
 #include <typeindex>
 #include <type_traits>
+#include <cmath>
+#include <numbers>
 
 namespace meno {
 
 struct Transform : public Component {
-    Vec2f pos {0,0};       // 2D 위치 (x, y), 좌상단부터 (0, 0)
-    int magnitude{1};  // 크기 배율
+    Vec2f pos {0,0};       // 로컬 좌상단 원점의 월드 위치 (회전/배율의 기준점)
+    float magnitude{1.f};  // 균일 배율. 음수는 원점 기준 반전, 0은 크기 없음.
     int rotation{0};       // 360도 기준 회전
     int width{0}, height{0}; // 크기, 너비
+
+    /// 로컬 방향을 회전한다. 배율과 위치는 적용하지 않는다.
+    [[nodiscard]] Vec2f rotateVector(const Vec2f& vector) const {
+        const float radians = static_cast<float>(rotation % 360) * std::numbers::pi_v<float> / 180.f;
+        const float cosine = std::cos(radians);
+        const float sine = std::sin(radians);
+        return {vector.x * cosine - vector.y * sine,
+                vector.x * sine + vector.y * cosine};
+    }
+
+    /// 부모 좌상단 기준 로컬 좌표를 배율 → 회전 → 평행이동 순으로 변환한다.
+    [[nodiscard]] Vec2f transformPoint(const Vec2f& point) const {
+        return pos + rotateVector(point * magnitude);
+    }
 };
 
-// 렌더링 파이프라인 참고해서 수정 필요
-struct Sprite : public Component {
-    int width, height; // 크기, 너비
-    int* pixels;       // 픽셀 데이터
-};
+class Scene; // friend 선언을 위한 전방선언
 
 /**
  * @brief 게임 내 객체를 표현하는 기본 클래스입니다.
@@ -37,35 +49,41 @@ struct Sprite : public Component {
  * 같은 타입의 컴포넌트는 중복되어 소유할 수 없으며, 마지막으로 등록된 것을 소유합니다.
  *
  * 등록된 컴포넌트는 GameObject가 독점적으로 소유하며,
- * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
+ * GameObject 간 복사와 이동을 허용하지 않습니다.
  */
-class GameObject {
+class GameObject final {
+    friend class Scene;
+
+public:
+    using GameObjectID = std::uint64_t;
+
 private:
+// private 멤버변수 필드
     Transform transform_;
     Sprite sprite_;
 
     std::unordered_map<std::type_index, std::unique_ptr<Component>> components_;
 
-public:
-    GameObject() = default;
+    GameObjectID id_;
 
-
+// private 메서드 필드
     GameObject(const GameObject&) = delete;
+    GameObject(GameObject&&) noexcept = delete;
+
+    GameObject(GameObjectID id) : sprite_(this), id_(id) { transform_.parent = this; }
+
+public:
     GameObject& operator=(const GameObject&) = delete;
-
-
-    GameObject(GameObject&& other) noexcept = default;
-
-    /**
-     * @brief 다른 GameObject의 자원 소유권을 현재 객체로 이전합니다.
-     *
-     * @param other 소유권을 이전할 GameObject입니다.
-     * @return 현재 GameObject에 대한 참조입니다.
-     */
-    GameObject& operator=(GameObject&& other) noexcept = default;
-
+    GameObject& operator=(GameObject&&) = delete;
 
     Transform& transform() noexcept { return transform_; }
+    const Transform& transform() const noexcept { return transform_; }
+    Sprite& sprite() noexcept { return sprite_; }
+    const Sprite& sprite() const noexcept { return sprite_; }
+
+    /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
+    void draw(Renderer& renderer) const { sprite_.draw(renderer); }
+    [[nodiscard]] GameObjectID id() const noexcept { return id_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.
@@ -89,6 +107,7 @@ public:
         (!std::is_same_v<T, Transform>) && (!std::is_same_v<T, Sprite>)
     T& addComponent(Args&&... args) {
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        ptr->parent = this;
 
         T& ref = *ptr;
 

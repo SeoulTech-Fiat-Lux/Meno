@@ -15,5 +15,5 @@ endfunction()
 # 2D 렌더 API 전반을 한 화면에서 보여주는 예제. 에셋 파일 없이 동작한다.
 meno_add_example(render_basics)
 
-# GameObject-Demo 브랜치를 병합하면 여기에 추가한다:
-# meno_add_example(gameobject_demo)
+# Scene이 소유하는 GameObject와 기본 Sprite로 정적인 장면을 구성한다.
+meno_add_example(gameobject_demo)
