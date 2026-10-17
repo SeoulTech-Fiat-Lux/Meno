@@ -36,9 +36,10 @@ class Scene; // friend 선언을 위한 전방선언
  * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
  */
 class GameObject final {
-    using GameObjectID = std::uint64_t;
-
     friend class Scene;
+
+public:
+    using GameObjectID = std::uint64_t;
 
 private:
 // private 맴버변수 필드
@@ -67,7 +68,7 @@ public:
 
     /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
     void draw(Renderer& renderer) const { sprite_.draw(renderer); }
-    GameObjectID id() noexcept { return id_; }
+    [[nodiscard]] GameObjectID id() const noexcept { return id_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.
