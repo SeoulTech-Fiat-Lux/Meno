@@ -140,6 +140,7 @@ include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
   audio/            Sound, Music
+  scene/            Scene, GameObject, Component와 파생 Components
 src/meno/         구현 — 사용자에게 배포되지 않는다
   sfml_backend/     SFML을 include하는 유일한 곳
 examples/         데모 게임
