@@ -1,3 +1,4 @@
+#include <meno/scene/Collider.hpp>
 #include <meno/scene/Scene.hpp>
 
 #include "check.hpp"
