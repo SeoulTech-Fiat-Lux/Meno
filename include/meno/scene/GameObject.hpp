@@ -49,7 +49,7 @@ class Scene; // friend 선언을 위한 전방선언
  * 같은 타입의 컴포넌트는 중복되어 소유할 수 없으며, 마지막으로 등록된 것을 소유합니다.
  *
  * 등록된 컴포넌트는 GameObject가 독점적으로 소유하며,
- * GameObject 간 복사는 허용하지 않고 이동만 허용합니다.
+ * GameObject 간 복사와 이동을 허용하지 않습니다.
  */
 class GameObject final {
     friend class Scene;
@@ -58,7 +58,7 @@ public:
     using GameObjectID = std::uint64_t;
 
 private:
-// private 맴버변수 필드
+// private 멤버변수 필드
     Transform transform_;
     Sprite sprite_;
 
@@ -66,10 +66,9 @@ private:
 
     GameObjectID id_;
 
-// prvate 메서드 필드
-    GameObject() : sprite_(this) { transform_.parent = this; }
+// private 메서드 필드
     GameObject(const GameObject&) = delete;
-    GameObject(GameObject&& other) noexcept = default;
+    GameObject(GameObject&&) noexcept = delete;
 
     GameObject(GameObjectID id) : sprite_(this), id_(id) { transform_.parent = this; }
 
