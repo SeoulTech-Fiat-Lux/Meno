@@ -25,8 +25,9 @@ private:
     std::shared_ptr<const Texture> texture_;
 
 public:
-    /// GameObject 기준 상대 위치. 부모의 배율과 회전을 적용한다.
+    /// 부모 좌상단 기준 origin의 로컬 위치. 부모의 배율과 회전을 적용한다.
     Vec2f offset{0.f, 0.f};
+    /// 텍스처 내부의 기준점. 기본값은 좌상단이며 부모의 원점은 바꾸지 않는다.
     Vec2f origin{0.f, 0.f};
     Color tint{colors::White};
     std::optional<Recti> source{};

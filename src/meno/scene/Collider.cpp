@@ -1,7 +1,7 @@
 #include <meno/scene/Collider.hpp>
 #include <meno/scene/GameObject.hpp>
 
-#include <meno/math/Rect.hpp>
+#include <cmath>
 
 #include <algorithm>
 
@@ -9,39 +9,81 @@ namespace meno {
 
 namespace {
 
-bool intersects_box_circle(const meno::BoxCollider& box, const meno::CircleCollider& circle) {
-    if (!box.parent || !circle.parent || box.size.x <= 0.f || box.size.y <= 0.f || circle.radius <= 0.f)
+struct WorldBox {
+    Vec2f center;
+    Vec2f halfSize;
+    Vec2f xAxis;
+    Vec2f yAxis;
+};
+
+bool valid(const Collider& collider) {
+    return collider.parent && std::isfinite(collider.parent->transform().magnitude)
+        && collider.parent->transform().magnitude != 0.f;
+}
+
+bool valid(const BoxCollider& box) {
+    return valid(static_cast<const Collider&>(box)) && box.size.x > 0.f && box.size.y > 0.f;
+}
+
+bool valid(const CircleCollider& circle) {
+    return valid(static_cast<const Collider&>(circle)) && circle.radius > 0.f;
+}
+
+WorldBox worldBox(const BoxCollider& box) {
+    const auto& transform = box.parent->transform();
+    return {transform.transformPoint(box.offset + box.size * 0.5f),
+            box.size * (std::abs(transform.magnitude) * 0.5f),
+            transform.rotateVector({1.f, 0.f}), transform.rotateVector({0.f, 1.f})};
+}
+
+float worldRadius(const CircleCollider& circle) {
+    return circle.radius * std::abs(circle.parent->transform().magnitude);
+}
+
+bool intersects_box_circle(const BoxCollider& box, const CircleCollider& circle) {
+    if (!valid(box) || !valid(circle))
         return false;
 
-    // 월드좌표로 변환
-    const Rectf bounds{box.parent->transform().pos + box.offset, box.size};
-    const Vec2f center = circle.parent->transform().pos + circle.offset;
+    const auto bounds = worldBox(box);
+    const Vec2f delta = circle.parent->transform().transformPoint(circle.offset) - bounds.center;
+    // Project into the rotated box's frame without dividing by scale.
+    const Vec2f center{dot(delta, bounds.xAxis), dot(delta, bounds.yAxis)};
     const Vec2f closest{
-        std::clamp(center.x, bounds.left(), bounds.right()),
-        std::clamp(center.y, bounds.top(), bounds.bottom())
+        std::clamp(center.x, -bounds.halfSize.x, bounds.halfSize.x),
+        std::clamp(center.y, -bounds.halfSize.y, bounds.halfSize.y)
     };
-    return (center - closest).lengthSquared() < circle.radius * circle.radius;
+    const float radius = worldRadius(circle);
+    return (center - closest).lengthSquared() < radius * radius;
 }
 
-bool intersects_box_box(const meno::BoxCollider& a, const meno::BoxCollider& b) {
-    if (!a.parent || !b.parent || a.size.x <= 0.f || a.size.y <= 0.f || b.size.x <= 0.f || b.size.y <= 0.f)
+bool intersects_box_box(const BoxCollider& a, const BoxCollider& b) {
+    if (!valid(a) || !valid(b))
         return false;
 
-    const Rectf boundsA{a.parent->transform().pos + a.offset, a.size};
-    const Rectf boundsB{b.parent->transform().pos + b.offset, b.size};
-    return boundsA.intersects(boundsB);
+    const auto boundsA = worldBox(a);
+    const auto boundsB = worldBox(b);
+    const Vec2f delta = boundsB.center - boundsA.center;
+    // Separating axis theorem: test the two edge normals of each rectangle.
+    for (const Vec2f axis : {boundsA.xAxis, boundsA.yAxis, boundsB.xAxis, boundsB.yAxis}) {
+        const float extentA = boundsA.halfSize.x * std::abs(dot(boundsA.xAxis, axis))
+                            + boundsA.halfSize.y * std::abs(dot(boundsA.yAxis, axis));
+        const float extentB = boundsB.halfSize.x * std::abs(dot(boundsB.xAxis, axis))
+                            + boundsB.halfSize.y * std::abs(dot(boundsB.yAxis, axis));
+        if (std::abs(dot(delta, axis)) >= extentA + extentB)
+            return false;
+    }
+    return true;
 }
 
-bool intersects_circle_circle(const meno::CircleCollider& a, const meno::CircleCollider& b) {
-    if (!a.parent || !b.parent || a.radius <= 0.f || b.radius <= 0.f)
+bool intersects_circle_circle(const CircleCollider& a, const CircleCollider& b) {
+    if (!valid(a) || !valid(b))
         return false;
 
-    const Vec2f centerA = a.parent->transform().pos + a.offset;
-    const Vec2f centerB = b.parent->transform().pos + b.offset;
-    const float radiusSum = a.radius + b.radius;
+    const Vec2f centerA = a.parent->transform().transformPoint(a.offset);
+    const Vec2f centerB = b.parent->transform().transformPoint(b.offset);
+    const float radiusSum = worldRadius(a) + worldRadius(b);
     return (centerA - centerB).lengthSquared() < radiusSum * radiusSum;
 }
-
 } // namespace
 
 bool intersects(const GameObject& a, const GameObject& b) {

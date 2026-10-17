@@ -104,6 +104,20 @@ int main() {
     MENO_CHECK(std::abs(rotated.position.x - 80.f) < 0.0001f);
     MENO_CHECK(std::abs(rotated.position.y - 120.f) < 0.0001f);
 
+    object.transform().magnitude = 0.25f;
+    const auto fractional = object.sprite().drawParams();
+    MENO_CHECK(std::abs(fractional.position.x - 97.5f) < 0.0001f);
+    MENO_CHECK(std::abs(fractional.position.y - 102.5f) < 0.0001f);
+    MENO_CHECK(fractional.scale == meno::Vec2f{0.25f, 0.25f});
+    object.transform().magnitude = -0.5f;
+    const auto mirrored = object.sprite().drawParams();
+    MENO_CHECK(std::abs(mirrored.position.x - 105.f) < 0.0001f);
+    MENO_CHECK(std::abs(mirrored.position.y - 95.f) < 0.0001f);
+    MENO_CHECK(mirrored.scale == meno::Vec2f{-0.5f, -0.5f});
+    object.transform().magnitude = 0.f;
+    MENO_CHECK(object.sprite().drawParams().position == object.transform().pos);
+    MENO_CHECK(object.sprite().drawParams().scale == meno::Vec2f{});
+
     detachedSprite.offset = {-10.f, 20.f};
     MENO_CHECK(detachedSprite.drawParams().position == meno::Vec2f{-10.f, 20.f});
 

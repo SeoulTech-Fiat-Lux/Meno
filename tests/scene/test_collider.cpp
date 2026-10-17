@@ -2,6 +2,7 @@
 #include <meno/scene/Scene.hpp>
 
 #include "check.hpp"
+#include <limits>
 
 int main() {
     meno::Scene scene;
@@ -63,6 +64,73 @@ int main() {
     MENO_CHECK(meno::intersects(a, b));
     boxA.parent = nullptr;
     MENO_CHECK(!meno::intersects(a, b));
+
+    // Fractional scale applies to both offset and size, about the parent's top-left.
+    auto& scaled = scene.createGameObject();
+    auto& probe = scene.createGameObject();
+    scaled.transform().pos = {100.f, 200.f};
+    scaled.transform().magnitude = 0.5f;
+    scaled.addComponent<meno::BoxCollider>(meno::Vec2f{10.f, 20.f}, meno::Vec2f{20.f, 10.f});
+    probe.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{1.f, 1.f});
+    probe.transform().pos = {114.f, 214.f};
+    MENO_CHECK(meno::intersects(scaled, probe));
+    probe.transform().pos = {115.f, 214.f};
+    MENO_CHECK(!meno::intersects(scaled, probe));
+    scaled.transform().magnitude = -0.5f; // Bounds [85,95] x [185,190].
+    probe.transform().pos = {86.f, 186.f};
+    MENO_CHECK(meno::intersects(scaled, probe));
+    probe.transform().pos = {95.f, 186.f};
+    MENO_CHECK(!meno::intersects(scaled, probe));
+
+    // Rotation moves the offset and rotates the shape around the same parent origin.
+    scaled.transform().magnitude = 0.5f;
+    scaled.transform().rotation = 90;
+    probe.transform().pos = {86.f, 206.f};
+    MENO_CHECK(meno::intersects(scaled, probe));
+    MENO_CHECK(meno::intersects(probe, scaled));
+    probe.transform().pos = {106.f, 211.f};
+    MENO_CHECK(!meno::intersects(scaled, probe));
+
+    auto& round = scene.createGameObject();
+    round.transform().pos = {100.f, 200.f};
+    round.transform().magnitude = 0.5f;
+    round.transform().rotation = 90;
+    round.addComponent<meno::CircleCollider>(meno::Vec2f{12.f, 24.f}, 2.f);
+    MENO_CHECK(meno::intersects(scaled, round)); // Center (88,206), radius 1.
+    MENO_CHECK(meno::intersects(round, scaled));
+    auto& roundProbe = scene.createGameObject();
+    roundProbe.addComponent<meno::CircleCollider>(meno::Vec2f{}, 1.f);
+    roundProbe.transform().pos = {89.5f, 206.f};
+    MENO_CHECK(meno::intersects(round, roundProbe));
+    roundProbe.transform().pos = {90.5f, 206.f};
+    MENO_CHECK(!meno::intersects(round, roundProbe));
+    round.transform().magnitude = -0.5f; // Center (112,194), radius stays positive.
+    roundProbe.transform().pos = {113.f, 194.f};
+    MENO_CHECK(meno::intersects(round, roundProbe));
+
+    // A rotated thin rectangle's enclosing AABB must not cause false positives.
+    auto& thin = scene.createGameObject();
+    thin.transform().rotation = 45;
+    thin.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{10.f, 1.f});
+    probe.transform().pos = {0.f, 6.f};
+    MENO_CHECK(!meno::intersects(thin, probe));
+    MENO_CHECK(!meno::intersects(probe, thin));
+    probe.transform().pos = {3.f, 3.f};
+    MENO_CHECK(meno::intersects(thin, probe));
+    roundProbe.transform().pos = {0.f, 6.f};
+    MENO_CHECK(!meno::intersects(thin, roundProbe));
+    roundProbe.transform().pos = {3.f, 3.f};
+    MENO_CHECK(meno::intersects(thin, roundProbe));
+
+    for (float scale : {0.f, std::numeric_limits<float>::infinity(),
+                        std::numeric_limits<float>::quiet_NaN()}) {
+        thin.transform().magnitude = scale;
+        MENO_CHECK(!meno::intersects(thin, probe));
+        MENO_CHECK(!meno::intersects(thin, roundProbe));
+        roundProbe.transform().magnitude = scale;
+        MENO_CHECK(!meno::intersects(roundProbe, round));
+        MENO_CHECK(!meno::intersects(probe, roundProbe));
+    }
 
     return meno::test::report();
 }

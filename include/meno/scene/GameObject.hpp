@@ -13,14 +13,30 @@
 #include <unordered_map>
 #include <typeindex>
 #include <type_traits>
+#include <cmath>
+#include <numbers>
 
 namespace meno {
 
 struct Transform : public Component {
-    Vec2f pos {0,0};       // 2D 위치 (x, y), 좌상단부터 (0, 0)
-    int magnitude{1};  // 크기 배율
+    Vec2f pos {0,0};       // 로컬 좌상단 원점의 월드 위치 (회전/배율의 기준점)
+    float magnitude{1.f};  // 균일 배율. 음수는 원점 기준 반전, 0은 크기 없음.
     int rotation{0};       // 360도 기준 회전
     int width{0}, height{0}; // 크기, 너비
+
+    /// 로컬 방향을 회전한다. 배율과 위치는 적용하지 않는다.
+    [[nodiscard]] Vec2f rotateVector(const Vec2f& vector) const {
+        const float radians = static_cast<float>(rotation % 360) * std::numbers::pi_v<float> / 180.f;
+        const float cosine = std::cos(radians);
+        const float sine = std::sin(radians);
+        return {vector.x * cosine - vector.y * sine,
+                vector.x * sine + vector.y * cosine};
+    }
+
+    /// 부모 좌상단 기준 로컬 좌표를 배율 → 회전 → 평행이동 순으로 변환한다.
+    [[nodiscard]] Vec2f transformPoint(const Vec2f& point) const {
+        return pos + rotateVector(point * magnitude);
+    }
 };
 
 class Scene; // friend 선언을 위한 전방선언
