@@ -3,14 +3,18 @@
 
 #include <meno/scene/GameObject.hpp>
 
-#include <vector>
 #include <memory>
 #include <unordered_map>
 #include <functional>
 
 namespace meno {
 
+class SceneManager;
+
 class Scene {
+    friend class SceneManager;
+public:
+    using SceneID = std::uint64_t;
 
 private:
     std::unordered_map<

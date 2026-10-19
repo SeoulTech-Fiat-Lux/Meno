@@ -1,5 +1,6 @@
 #include <meno/scene/Scene.hpp>
 #include <meno/scene/GameObject.hpp>
+#include <meno/core/SceneManager.hpp>
 
 namespace meno {
 
