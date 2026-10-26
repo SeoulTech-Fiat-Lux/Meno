@@ -3,6 +3,7 @@
 meno_add_test(audio_component
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Audio.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
 )
 
 meno_add_test(collider)
