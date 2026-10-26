@@ -1,7 +1,7 @@
 #include <meno/scene/Component.hpp>
 #include <meno/scene/Sprite.hpp>
 #include <meno/scene/GameObject.hpp>
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include "check.hpp"
 
@@ -40,7 +40,8 @@ int main() {
     static_assert(!CanAddComponent<meno::Transform>);
     static_assert(!CanAddComponent<meno::Sprite>);
 
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
     meno::GameObject& object = scene.createGameObject();
     MENO_CHECK(object.transform().parent == &object);
     meno::Sprite sprite(&object);
@@ -145,5 +146,6 @@ int main() {
     MENO_CHECK(constObject->getComponent<Health>() != nullptr);
     MENO_CHECK(constObject->getComponent<Health>()->value == 25);
 
+    MENO_CHECK(manager.shutdown());
     return meno::test::report();
 }

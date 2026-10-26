@@ -1,17 +1,20 @@
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include "check.hpp"
 
 #include <type_traits>
-#include <utility>
 
 int main() {
+    static_assert(!std::is_default_constructible_v<meno::Scene>);
+    static_assert(!std::is_constructible_v<meno::Scene, meno::Scene::SceneID>);
+    static_assert(!std::is_destructible_v<meno::Scene>);
     static_assert(!std::is_copy_constructible_v<meno::Scene>);
     static_assert(!std::is_copy_assignable_v<meno::Scene>);
-    static_assert(std::is_move_constructible_v<meno::Scene>);
-    static_assert(std::is_move_assignable_v<meno::Scene>);
+    static_assert(!std::is_move_constructible_v<meno::Scene>);
+    static_assert(!std::is_move_assignable_v<meno::Scene>);
 
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
 
     meno::GameObject& first = scene.createGameObject();
     const auto firstId = first.id();
@@ -45,10 +48,6 @@ int main() {
     MENO_CHECK(thirdId == 3);
     MENO_CHECK(scene.getGameObject(thirdId) == &third);
 
-    meno::Scene movedScene = std::move(scene);
-    MENO_CHECK(movedScene.getGameObject(secondId) != nullptr);
-    MENO_CHECK(movedScene.getGameObject(thirdId) != nullptr);
-    MENO_CHECK(movedScene.getGameObject(firstId) == nullptr);
-
+    MENO_CHECK(manager.shutdown());
     return meno::test::report();
 }

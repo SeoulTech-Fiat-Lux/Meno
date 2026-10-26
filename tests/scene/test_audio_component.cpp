@@ -1,5 +1,5 @@
 #include <meno/scene/Audio.hpp>
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include "check.hpp"
 
@@ -59,7 +59,8 @@ static_assert(!std::is_copy_constructible_v<meno::Audio>);
 static_assert(!std::is_move_constructible_v<meno::Audio>);
 
 int main() {
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
     auto& object = scene.createGameObject();
     const auto id = object.id();
     auto& audio = object.addComponent<meno::Audio>();
@@ -136,5 +137,6 @@ int main() {
     }
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(playingSounds == 0);
+    MENO_CHECK(manager.shutdown());
     return meno::test::report();
 }
