@@ -6,7 +6,7 @@
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
 #include <meno/math/Color.hpp>
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include <array>
 #include <cstddef>
@@ -52,7 +52,8 @@ int main() {
     texture->setSmooth(false);
 
     // Scene이 객체를 소유한다. crate 참조는 객체가 삭제되기 전까지만 유효하다.
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
     meno::GameObject& crate = scene.createGameObject();
     crate.transform().pos = {400.f, 300.f};
     crate.transform().magnitude = 10; // 16 x 16 텍스처를 160 x 160으로 표시
@@ -63,7 +64,7 @@ int main() {
 
     meno::Clock clock;
     clock.setFramerateLimit(60);
-    scene.onEnter();
+    (void)manager.changeScene(scene.id());
 
     while (window.isOpen()) {
         (void)clock.restart();
@@ -78,6 +79,6 @@ int main() {
         renderer.endFrame();
     }
 
-    scene.onExit();
+    (void)manager.shutdown();
     return 0;
 }
