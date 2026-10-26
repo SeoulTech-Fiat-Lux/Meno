@@ -4,6 +4,7 @@
 #include <meno/scene/GameObject.hpp>
 
 #include <memory>
+#include <cstdint>
 #include <unordered_map>
 #include <functional>
 
@@ -17,6 +18,11 @@ public:
     using SceneID = std::uint64_t;
 
 private:
+    SceneID id_;
+
+    explicit Scene(SceneID id) : id_(id) {}
+    ~Scene() = default;
+
     std::unordered_map<
         GameObject::GameObjectID, std::unique_ptr<GameObject>
     > objects_;
@@ -31,14 +37,13 @@ private:
     ExitHandler exit_handler_;
 
 public:
-    Scene() = default;
-    ~Scene() = default;
-
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
 
-    Scene(Scene&&) noexcept = default;
-    Scene& operator=(Scene&&) noexcept = default;
+    Scene(Scene&&) = delete;
+    Scene& operator=(Scene&&) = delete;
+
+    [[nodiscard]] SceneID id() const noexcept { return id_; }
 
     void setEnterHandler(EnterHandler handler) {
         enter_handler_ = std::move(handler);
@@ -57,7 +62,7 @@ public:
             enter_handler_();
     }
 
-    void onUpdate(float dt) const {
+    void onUpdate(double dt) const {
         if (update_handler_)
             update_handler_(dt);
     }

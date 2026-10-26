@@ -1,4 +1,5 @@
 #include <meno/core/SceneManager.hpp>
+#include <exception>
 #include <limits>
 #include <stdexcept>
 
@@ -62,7 +63,7 @@ bool SceneManager::deleteScene(Scene::SceneID id) {
     return scenes_.erase(id) != 0;
 }
 
-void SceneManager::update(float dt) {
+void SceneManager::update(double dt) {
     if (busy_) return;
     applyPending();
     {
@@ -75,10 +76,16 @@ void SceneManager::update(float dt) {
 bool SceneManager::shutdown() {
     if (busy_) return false;
     CallbackGuard guard{busy_};
-    if (active_) active_->onExit();
+    std::exception_ptr exitError;
+    try {
+        if (active_) active_->onExit();
+    } catch (...) {
+        exitError = std::current_exception();
+    }
     active_ = nullptr;
     pending_.reset();
     scenes_.clear();
+    if (exitError) std::rethrow_exception(exitError);
     return true;
 }
 

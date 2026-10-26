@@ -9,7 +9,6 @@ namespace meno {
 /// 단일 스레드 게임 루프에서 사용한다. 최초 접근 시 생성, 정상 종료 시 소멸한다.
 class SceneManager final {
 private:
-
     struct SceneDeleter {
         void operator()(Scene* scene) const { delete scene; }
     };
@@ -20,7 +19,7 @@ private:
     std::optional<Scene::SceneID> pending_;
     bool busy_{false};
 
-    // private 맴버 함수 필드
+// private 맴버 함수 필드
     SceneManager() = default;
     ~SceneManager() = default;
 
@@ -46,15 +45,14 @@ public:
     [[nodiscard]] bool changeScene(Scene::SceneID id);
     /// 활성 Scene 또는 콜백 실행 중에는 삭제할 수 없다.
     [[nodiscard]] bool deleteScene(Scene::SceneID id);
-    void update(float dt);
+    void update(double dt);
     void draw(Renderer& renderer) {
         if (active_) active_->drawScene(renderer);
     }
     /// 창/오디오 시스템 종료 전에 호출한다. 콜백 안에서는 false를 반환한다.
     /// Scene을 모두 해제하지만 매니저는 유지되며 다시 사용할 수 있다.
+    /// onExit이 예외를 던져도 모든 Scene과 전환 예약을 정리한 뒤 재전파한다.
     [[nodiscard]] bool shutdown();
-
-
 };
 
 } // namespace meno
