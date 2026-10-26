@@ -5,3 +5,7 @@ meno_add_test(application
         ${CMAKE_SOURCE_DIR}/src/meno/core/Clock.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/core/Time.cpp
 )
+
+meno_add_test(scene_manager
+        ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
+)
