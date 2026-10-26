@@ -43,6 +43,10 @@ cmake --build build
 ./build/examples/meno_example_render_basics
 ```
 
+씬 전환 예제: `./build/examples/meno_example_scene_transition`
+— 파란 씬과 주황 씬이 3초마다 전환된다.
+콜백 흐름과 빌드 방법은 [씬 전환 예제 안내](examples/scene_transition/README.md)를 참고한다.
+
 테스트:
 
 ```bash

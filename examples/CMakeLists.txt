@@ -17,3 +17,6 @@ meno_add_example(render_basics)
 
 # Scene이 소유하는 GameObject와 기본 Sprite로 정적인 장면을 구성한다.
 meno_add_example(gameobject_demo)
+
+# SceneManager의 콜백과 예약 전환을 보여주는 자동 전환 예제.
+meno_add_example(scene_transition)
