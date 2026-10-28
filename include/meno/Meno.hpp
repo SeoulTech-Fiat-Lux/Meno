@@ -22,12 +22,16 @@
 // --- 오디오 ---------------------------------------------------------------
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
+#include <meno/audio/SoundBuffer.hpp>
 
 // --- 그래픽 ---------------------------------------------------------------
 #include <meno/graphics/DrawParams.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
+
+// --- 리소스 ---------------------------------------------------------------
+#include <meno/resources/ResourceManager.hpp>
 
 // --- 코어 -----------------------------------------------------------------
 #include <meno/core/Application.hpp>
@@ -45,6 +49,5 @@
 
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
 //   #include <meno/input/Input.hpp>
-//   #include <meno/resources/ResourceManager.hpp>
 
 #endif  // MENO_HPP

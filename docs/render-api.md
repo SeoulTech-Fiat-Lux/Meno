@@ -97,10 +97,12 @@ UI는 항상 `resetCamera()` 뒤에 그린다.
 
 - 로딩은 `static std::optional<Texture> Texture::loadFromFile(path)` 하나로 통일했다.
   실패는 예외가 아니라 빈 optional이다.
-- 둘 다 **복사 불가, 이동 가능**이다. `std::unordered_map<std::string, Texture>`에
-  그대로 담으면 된다.
+- 둘 다 **복사 불가, 이동 가능**이다. `ResourceManager`는 로드한 객체를
+  `std::shared_ptr<const Texture>` / `std::shared_ptr<const Font>`로 보관한다.
+- 로드 함수는 성공 시 공유 포인터, 실패 시 빈 공유 포인터를 반환한다. 같은 정규화
+  경로를 다시 요청하면 기존 객체를 반환하고 실패 결과는 캐시하지 않는다.
 - `Renderer`는 `const Texture&`만 받고 수명에 관여하지 않는다. 텍스처가 살아 있는지는
-  호출자가 보장한다.
+  호출자가 보장한다. `Sprite`는 공유 포인터를 보관하므로 매니저가 먼저 소멸해도 안전하다.
 - 이동당한(moved-from) 텍스처를 그리면 조용히 건너뛴다. 크래시는 나지 않는다.
   그리기뿐 아니라 조회도 마찬가지다. `size()`는 `{0, 0}`, `isSmooth()`는 `false`를 돌려주고
   `setSmooth()`는 무시된다. 이동당한 폰트로 그리면 건너뛰고, 재면 `{0, 0}`이 나온다.

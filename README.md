@@ -94,8 +94,8 @@ int main() {
 
 ## 오디오
 
-짧은 효과음은 파일 전체를 메모리에 올리는 `Sound`, 긴 배경음악은 파일에서
-스트리밍하는 `Music`을 사용한다. 둘 다 복사할 수 없고 이동할 수 있으며, 볼륨은
+짧은 효과음은 파일 전체를 메모리에 올리는 `SoundBuffer`와 이를 재생하는 `Sound`,
+긴 배경음악은 파일에서 스트리밍하는 `Music`을 사용한다. 이 타입들은 복사할 수 없고 이동할 수 있으며, 볼륨은
 `0.0f`(무음)부터 `1.0f`(최대)까지 지정한다.
 
 ```cpp
@@ -116,6 +116,10 @@ if (bgm) {
 객체에서 바로 `play()`를 호출하지 말고, 재생이 끝날 때까지 지역 변수나 게임 객체의
 멤버로 보관해야 한다.
 
+`Sound::loadFromFile()`은 단독 사용을 위한 편의 함수라 호출할 때마다 파일을 로드한다.
+같은 효과음을 여러 재생 객체가 공유해야 하면 아래의 `ResourceManager`에서
+`SoundBuffer`를 불러와 각각의 `Sound`에 전달한다.
+
 ```cpp
 // 잘못된 예: 문장이 끝날 때 임시 객체가 소멸하여 소리가 재생되지 않는다.
 meno::Sound::loadFromFile("assets/click.wav")->play();
@@ -131,6 +135,37 @@ if (click) {
 이동하거나 삭제하면 안 된다. 로딩 또는 열기에 실패하면 두 함수 모두
 `std::nullopt`를 반환한다.
 
+## 리소스 캐시
+
+`ResourceManager`는 같은 경로의 `Texture`, `Font`, `SoundBuffer`를 한 번만 로드하고 공유한다.
+성공하면 `std::shared_ptr<const T>`, 실패하면 빈 `shared_ptr`을 반환한다. 반환된
+리소스는 매니저가 소멸해도 이를 참조하는 `shared_ptr`이 남아 있는 동안 유지된다.
+
+```cpp
+meno::ResourceManager resources;
+
+auto texture = resources.loadTexture("assets/player.png");
+if (texture) {
+    gameObject.sprite().setTexture(texture);
+}
+
+auto font = resources.loadFont("assets/main.ttf");
+if (font) {
+    renderer.drawText(*font, "Hello", {10.0f, 10.0f});
+}
+
+auto shotBuffer = resources.loadSoundBuffer("assets/shot.wav");
+if (shotBuffer) {
+    meno::Sound first{shotBuffer};
+    meno::Sound second{shotBuffer};
+    first.play();
+    second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
+}
+```
+
+동일한 정규화 경로를 다시 요청하면 같은 객체를 가리키는 `shared_ptr`을 반환한다.
+로드 실패는 캐시하지 않으므로 파일을 수정한 뒤 다시 요청할 수 있다.
+
 ## 디렉터리 구조
 
 ```
@@ -139,7 +174,8 @@ include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   core/             Window, Application, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
-  audio/            Sound, Music
+  resources/        ResourceManager
+  audio/            SoundBuffer, Sound, Music
   scene/            Scene, GameObject, Component와 파생 Components
 src/meno/         구현 — 사용자에게 배포되지 않는다
   sfml_backend/     SFML을 include하는 유일한 곳

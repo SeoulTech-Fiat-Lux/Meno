@@ -7,13 +7,16 @@
 
 namespace meno {
 
+class SoundBuffer;
+
 /// 메모리에 전체를 올려 재생하는 짧은 효과음.
 ///
-/// 오디오 샘플과 재생 객체를 함께 소유한다. 복사할 수 없고 이동할 수 있으며,
-/// 로딩 실패는 예외 대신 빈 optional로 알린다.
+/// SoundBuffer를 공유하고 독립된 재생 상태를 소유한다. 복사할 수 없고 이동할 수
+/// 있으며, 로딩 실패는 예외 대신 빈 optional로 알린다.
 class Sound {
 public:
     Sound();
+    explicit Sound(std::shared_ptr<const SoundBuffer> buffer);
     ~Sound();
 
     Sound(const Sound&) = delete;
@@ -21,7 +24,7 @@ public:
     Sound(Sound&&) noexcept;
     Sound& operator=(Sound&&) noexcept;
 
-    /// 지원되는 오디오 파일을 메모리에 로드한다. 실패하면 std::nullopt.
+    /// 편의 함수. SoundBuffer를 로드해 이 Sound에 연결한다. 실패하면 std::nullopt.
     [[nodiscard]] static std::optional<Sound> loadFromFile(const std::filesystem::path& path);
 
     void play();
