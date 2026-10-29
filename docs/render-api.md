@@ -97,7 +97,7 @@ renderer.setCamera({.center = player.position,   // 화면 가운데에 올 월�
                     .zoom = 1.5f,                // 동적 확대: 보이는 영역 = size / zoom
                     .rotation = 10.f,            // 도, 시계 방향
                     .viewport = {0.f, 0.f, 1.f, 1.f},  // 창에서 그릴 영역(비율)
-                    .fit = meno::CameraFit::Letterbox});
+                    .fit = meno::CameraFit::Letterbox});  // 기본값. 꽉 채우려면 Stretch
 ```
 
 | 필드 | 기본값 | 규칙 |
@@ -107,7 +107,7 @@ renderer.setCamera({.center = player.position,   // 화면 가운데에 올 월�
 | `zoom` | `1` | `size` 위에 곱하는 배율. 0 이하·NaN이면 1 |
 | `rotation` | `0` | 도, 시계 방향. 범위 제한 없음(내부에서 360으로 접는다) |
 | `viewport` | `{0, 0, 1, 1}` | 창 전체를 1로 보는 비율 좌표. 분할 화면·미니맵 |
-| `fit` | `Stretch` | `size`와 뷰포트의 종횡비가 다를 때. `Letterbox`면 비율을 지키고 남는 띠를 비운다 |
+| `fit` | `Letterbox` | `size`와 뷰포트의 종횡비가 다를 때. 기본은 비율을 지키고 남는 띠를 비운다. `Stretch`면 찌그러지더라도 꽉 채운다 |
 
 - **`size`와 `zoom`의 역할 분담.** `size`는 게임 내내 고정하는 설계 해상도, `zoom`은 연출용 확대다.
   둘을 동시에 바꾸지 말 것. 보이는 영역은 항상 `size / zoom`이다.
@@ -120,6 +120,12 @@ renderer.setCamera({.center = player.position,   // 화면 가운데에 올 월�
   화면 사이에 1픽셀 틈이 생긴다. 모서리를 반올림하면 맞닿은 뷰포트가 같은 경계를 공유한다.
 - **뷰포트 밖으로는 그려지지 않는다.** 아주 큰 사각형을 그려서 미니맵 배경을 칠할 수 있다.
   레터박스 띠와 뷰포트 바깥은 `beginFrame`의 `clearColor`로 남는다.
+- **`fit`의 기본값은 `Letterbox`다.** `size`를 정했다는 것은 "이 해상도로 설계했다"는 뜻이므로, 따로 지시하지
+  않아도 비율을 지킨다. SFML의 `sf::View`처럼 꽉 채우려면 `.fit = meno::CameraFit::Stretch`를 명시한다.
+  `size`가 `{0, 0}`인 기본 카메라는 맞출 비율이 없으므로 어느 쪽이든 같다.
+  (Godot도 같은 구조다. 기본은 늘이지 않고(`stretch/mode = disabled`), 기준 해상도를 켜면 비율 유지(`stretch/aspect = keep`)가 기본이다.)
+- **레터박스 띠 위의 마우스.** `screenToWorld`는 띠 위의 픽셀에도 같은 규칙을 연장해 보이는 영역 밖의 월드 좌표를
+  돌려준다. 걸러야 하면 `meno::viewportPixels(camera, renderer.framebufferSize()).contains(mouse)`로 먼저 확인한다.
 
   화면 분할 예:
 
@@ -138,8 +144,7 @@ renderer.resetCamera();  // UI
 
 - `resetCamera()`의 화면 좌표도 창 크기를 따라간다. 원점은 언제나 창 좌상단, 1픽셀 = 1월드유닛이다.
   (SFML의 `getDefaultView()`는 창을 만들 때 한 번만 정해져서, 그대로 쓰면 창을 키울 때 UI가 함께 늘어난다.)
-- `size`가 `{0, 0}`인 카메라는 창이 커지면 월드가 더 넓게 보인다. 창 크기와 상관없이 같은 영역을 보이려면
-  `size`를 정하고, 비율까지 지키려면 `fit = Letterbox`를 쓴다.
+- `size`가 `{0, 0}`인 카메라는 창이 커지면 월드가 더 넓게 보인다. 창 크기와 상관없이 같은 영역을 보이려면 `size`를 정해야 한다. 비율은 기본값(`Letterbox`)이 지켜 준다.
 - 지금 카메라는 `renderer.camera()`로 읽는다. `resetCamera()` 상태(처음 포함)면 `std::nullopt`다.
 
 ### 좌표 변환은 그리기와 같은 계산을 쓴다
@@ -201,7 +206,7 @@ renderer.resetCamera();  // UI
 `Renderer`가 `Window`에게 요구하는 건 두 가지뿐이다:
 
 1. `backend::WindowAccess::native()`로 꺼낼 수 있는 `sf::RenderWindow*`
-2. `size()`
+2. **매 프레임 SFML 이벤트 큐를 비우는 것** (지금은 `pollEvents()`가 한다)
 
 이 둘만 유지되면 이벤트 큐든 Config 연동이든 자유롭게 설계해도 렌더 쪽은 영향받지 않는다.
 
