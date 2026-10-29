@@ -8,6 +8,7 @@
 #include <meno/graphics/DrawParams.hpp>
 
 #include <memory>
+#include <optional>
 #include <string_view>
 
 namespace meno {
@@ -54,6 +55,8 @@ public:
     // --- 프레임 -----------------------------------------------------------
 
     // 화면을 clearColor로 지우고 그리기를 시작한다.
+    // 이때 현재 카메라를 지금의 창 크기로 다시 적용한다. 창 크기가 바뀌어도 따로 할 일이 없는 이유다.
+    // (창 크기는 Window::pollEvents가 OS 이벤트를 꺼낼 때 갱신되므로, pollEvents를 beginFrame보다 먼저 부른다.)
     void beginFrame(Color clearColor = colors::Black);
 
     // 이번 프레임에 쌓인 그리기를 화면에 표시한다.
@@ -100,12 +103,22 @@ public:
                                           const TextParams& params = {}) const;
 
     // --- 카메라 -----------------------------------------------------------
+    // 계산 규칙은 전부 math/Camera2D.hpp의 같은 이름 자유 함수에 있다.
+    // 아래 함수들은 지금 카메라와 지금 창 크기를 넣어 그 함수들을 부를 뿐이다.
 
+    // 이후의 그리기를 이 카메라의 월드 좌표로 해석한다.
+    // Renderer가 카메라를 기억해 두었다가 beginFrame마다 다시 적용하므로, 매 프레임 다시 부를 필요는 없다.
     void setCamera(const Camera2D& camera);
 
-    // 1픽셀 = 1월드유닛인 기본 시점으로 되돌린다. UI를 그리기 전에 호출한다.
+    // 화면 좌표로 되돌린다. 원점은 창의 좌상단, 1픽셀 = 1월드유닛. UI를 그리기 전에 호출한다.
+    // 창 크기가 바뀌면 화면 좌표도 새 크기를 따른다. 처음 만들어진 Renderer도 이 상태다.
     void resetCamera();
 
+    // 지금 적용 중인 카메라. resetCamera() 상태(화면 좌표)면 std::nullopt.
+    [[nodiscard]] std::optional<Camera2D> camera() const;
+
+    // 월드 좌표 <-> 창 픽셀 좌표. 정수로 자르지 않은 실수를 돌려준다.
+    // 마우스 위치로 월드의 물체를 고를 때는 screenToWorld를 쓴다.
     [[nodiscard]] Vec2f worldToScreen(Vec2f worldPoint) const;
     [[nodiscard]] Vec2f screenToWorld(Vec2f screenPoint) const;
 
@@ -113,7 +126,7 @@ public:
 
     // 카메라가 회전해 있으면 보이는 영역은 기울어진 사각형이 된다.
     // 이때 그것을 감싸는 축 정렬 사각형을 돌려준다. (회전된 사각형의 외접 사각형)
-    // 실제보다 조금 넓을 수는 잇어도 좁지는 않으므로,
+    // 실제보다 조금 넓을 수는 있어도 좁지는 않으므로,
     // 컬링에 써도 보이는 오브젝트를 놓치지 않는다.
     [[nodiscard]] Rectf visibleWorldBounds() const;
 

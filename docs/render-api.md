@@ -51,11 +51,11 @@ renderer.endFrame();
 | 함수 | 받는 형태 | 예 |
 |---|---|---|
 | `Color::fromRgb` | 6자리 `0xRRGGBB` (불투명) | `Color::fromRgb(0x1E2430)` |
-| `Color::fromHex` | 8자리 `0xRRGGBBAA` | `Color::fromHex(0x1E2430FF)` |
+| `Color::fromRgba` | 8자리 `0xRRGGBBAA` | `Color::fromRgba(0x1E2430FF)` |
 
 두 리터럴은 모두 `std::uint32_t`라서 오버로드로는 구분할 수 없다. 그래서 이름을 나눴다.
-`fromHex`에 6자리를 넣으면 `0x001E2430`으로 읽혀 색이 한 칸씩 밀리고 거의 투명해진다.
-반대로 `fromRgb`에 8자리를 넣으면 디버그 빌드에서 assert로 멈춘다.
+`fromRgba`에 6자리를 넣으면 `0x001E2430`으로 읽혀 색이 한 칸씩 밀리고 거의 투명해진다.
+반대로 `fromRgb`에 8자리를 넣으면 컴파일 에러가 난다. `consteval`이라 빌드 설정과 상관없이 컴파일할 때 검사한다.
 
 ### 텍스트 크기 재기
 
@@ -88,6 +88,77 @@ renderer.drawText(font, "GAME OVER", screenCenter, params);  // 정확히 가운
 
 카메라를 켠 상태에서 그린 것은 월드 좌표, `resetCamera()` 후에 그린 것은 화면 좌표다.
 UI는 항상 `resetCamera()` 뒤에 그린다.
+
+### 카메라 (`Camera2D`)
+
+```cpp
+renderer.setCamera({.center = player.position,   // 화면 가운데에 올 월드 좌표
+                    .size = {320.f, 180.f},      // 설계 해상도: 창 크기와 상관없이 이만큼의 월드가 보인다
+                    .zoom = 1.5f,                // 동적 확대: 보이는 영역 = size / zoom
+                    .rotation = 10.f,            // 도, 시계 방향
+                    .viewport = {0.f, 0.f, 1.f, 1.f},  // 창에서 그릴 영역(비율)
+                    .fit = meno::CameraFit::Letterbox});  // 기본값. 꽉 채우려면 Stretch
+```
+
+| 필드 | 기본값 | 규칙 |
+|---|---|---|
+| `center` | `{0, 0}` | 뷰포트 가운데에 올 월드 좌표 |
+| `size` | `{0, 0}` | 보일 월드 크기. `{0, 0}`이면 **뷰포트의 픽셀 크기**를 써서 1픽셀 = 1월드유닛 |
+| `zoom` | `1` | `size` 위에 곱하는 배율. 0 이하·NaN이면 1 |
+| `rotation` | `0` | 도, 시계 방향. 범위 제한 없음(내부에서 360으로 접는다) |
+| `viewport` | `{0, 0, 1, 1}` | 창 전체를 1로 보는 비율 좌표. 분할 화면·미니맵 |
+| `fit` | `Letterbox` | `size`와 뷰포트의 종횡비가 다를 때. 기본은 비율을 지키고 남는 띠를 비운다. `Stretch`면 찌그러지더라도 꽉 채운다 |
+
+- **`size`와 `zoom`의 역할 분담.** `size`는 게임 내내 고정하는 설계 해상도, `zoom`은 연출용 확대다.
+  둘을 동시에 바꾸지 말 것. 보이는 영역은 항상 `size / zoom`이다.
+- **회전 방향.** 카메라를 시계 방향으로 돌리면 화면 속 월드는 **반시계 방향**으로 돈다.
+  같은 `+45`라도 스프라이트(`SpriteParams::rotation`)는 시계 방향으로 돈다. 화면 위쪽이 가리키는 월드 방향은
+  `0° → -y`, `90° → +x`, `180° → +y`, `-90° → -x`다. (y축은 아래로 증가하므로 회전 없을 때 위쪽은 `-y`)
+- **`size`가 `{0, 0}`일 때의 "1픽셀 = 1월드유닛"은 뷰포트 기준이다.** 그런 카메라를 창의 왼쪽 절반에 두면
+  보이는 영역은 창 크기가 아니라 절반 크기다. 창 크기를 쓰면 반쪽 화면에 창 전체가 들어가 가로로 찌그러진다.
+- **뷰포트 픽셀은 네 모서리를 각각 반올림한다.** SFML은 위치와 크기를 따로 반올림해서, 창을 3등분하면
+  화면 사이에 1픽셀 틈이 생긴다. 모서리를 반올림하면 맞닿은 뷰포트가 같은 경계를 공유한다.
+- **뷰포트 밖으로는 그려지지 않는다.** 아주 큰 사각형을 그려서 미니맵 배경을 칠할 수 있다.
+  레터박스 띠와 뷰포트 바깥은 `beginFrame`의 `clearColor`로 남는다.
+- **`fit`의 기본값은 `Letterbox`다.** `size`를 정했다는 것은 "이 해상도로 설계했다"는 뜻이므로, 따로 지시하지
+  않아도 비율을 지킨다. SFML의 `sf::View`처럼 꽉 채우려면 `.fit = meno::CameraFit::Stretch`를 명시한다.
+  `size`가 `{0, 0}`인 기본 카메라는 맞출 비율이 없으므로 어느 쪽이든 같다.
+  (Godot도 같은 구조다. 기본은 늘이지 않고(`stretch/mode = disabled`), 기준 해상도를 켜면 비율 유지(`stretch/aspect = keep`)가 기본이다.)
+- **레터박스 띠 위의 마우스.** `screenToWorld`는 띠 위의 픽셀에도 같은 규칙을 연장해 보이는 영역 밖의 월드 좌표를
+  돌려준다. 걸러야 하면 `meno::viewportPixels(camera, renderer.framebufferSize()).contains(mouse)`로 먼저 확인한다.
+
+  화면 분할 예:
+
+```cpp
+renderer.setCamera({.center = p1.position, .viewport = {0.f, 0.f, 0.5f, 1.f}});
+drawWorld(renderer);
+renderer.setCamera({.center = p2.position, .viewport = {0.5f, 0.f, 0.5f, 1.f}});
+drawWorld(renderer);
+renderer.resetCamera();  // UI
+```
+
+### 카메라와 창 크기
+
+**`Renderer`는 마지막 카메라를 기억했다가 `beginFrame`마다 지금 창 크기로 다시 적용한다.**
+그래서 창 크기가 바뀌어도 게임 코드가 할 일은 없고, 카메라를 매 프레임 다시 `setCamera`할 필요도 없다.
+
+- `resetCamera()`의 화면 좌표도 창 크기를 따라간다. 원점은 언제나 창 좌상단, 1픽셀 = 1월드유닛이다.
+  (SFML의 `getDefaultView()`는 창을 만들 때 한 번만 정해져서, 그대로 쓰면 창을 키울 때 UI가 함께 늘어난다.)
+- `size`가 `{0, 0}`인 카메라는 창이 커지면 월드가 더 넓게 보인다. 창 크기와 상관없이 같은 영역을 보이려면 `size`를 정해야 한다. 비율은 기본값(`Letterbox`)이 지켜 준다.
+- 지금 카메라는 `renderer.camera()`로 읽는다. `resetCamera()` 상태(처음 포함)면 `std::nullopt`다.
+
+### 좌표 변환은 그리기와 같은 계산을 쓴다
+
+`worldToScreen` / `screenToWorld` / `visibleWorldBounds`의 계산은 `include/meno/math/Camera2D.hpp`의
+같은 이름 자유 함수에 있다. `Renderer`의 멤버는 지금 카메라와 지금 창 크기를 넣어 부르기만 한다.
+그리는 쪽도 `backend::toSfView`가 이 함수들로 `sf::View`를 만들기 때문에, 화면에 그려진 위치와 계산 결과가
+일치한다. (`tests/graphics/test_camera_parity.cpp`가 무작위 카메라 3000개로 SFML과 대조한다.)
+
+- 결과는 **정수로 자르지 않은 실수**다. 마우스 픽셀 좌표를 넣으면 그 픽셀의 좌상단 모서리에 해당하는 월드 좌표가 나온다.
+- `Renderer` 없이도 쓸 수 있다. 창 없이 돌아가는 게임 로직이나 테스트에서
+  `meno::screenToWorld(camera, framebufferSize, mouse)`처럼 부르면 된다.
+- 주의: `Renderer`의 멤버 함수 안에서 이 자유 함수를 부를 때는 `meno::`를 붙여야 한다.
+  이름이 같아서 그냥 부르면 멤버 자신이 불린다.
 
 ## 4. 다른 담당자와의 경계
 
@@ -135,7 +206,7 @@ UI는 항상 `resetCamera()` 뒤에 그린다.
 `Renderer`가 `Window`에게 요구하는 건 두 가지뿐이다:
 
 1. `backend::WindowAccess::native()`로 꺼낼 수 있는 `sf::RenderWindow*`
-2. `size()`
+2. **매 프레임 SFML 이벤트 큐를 비우는 것** (지금은 `pollEvents()`가 한다)
 
 이 둘만 유지되면 이벤트 큐든 Config 연동이든 자유롭게 설계해도 렌더 쪽은 영향받지 않는다.
 
