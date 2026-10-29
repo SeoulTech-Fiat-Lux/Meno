@@ -22,12 +22,12 @@ constexpr Camera2D kAllFields{.center = {1.f, 2.f},
                               .zoom = 2.f,
                               .rotation = 30.f,
                               .viewport = {0.f, 0.f, 0.5f, 1.f},
-                              .fit = CameraFit::Letterbox};
-static_assert(kAllFields.fit == CameraFit::Letterbox);
+                              .fit = CameraFit::Stretch};
+static_assert(kAllFields.fit == CameraFit::Stretch); // 기본값(Letterbox)과 다른 값이어야 대입을 확인할 수 있다
 
-// 기본값: 창 전체, Stretch, 크기를 정하지 않음(1픽셀 = 1월드유닛).
+// 기본값: 창 전체, Letterbox, 크기를 정하지 않음(1픽셀 = 1월드유닛).
 static_assert(Camera2D{}.viewport.size.x == 1.f && Camera2D{}.viewport.size.y == 1.f);
-static_assert(Camera2D{}.fit == CameraFit::Stretch);
+static_assert(Camera2D{}.fit == CameraFit::Letterbox);
 
 // --- 런타임 검사 ------------------------------------------------------------
 
@@ -219,8 +219,13 @@ void checkLetterbox() {
     const Vec2f unit = worldToScreen(wide, {800u, 800u}, {1.f, 1.f}) - origin;
     check(near(unit.x, unit.y) && near(origin, Vec2f{400.f, 400.f}), "Letterbox: 종횡비가 유지되고 center는 가운데");
 
-    // Stretch(기본)는 뷰포트를 꽉 채운다.
-    check(same(viewportPixels({.size = {320.f, 180.f}}, {800u, 800u}), Rectf{0.f, 0.f, 800.f, 800.f}),
+    // 기본값은 Letterbox다. size만 정해도 fit을 따로 쓰지 않고 비율이 유지된다.
+    check(same(viewportPixels({.size = {320.f, 180.f}}, {800u, 800u}), Rectf{0.f, 175.f, 800.f, 450.f}),
+          "기본값(Letterbox): size만 정해도 비율이 유지된다");
+
+    // Stretch는 명시해야 한다. 종횡비가 달라도 뷰포트를 꽉 채운다.
+    check(same(viewportPixels({.size = {320.f, 180.f}, .fit = CameraFit::Stretch}, {800u, 800u}),
+               Rectf{0.f, 0.f, 800.f, 800.f}),
           "Stretch: 뷰포트를 꽉 채운다");
 
     // size가 {0,0}이면 맞출 종횡비가 없으므로 Stretch와 같다.

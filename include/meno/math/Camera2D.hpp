@@ -13,11 +13,14 @@ namespace meno {
 enum class CameraFit : std::uint8_t {
     // SFML의 기본 동작과 동일하게, 카메라가 담는 월드 영역을 뷰포트에 맞춘다.
     // 이때 카메라가 담는 월드 영역의 종횡비가 뷰포트와 다르면, 그림이 늘어나거나 찌그러진다.
+    // 띠 없이 뷰포트를 꽉 채워야 할 때 명시한다. (.fit = CameraFit::Stretch)
     Stretch,
 
-    // 종횡비를 유지하면서 뷰포트 안에 카메라가 담는 월드 영역을 최대한 맞춘다.
+    // 종횡비를 유지하면서 뷰포트 안에 카메라가 담는 월드 영역을 최대한 맞춘다. Camera2D의 기본값이다.
     // 남는 영역은 beginFrame의 clearColor로 채워진다.
     // size가 {0, 0}이면, 맞춰야 할 종횡비가 없으므로 Stretch와 동일하게 작동한다.
+    // 띠 위의 마우스 좌표를 screenToWorld에 넣으면 보이는 영역 밖의 월드 좌표가 나온다.
+    // 걸러야 하면 viewportPixels(camera, framebuffer).contains(mouse)로 먼저 확인한다.
     Letterbox,
 };
 
@@ -59,8 +62,10 @@ struct Camera2D {
     // 실제 픽셀은 네 모서리를 각각 가장 가까운 정수로 반올림해서 정한다.
     Rectf viewport{{0.f, 0.f}, {1.f, 1.f}};
 
-    // size와 viewport의 종횡비가 다를 때의 처리. 기본은 SFML과 같은 Stretch.
-    CameraFit fit{CameraFit::Stretch};
+    // size와 viewport의 종횡비가 다를 때의 처리.
+    // 기본은 Letterbox. size를 정했다는 것은 "이 해상도로 설계했다"는 뜻이므로, 따로 지시하지 않아도 비율을 지킨다.
+    // 찌그러지더라도 뷰포트를 꽉 채우려면 Stretch를 명시한다. (SFML의 sf::View와 같은 동작)
+    CameraFit fit{CameraFit::Letterbox};
 };
 
 // --- 카메라 수학 ------------------------------------------------------------
