@@ -74,11 +74,13 @@ jobs:
       # 값 타입 테스트는 창을 열지 않으므로 헤드리스 러너에서도 돈다.
       # render 테스트는 창과 GL 컨텍스트가 필요해서 MENO_DISPLAY_TESTS = 1일 때만 돈다.
       # Linux는 xvfb-run으로 가상 디스플레이를 띄워 함께 돌리고, Windows에서는 건너뛴다.
+      # render_resize는 그린 픽셀의 색을 읽어 비교하므로 24비트 색 화면이 필요하다.
+      # xvfb-run의 기본 화면은 배포판마다 달라서(8비트인 곳도 있다) 명시해 둔다.
       - name: Test (Linux)
         if: runner.os == 'Linux'
         env:
           MENO_DISPLAY_TESTS: "1"
-        run: xvfb-run -a ctest --test-dir build --build-config Release --output-on-failure
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" ctest --test-dir build --build-config Release --output-on-failure
 
       - name: Test (Windows)
         if: runner.os != 'Linux'
