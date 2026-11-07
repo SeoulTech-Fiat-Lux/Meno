@@ -32,10 +32,12 @@ struct KeyReleased {
 
 struct MouseButtonPressed {
     MouseButton button = MouseButton::Left;
+    Vec2i position;
 };
 
 struct MouseButtonReleased {
     MouseButton button = MouseButton::Left;
+    Vec2i position;
 };
 
 struct MouseMoved {

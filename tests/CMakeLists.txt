@@ -8,6 +8,7 @@
 #   tests/math/      -- 공용 값 타입
 #   tests/core/      -- Application, Clock, Time
 #   tests/graphics/  -- Renderer, Texture, Font
+#   tests/input/     -- Input, SFML 이벤트 변환
 #   tests/audio/     -- Sound, Music
 #   tests/scene/     -- Scene, GameObject, Component, Collider
 
@@ -57,6 +58,7 @@ meno_add_test(umbrella)
 add_subdirectory(audio)
 add_subdirectory(core)
 add_subdirectory(graphics)
+add_subdirectory(input)
 add_subdirectory(math)
 add_subdirectory(scene)
 
