@@ -1,9 +1,12 @@
 #ifndef MENO_TIME_HPP
 #define MENO_TIME_HPP
 
+#include <cstdint>
+
 namespace meno {
 
 class Application;
+class Input;
 
 /// Application이 관리하는 게임 시간 정보.
 class Time final {
@@ -21,16 +24,25 @@ public:
 
 private:
     friend class Application;
+    // Input은 "키가 눌린 순간"을 update 단위로 판정하기 위해 stepNumber_와 inStep_을 읽는다.
+    friend class Input;
 
     static void beginRun(double fixedDeltaTime) noexcept;
     static void beginFrame(double frameDeltaTime, double realDeltaTime) noexcept;
+    // update 직전에 호출한다. 단계 번호를 1 올리고서 해당 스텝이 update 안에 있다고 표시한다.
     static void advanceStep(double deltaTime) noexcept;
+    // update가 끝나거나 update 상태를 벗어날 때 호출한다.
+    static void endStep() noexcept;
 
     static double deltaTime_;
     static double fixedDeltaTime_;
     static double elapsedTime_;
     static double frameDeltaTime_;
     static double realElapsedTime_;
+    // 현재까지 수행된 update 횟수. run이 다시 시작해도 초기화되지 않는다.
+    static std::uint64_t stepNumber_;
+    // 현재 update 안에 있는지 여부.
+    static bool inStep_;
 };
 
 } // namespace meno

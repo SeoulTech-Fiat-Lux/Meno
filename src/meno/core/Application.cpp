@@ -28,7 +28,11 @@ void Application::run(Clock& clock) {
     struct RunGuard {
         bool& running;
 
-        ~RunGuard() noexcept { running = false; }
+        // 예외 처리: update 상태를 벗어날 때 "update 안에 있다"는 표시를 남기지 않도록 한다.
+        ~RunGuard() noexcept {
+            running = false;
+            Time::endStep();
+        }
     } guard{running_};
 
     clock.setFramerateLimit(config_.framerateLimit);
@@ -52,6 +56,7 @@ void Application::run(Clock& clock) {
                updateCount < config_.maxUpdatesPerFrame) {
             Time::advanceStep(config_.fixedTimeStep);
             update(config_.fixedTimeStep);
+            Time::endStep();
             accumulator -= config_.fixedTimeStep;
             ++updateCount;
         }
