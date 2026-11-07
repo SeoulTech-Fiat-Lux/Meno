@@ -228,7 +228,7 @@ void Input::on(const event::KeyPressed& event) {
 }
 
 void Input::on(const event::KeyReleased& event) {
-    applyButton(stateOf(keys_, event.key), press);
+    applyButton(stateOf(keys_, event.key), release);
 }
 
 void Input::on(const event::MouseButtonPressed& event) {
@@ -238,7 +238,7 @@ void Input::on(const event::MouseButtonPressed& event) {
 
 void Input::on(const event::MouseButtonReleased& event) {
     mousePosition_ = event.position;
-    applyButton(stateOf(mouseButtons_, event.button), press);
+    applyButton(stateOf(mouseButtons_, event.button), release);
 }
 
 void Input::on(const event::MouseMoved& event) {
