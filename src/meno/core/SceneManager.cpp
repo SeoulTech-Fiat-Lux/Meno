@@ -96,9 +96,4 @@ bool SceneManager::shutdown() {
     return true;
 }
 
-[[nodiscard]]
-bool SceneManager::deleteScene(Scene::SceneID id) {
-    return scenes.erase(id) != 0;
-}
-
 } // namespace meno
