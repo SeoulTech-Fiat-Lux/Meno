@@ -78,6 +78,15 @@ bool Input::press(ButtonState& state, const Tick& now) noexcept {
     return true;
 }
 
+bool Input::release(ButtonState& state, const Tick& now) noexcept {
+    if (!state.down) {
+        return false;
+    }
+    state.down = false;
+    state.released = now;
+    return true;
+}
+
 // --- 질의 ----------------------------------------------------
 
 bool Input::isDown(Key key) const noexcept {
@@ -198,6 +207,7 @@ void Input::on(const event::FocusLost&) {
      for (ButtonState& state: mouseButtons_) {
         release(state, tick);
      }
+     refreshActions(tick);
 }
 
 void Input::on(const event::KeyPressed& event) {
@@ -206,27 +216,39 @@ void Input::on(const event::KeyPressed& event) {
         return;
     }
     if (ButtonState* state = stateOf(keys_, event.key)) {
-        press(*state, now());
+        const Tick tick = now();
+        if (press(*state, tick)) {
+            refreshActions(tick);
+        }
     }
 }
 
 void Input::on(const event::KeyReleased& event) {
     if (ButtonState* state = stateOf(keys_, event.key)) {
-        release(*state, now());
+        const Tick tick = now();
+        if (release(*state, tick)) {
+            refreshActions(tick);
+        }
     }
 }
 
 void Input::on(const event::MouseButtonPressed& event) {
     mousePosition_ = event.position;
     if (ButtonState* state = stateOf(mouseButtons_, event.button)) {
-        press(*state, now());
+        const Tick tick = now();
+        if (press(*state, tick)) {
+            refreshActions(tick);
+        }
     }
 }
 
 void Input::on(const event::MouseButtonReleased& event) {
     mousePosition_ = event.position;
     if (ButtonState* state = stateOf(mouseButtons_, event.button)) {
-        release(*state, now());
+        const Tick tick = now();
+        if (release(*state, tick)) {
+            refreshActions(tick);
+        }
     }
 }
 

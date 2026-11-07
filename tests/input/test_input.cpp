@@ -37,8 +37,8 @@ void testKeyboard() {
     MENO_CHECK(!input.wasReleased(Key::A));
 
     frame(input, {ev::KeyPressed{Key::A}});
-    MENO_CHECK(!input.isDown(Key::A));
-    MENO_CHECK(!input.wasPressed(Key::A));
+    MENO_CHECK(input.isDown(Key::A));
+    MENO_CHECK(input.wasPressed(Key::A));
     MENO_CHECK(!input.wasReleased(Key::A));
     MENO_CHECK(!input.isDown(Key::B));
 
@@ -249,7 +249,7 @@ public:
 private:
     Observation observe() const {
         return {input.isDown(Key::Space), input.wasPressed(Key::Space),
-                input.wasPressed(Key::Space), input.mouseWheelDelta(), input.text()};
+                input.wasReleased(Key::Space), input.mouseWheelDelta(), input.text()};
     }
 
     void processEvents() override {
@@ -392,7 +392,7 @@ void testStepFlagClearedAfterException() {
     ThrowingApplication app;
     try {
         app.run(clock);
-    } catch (const std::runtime_error) {
+    } catch (const std::runtime_error&) {
     }
 
     // update가 예외로 끝날 때 "update 내부" 표시 역시 지운다.
