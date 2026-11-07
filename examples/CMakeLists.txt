@@ -20,3 +20,6 @@ meno_add_example(gameobject_demo)
 
 # SceneManager의 콜백과 예약 전환을 보여주는 자동 전환 예제.
 meno_add_example(scene_transition)
+
+# 바닥과 상자 GameObject, 충돌 판정으로 자동 이동/점프를 구성한다.
+meno_add_example(jumping_box)
