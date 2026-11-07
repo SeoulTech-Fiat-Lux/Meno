@@ -17,3 +17,6 @@ meno_add_example(render_basics)
 
 # Scene이 소유하는 GameObject와 기본 Sprite로 정적인 장면을 구성한다.
 meno_add_example(gameobject_demo)
+
+# 키보드·마우스 폴링과 액션 매핑. Application의 update에서 입력을 읽는다.
+meno_add_example(input_demo)

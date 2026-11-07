@@ -6,7 +6,9 @@
 
 #include "check.hpp"
 
-#include <SFML/Window.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 #include <cstdio>
 #include <optional>
@@ -26,7 +28,7 @@ void testKeys() {
     MENO_CHECK(sf::Keyboard::KeyCount == meno::keyCount - 1);
 
     bool allMatch = true;
-    for (unsigned int code = 0; code < sf::Keyboard::KeyCount; ++ code) {
+    for (unsigned int code = 0; code < sf::Keyboard::KeyCount; ++code) {
         const Key key = fromSf(static_cast<sf::Keyboard::Key>(code));
         if (static_cast<unsigned int>(key) != code + 1) {
             std::printf("FAIL  sf::Keyboard::Key %u -> meno::Key %u\n", code,
