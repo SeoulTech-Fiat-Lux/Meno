@@ -6,6 +6,9 @@ meno_add_test(input
         ${CMAKE_SOURCE_DIR}/src/meno/core/Time.cpp
 )
 
+# Input.cpp가 내부 헤더 core/TimeAccess.hpp를 쓰므로 src/meno를 include 경로에 넣는다.
+target_include_directories(meno_test_input PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+
 # SFML 이벤트 -> meno 이벤트 변환. 내부 헤더(sfml_backend/)를 직접 검사하므로
 # src/meno를 include 경로에 넣고 SFML을 함께 링크한다. 창은 열지 않는다.
 meno_add_test(input_convert)

@@ -88,7 +88,7 @@ private:
     static constexpr std::uint64_t never = std::numeric_limits<std::uint64_t>::max();
 
     // 이벤트가 처리된 시점으로, 통칭 틱(Tick).
-    // 프레임 번호와 해당 이벤트를 처음 보게 될 update()의 stepNumber_를 함께 기록한다.
+    // 프레임 번호와 해당 이벤트를 처음 보게 될 update()의 단계 번호를 함께 기록한다.
     // Tick 내부 번호를 묻는 곳(update 안팎)에 따라 둘 중 하나를 선택하여 비교한다.
     struct Tick {
         std::uint64_t frame = never;

@@ -6,7 +6,7 @@
 namespace meno {
 
 class Application;
-class Input;
+namespace detail { struct TimeAccess; }
 
 /// Application이 관리하는 게임 시간 정보.
 class Time final {
@@ -24,8 +24,9 @@ public:
 
 private:
     friend class Application;
-    // Input은 "키가 눌린 순간"을 update 단위로 판정하기 위해 stepNumber_와 inStep_을 읽는다.
-    friend class Input;
+    // 라이브러리 내부 Input이 update 단계 정보를 읽어들이는 통로.
+    // 정의는 src/meno/core/TimeAccess.hpp에 선언되어 있다.
+    friend struct detail::TimeAccess;
 
     static void beginRun(double fixedDeltaTime) noexcept;
     static void beginFrame(double frameDeltaTime, double realDeltaTime) noexcept;

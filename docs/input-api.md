@@ -111,10 +111,10 @@ if (input.wasActionPressed("jump")) { ... }
 
 ## 6. Time·Application과의 계약
 
-- `Time`에 비공개 값 두 개를 추가했다. `Input`만 `friend`로 읽는다.
-  - `stepNumber_`: 지금까지 시작한 update 수. `beginRun`에서도 0으로 돌리지 않는다.
+- `Time`의 비공개 값 두 개를 내부 전용 `detail::TimeAccess`(`src/meno/core/TimeAccess.hpp`)가 읽기 전용으로 연다. `Input`은 이것만 쓴다.
+  - `stepNumber()`: 지금까지 시작한 update 수. `beginRun`에서도 0으로 돌리지 않는다.
     이전 `run`에서 찍힌 번호와 새 `run`의 번호가 겹치지 않게 하려는 것이다.
-  - `inStep_`: 지금 update 안인가.
+  - `isInStep()`: 지금 update 안인가.
 - `Application::run`은 `advanceStep` → `update` → `endStep` 순으로 호출한다.
   `update`가 예외를 던져도 `RunGuard`가 `endStep`을 불러 "update 안" 표시가 남지 않는다.
 - `Application`을 쓰지 않는 루프에서는 `inStep_`이 항상 false이므로 모든 질의가 프레임 기준이다.

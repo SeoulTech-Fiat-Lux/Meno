@@ -1,5 +1,6 @@
 #include <meno/input/Input.hpp>
-#include <meno/core/Time.hpp>
+
+#include "core/TimeAccess.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -7,6 +8,8 @@
 #include <variant>
 
 namespace meno {
+
+using detail::TimeAccess;
 
 namespace {
 
@@ -55,18 +58,18 @@ std::string toUtf8(char32_t c) {
 
 Input::Tick Input::now() const noexcept {
     // update 밖에서 들어온 이벤트는 다음에 동작하는 update에서 처리한다.
-    return Tick{frame_, Time::stepNumber_ + 1};
+    return Tick{frame_, TimeAccess::stepNumber() + 1};
 }
 
 bool Input::isCurrent(const Tick& tick) const noexcept {
-    return Time::inStep_ ? tick.step == Time::stepNumber_ : tick.frame == frame_;
+    return TimeAccess::isInStep() ? tick.step == TimeAccess::stepNumber() : tick.frame == frame_;
 }
 
 template <typename T> T Input::current(const Accumulator<T>& accumulator) const {
     if (!isCurrent(accumulator.tick)) {
         return T{};
     }
-    return Time::inStep_ ? accumulator.stepValue : accumulator.frameValue;
+    return TimeAccess::isInStep() ? accumulator.stepValue : accumulator.frameValue;
 }
 
 bool Input::press(ButtonState& state, const Tick& now) noexcept {

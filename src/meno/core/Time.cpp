@@ -1,5 +1,7 @@
 #include <meno/core/Time.hpp>
 
+#include "TimeAccess.hpp"
+
 namespace meno {
 
 double Time::deltaTime_ = 0.0;
@@ -38,5 +40,12 @@ void Time::advanceStep(double deltaTime) noexcept {
 }
 
 void Time::endStep() noexcept { inStep_ = false; }
+
+namespace detail {
+
+std::uint64_t TimeAccess::stepNumber() noexcept { return Time::stepNumber_; }
+bool TimeAccess::isInStep() noexcept { return Time::inStep_; }
+
+} // namespace detail
 
 } // namespace meno
