@@ -53,8 +53,7 @@ void Window::pollEvents() {
     while (const std::optional event = impl_->window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             impl_->window.close();
-        }
-        else if (const std::optional converted = backend::fromSf(*event)) {
+        } else if (const std::optional converted = backend::fromSf(*event)) {
             impl_->input.handleEvent(*converted);
         }
     }

@@ -9,7 +9,6 @@
 #include <array>
 #include <cstdint>
 #include <functional>
-#include <limits>
 #include <map>
 #include <limits>
 #include <string>
@@ -21,7 +20,7 @@ namespace meno {
 // 키보드와 마우스의 입력 상태를 관리한다.
 // 보통은 Window가 input 하나를 갖고 있고, window.pollEvent()가 채운다.
 
-// ex. if (window.input().wasPressed(meno::Key::space)) { jump(); }
+// ex. if (window.input().wasPressed(meno::Key::Space)) { jump(); }
 
 // wasPressed(), wasReleased()와 휠 및 텍스트는 "이번 틱"에 발생한 일만 반환한다. 틱은 호출된 곳에 따라 달라지며, 아래와 같이 정의한다.
 // Application::update 내부: 해당 fixed update 한 번.
@@ -79,7 +78,7 @@ public:
     [[nodiscard]] bool wasActionReleased(std::string_view action) const;
 
     // --- 이벤트 공급 ------------------------------------------------
-    // Window::pollEvent()가 호출한다. 직접 호출하는 경우는 테스트나 입력 재생 등, 창 없이 Input을 구동할 때이다.
+    // Window::pollEvents()가 호출한다. 직접 호출하는 경우는 테스트나 입력 재생 등, 창 없이 Input을 구동할 때이다.
 
     // 새 프레임을 시작한다. 이벤트를 넣기 전에 프레임마다 한 번 호출한다.
     void beginFrame() noexcept;
@@ -124,7 +123,7 @@ private:
     };
 
     // 액션의 상태는 매번 계산하지 않은 채로 들고 있다.
-    // 묵인 키나 버튼이 안 눌려있다가 눌리는 순간을 동작 단위로 적어야 하기 때문이다.
+    // 묶인 키나 버튼이 안 눌려있다가 눌리는 순간을 동작 단위로 적어야 하기 때문이다.
     struct Action {
         std::vector<Key> keys;
         std::vector<MouseButton> buttons;

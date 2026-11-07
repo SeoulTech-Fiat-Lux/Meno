@@ -21,7 +21,9 @@ namespace event {
 // 창이 포커스를 잃는다면, Input은 모든 키와 마우스 버튼을 "떼어진 상태"로 처리한다.
 struct FocusLost {};
 
-// 키를 눌렀을 때 발생한다. 키를 누르고 있으면 OS의 키 반복 기능에 따라 중복 발생하여 꾹 누르는 입력을 처리할 수 있다.
+// 키를 눌렀을 때 발생한다.
+// 키를 누르고 있으면 OS의 키 반복 기능에 따라 중복 발생하나 Input은 반복 이벤트를 무시한다.
+// 어떤 키를 꾹 누르고 있는지에 대한 여부는 Input::isDown()으로 판단한다.
 struct KeyPressed {
     Key key = Key::Unknown;
 };
