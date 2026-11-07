@@ -1,7 +1,6 @@
 #ifndef MENO_WINDOW_HPP
 #define MENO_WINDOW_HPP
 
-#include <meno/input/Input.hpp>
 #include <meno/math/Vec2.hpp>
 
 #include <memory>
@@ -9,6 +8,7 @@
 
 namespace meno {
 
+class Input;
 namespace backend {
 struct WindowAccess;
 }

@@ -1,4 +1,5 @@
 #include <meno/core/Window.hpp>
+#include <meno/input/Input.hpp>
 
 #include "sfml_backend/Access.hpp"
 #include "sfml_backend/Convert.hpp"
