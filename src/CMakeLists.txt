@@ -11,7 +11,7 @@
 #   meno/core/       -- Core 담당 (Application, Window, Clock)
 #   meno/math/       -- 공용 값 타입 (헤더 전용이라 여기 없음)
 #   meno/graphics/   -- 2D 렌더러 담당
-#   meno/input/      -- 키보드 및 마우스 입력 (SFML 없이 이벤트로만 상태를 갱신한다)
+#   meno/input/      -- 키보드·마우스 입력 (SFML 없이 이벤트로만 상태를 갱신한다)
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
 #   meno/scene/      -- 게임 화면에 나타나는 객체들 및 그 객체를 포함한 장면을 추상화 한 객체
 add_library(meno STATIC
@@ -31,6 +31,7 @@ add_library(meno STATIC
         meno/graphics/Renderer.cpp
         meno/graphics/Texture.cpp
         meno/input/Input.cpp
+        meno/sfml_backend/InputConvert.cpp
 )
 add_library(meno::meno ALIAS meno)
 
