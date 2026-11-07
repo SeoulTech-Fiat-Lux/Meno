@@ -1,7 +1,9 @@
 #include <meno/input/Input.hpp>
 #include <meno/core/Time.hpp>
 
+#include <algorithm>
 #include <cstddef>
+#include <ranges>
 #include <variant>
 
 namespace meno {
@@ -12,6 +14,12 @@ namespace {
 template <typename States, typename Id> auto* stateOf(States& states, Id id) noexcept {
     const auto index = static_cast<std::size_t>(id);
     return index < states.size() ? &states[index] : nullptr;
+}
+
+template <typename T> void addOnce(std::vector<T>& values, T value) {
+    if (std::ranges::find(values, value) == values.end()) {
+        values.push_back(value);
+    }
 }
 
 // 제어 문자나 서로게이트 등 UTF-32 범위를 벗어난 문자는 무시한다. (빈 문자열 처리)
@@ -112,6 +120,64 @@ float Input::mouseWheelDelta() const noexcept {
 
 std::string Input::text() const{
     return current(text_);
+}
+
+// --- 액션 --------------------------------------------------------------------
+
+void Input::bind(std::string_view action, Key key) {
+    Action& entry = actions_.try_emplace(std::string(action)).first->second;
+    addOnce(entry.keys, key);
+    entry.down = anyBoundDown(entry);
+}
+
+void Input::bind(std::string_view action, MouseButton button) {
+    Action& entry = actions_.try_emplace(std::string(action)).first->second;
+    addOnce(entry.buttons, button);
+    entry.down = anyBoundDown(entry);
+}
+
+void Input::unbind(std::string_view action) {
+    if (const auto it = actions_.find(action); it != actions_.end()) {
+        actions_.erase(it);
+    }
+}
+
+bool Input::isActionDown(std::string_view action) const {
+    const Action* entry = findAction(action);
+    return entry != nullptr && entry->down;
+}
+
+bool Input::wasActionPressed(std::string_view action) const {
+    const Action* entry = findAction(action);
+    return entry != nullptr && isCurrent(entry->pressed);
+}
+
+bool Input::wasActionReleased(std::string_view action) const {
+    const Action* entry = findAction(action);
+    return entry != nullptr && isCurrent(entry->released);
+}
+
+const Input::Action* Input::findAction(std::string_view name) const {
+    const auto it = actions_.find(name);
+    return it == actions_.end() ? nullptr : &it->second;
+}
+
+bool Input::anyBoundDown(const Action& action) const noexcept {
+    return std::ranges::any_of(action.keys, [this](Key key) { return isDown(key); }) ||
+           std::ranges::any_of(action.buttons,
+                               [this](MouseButton button) { return isDown(button); });
+}
+
+void Input::refreshActions(const Tick& now) noexcept {
+    for (Action& action : actions_ | std::views::values) {
+        const bool down = anyBoundDown(action);
+        if (down && !action.down) {
+            action.pressed = now;
+        } else if (!down && action.down) {
+            action.released = now;
+        }
+        action.down = down;
+    }
 }
 
 // --- 이벤트 ----------------------------------------------------

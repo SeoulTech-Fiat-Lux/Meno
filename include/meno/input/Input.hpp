@@ -8,8 +8,13 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
+#include <limits>
+#include <map>
 #include <limits>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace meno {
 
@@ -49,7 +54,31 @@ public:
     // 복사본을 들고 있기 때문에 다음 틱까지 들고 있어도 안전하다.
     [[nodiscard]] std::string text() const;
 
-    // --- 이벤트 처리 ------------------------------------------------
+    // --- 액션 매핑 -------------------------------------------------
+    // "jump"와 같은 특정 동작에 여러 키·버튼을 묶는다.
+    // 묶인 것 중 하나라도 눌려 있으면 곧 액션이 눌린 것과 같다.
+    // 등록하지 않은 이름을 묻는 경우에는 false를 반환한다.
+
+    // ex.  input.bind("jump", meno::Key::Space);
+    //      input.bind("jump", meno::Key::W);
+    //      if (input.wasActionPressed("jump")) {...}
+
+    // 같은 키를 두 번 묶어도 한 번으로 친다.
+    // 이미 눌려 있는 키를 묶으면 isActionDown은 바로 true를 반환하지만,
+    // 이번 틱에 키가 눌린 것은 아니므로 wasActionPressed는 false를 반환한다.
+    void bind(std::string_view action, Key key);
+    void bind(std::string_view action, MouseButton button);
+    // 등록된 동작을 제거한다. 묶여 있던 키나 버튼 역시 풀린다.
+    void unbind(std::string_view action);
+
+    [[nodiscard]] bool isActionDown(std::string_view action) const;
+    // 동작이 안 눌린 상태에서 눌린 상태로 바뀐 틱에만 true를 반환한다.
+    // 위 예시에서 Space를 누른 채 W를 한 번 더 누른다고 해도, true를 반환하지 않는다.
+    [[nodiscard]] bool wasActionPressed(std::string_view action) const;
+    // 해당 동작에 묶인 키나 버튼이 모두 떼어진 틱에만 true를 반환한다.
+    [[nodiscard]] bool wasActionReleased(std::string_view action) const;
+
+    // --- 이벤트 공급 ------------------------------------------------
     // Window::pollEvent()가 호출한다. 직접 호출하는 경우는 테스트나 입력 재생 등, 창 없이 Input을 구동할 때이다.
 
     // 새 프레임을 시작한다. 이벤트를 넣기 전에 프레임마다 한 번 호출한다.
@@ -94,6 +123,16 @@ private:
         }
     };
 
+    // 액션의 상태는 매번 계산하지 않은 채로 들고 있다.
+    // 묵인 키나 버튼이 안 눌려있다가 눌리는 순간을 동작 단위로 적어야 하기 때문이다.
+    struct Action {
+        std::vector<Key> keys;
+        std::vector<MouseButton> buttons;
+        bool down = false;
+        Tick pressed;
+        Tick released;
+    };
+
     [[nodiscard]] Tick now() const noexcept;
     [[nodiscard]] bool isCurrent(const Tick& tick) const noexcept;
     template <typename T> [[nodiscard]] T current(const Accumulator<T>& accumulator) const;
@@ -101,6 +140,12 @@ private:
     // 이미 눌린 키의 자동 반복은 무시하는 함수로, 상태가 바뀌면 true를 반환한다.
     static bool press(ButtonState& state, const Tick& now) noexcept;
     static bool release(ButtonState& state, const Tick& now) noexcept;
+
+    [[nodiscard]] const Action* findAction(std::string_view name) const;
+    [[nodiscard]] bool anyBoundDown(const Action& action) const noexcept;
+    // 키나 버튼의 상태가 바뀐 뒤 호출한다.
+    // 각 동작이 눌렸는지에 대한 여부를 다시 계산하고, 바뀐 액션에 대해서는 현재 시점을 적는다.
+    void refreshActions(const Tick& now) noexcept;
 
     void on(const event::FocusLost& event);
     void on(const event::KeyPressed& event);
@@ -116,6 +161,7 @@ private:
     Vec2i mousePosition_{};
     Accumulator<float> wheel_;
     Accumulator<std::string> text_;
+    std::map<std::string, Action, std::less<>> actions_;
     std::uint64_t frame_ = 0;
 };
 

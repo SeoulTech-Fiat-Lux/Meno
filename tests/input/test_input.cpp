@@ -153,6 +153,77 @@ void testFocusLost() {
     MENO_CHECK(input.wasPressed(Key::W));
 }
 
+void testActions() {
+    Input input;
+    input.bind("jump", Key::Space);
+    input.bind("jump", Key::W);
+    input.bind("jump", MouseButton::Left);
+
+    MENO_CHECK(!input.isActionDown("jump"));
+    MENO_CHECK(!input.isActionDown("unknown"));
+    MENO_CHECK(!input.wasActionPressed("unknown"));
+
+    frame(input, {ev::KeyPressed{Key::Space}});
+    MENO_CHECK(input.isActionDown("jump"));
+    MENO_CHECK(input.wasActionPressed("jump"));
+
+    frame(input, {});
+    MENO_CHECK(input.isActionDown("jump"));
+    MENO_CHECK(!input.wasActionPressed("jump"));
+
+    // Space를 누른 채 W를 더 눌러도 액션이 새로 눌린 것은 아니다.
+    frame(input, {ev::KeyPressed{Key::W}});
+    MENO_CHECK(!input.wasActionPressed("jump"));
+
+    // 하나를 떼도 다른 하나가 눌려 있으면 액션은 계속 눌려 있다.
+    frame(input, {ev::KeyReleased{Key::Space}});
+    MENO_CHECK(input.isActionDown("jump"));
+    MENO_CHECK(!input.wasActionReleased("jump"));
+
+    frame(input, {ev::KeyReleased{Key::W}});
+    MENO_CHECK(!input.isActionDown("jump"));
+    MENO_CHECK(input.wasActionReleased("jump"));
+
+    // 마우스 버튼도 같은 액션에 묶인다. 한 프레임 안에 눌렀다 떼도 놓치지 않는다.
+    frame(input, {ev::MouseButtonPressed{MouseButton::Left, {}},
+                  ev::MouseButtonReleased{MouseButton::Left, {}}});
+    MENO_CHECK(!input.isActionDown("jump"));
+    MENO_CHECK(input.wasActionPressed("jump"));
+    MENO_CHECK(input.wasActionReleased("jump"));
+
+    // 묶이지 않은 키는 액션에 영향이 없다. 이미 떼어진 액션이 다시 떼어지지도 않는다.
+    frame(input, {ev::KeyPressed{Key::A}});
+    MENO_CHECK(!input.isActionDown("jump"));
+    MENO_CHECK(!input.wasActionReleased("jump"));
+
+    // 이미 눌려 있는 키를 묶으면 눌린 상태로 시작하지만, 이번 틱에 눌린 것은 아니다.
+    input.bind("fire", Key::A);
+    MENO_CHECK(input.isActionDown("fire"));
+    MENO_CHECK(!input.wasActionPressed("fire"));
+
+    frame(input, {ev::FocusLost{}});
+    MENO_CHECK(!input.isActionDown("fire"));
+    MENO_CHECK(input.wasActionReleased("fire"));
+
+    // 키 하나를 여러 액션이 같이 쓸 수 있다.
+    input.bind("pause", Key::Escape);
+    input.bind("back", Key::Escape);
+    frame(input, {ev::KeyPressed{Key::Escape}});
+    MENO_CHECK(input.wasActionPressed("pause"));
+    MENO_CHECK(input.wasActionPressed("back"));
+
+    input.unbind("jump");
+    input.unbind("never-bound");
+    frame(input, {ev::KeyPressed{Key::Space}});
+    MENO_CHECK(!input.isActionDown("jump"));
+    MENO_CHECK(!input.wasActionPressed("jump"));
+
+    // 지운 뒤 다시 묶으면 지금 키 상태에서 새로 시작한다.
+    input.bind("jump", Key::Space);
+    MENO_CHECK(input.isActionDown("jump"));
+    MENO_CHECK(!input.wasActionPressed("jump"));
+}
+
 // --- update 안: 틱 = fixed update---------------------------------
 
 struct Observation {
@@ -338,6 +409,7 @@ int main() {
     testMouse();
     testText();
     testFocusLost();
+    testActions();
     testFixedUpdate();
     testRunRestart();
     testStepFlagClearedAfterException();
