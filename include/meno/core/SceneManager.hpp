@@ -53,6 +53,8 @@ public:
     /// Scene을 모두 해제하지만 매니저는 유지되며 다시 사용할 수 있다.
     /// onExit이 예외를 던져도 모든 Scene과 전환 예약을 정리한 뒤 재전파한다.
     [[nodiscard]] bool shutdown();
+
+    [[nodiscard]] bool deleteScene(Scene::SceneID id);
 };
 
 } // namespace meno
