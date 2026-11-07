@@ -140,6 +140,12 @@ private:
     static bool press(ButtonState& state, const Tick& now) noexcept;
     static bool release(ButtonState& state, const Tick& now) noexcept;
 
+    // press 또는 release를 가리키는 함수 포인터
+    using ButtonChange = bool (*)(ButtonState&, const Tick&) noexcept;
+    // 키나 버튼 하나에 change를 적용하고, 상태가 실제로 바뀐 경우에만 액션을 다시 계산한다.
+    // state가 nullptr이라면 아무 것도 수행하지 않는다.
+    void applyButton(ButtonState* state, ButtonChange change) noexcept;
+
     [[nodiscard]] const Action* findAction(std::string_view name) const;
     [[nodiscard]] bool anyBoundDown(const Action& action) const noexcept;
     // 키나 버튼의 상태가 바뀐 뒤 호출한다.

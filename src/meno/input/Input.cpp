@@ -87,6 +87,16 @@ bool Input::release(ButtonState& state, const Tick& now) noexcept {
     return true;
 }
 
+void Input::applyButton(ButtonState* state, ButtonChange change) noexcept {
+    if (state == nullptr) {
+        return;
+    }
+    const Tick tick = now();
+    if (change(*state, tick)) {
+        refreshActions(tick);
+    }
+}
+
 // --- 질의 ----------------------------------------------------
 
 bool Input::isDown(Key key) const noexcept {
@@ -212,44 +222,23 @@ void Input::on(const event::FocusLost&) {
 
 void Input::on(const event::KeyPressed& event) {
     // Unknown에는 서로 다른 여러 키가 모이기 때문에 따로 추적하지 않는다.
-    if (event.key == Key::Unknown) {
-        return;
-    }
-    if (ButtonState* state = stateOf(keys_, event.key)) {
-        const Tick tick = now();
-        if (press(*state, tick)) {
-            refreshActions(tick);
-        }
+    if (event.key != Key::Unknown) {
+        applyButton(stateOf(keys_, event.key), press);
     }
 }
 
 void Input::on(const event::KeyReleased& event) {
-    if (ButtonState* state = stateOf(keys_, event.key)) {
-        const Tick tick = now();
-        if (release(*state, tick)) {
-            refreshActions(tick);
-        }
-    }
+    applyButton(stateOf(keys_, event.key), press);
 }
 
 void Input::on(const event::MouseButtonPressed& event) {
     mousePosition_ = event.position;
-    if (ButtonState* state = stateOf(mouseButtons_, event.button)) {
-        const Tick tick = now();
-        if (press(*state, tick)) {
-            refreshActions(tick);
-        }
-    }
+    applyButton(stateOf(mouseButtons_, event.button), press);
 }
 
 void Input::on(const event::MouseButtonReleased& event) {
     mousePosition_ = event.position;
-    if (ButtonState* state = stateOf(mouseButtons_, event.button)) {
-        const Tick tick = now();
-        if (release(*state, tick)) {
-            refreshActions(tick);
-        }
-    }
+    applyButton(stateOf(mouseButtons_, event.button), press);
 }
 
 void Input::on(const event::MouseMoved& event) {
