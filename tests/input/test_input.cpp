@@ -346,13 +346,15 @@ void testEventsBeforeUpdate() {
 }
 
 void testEventsInUpdate() {
-    auto clock = simulatedClock({0ms, 20ms, 30ms});
+    auto clock = simulatedClock({20ms, 10ms});
 
     ScriptedApplication app({
         {ev::TextEntered{U'a'}, {}},
-        {ev::KeyPressed{Key::Space}, ev::TextEntered{U'b'}, ev::MouseWheelScrolled{1.f, {}}},
-        {},
-        {ev::KeyReleased{Key::Space}},
+        {
+            {ev::KeyPressed{Key::Space}, ev::TextEntered{U'b'}, ev::MouseWheelScrolled{1.f, {}}},
+            {},
+            {ev::KeyReleased{Key::Space}},
+        }
     });
     app.run(clock);
 
