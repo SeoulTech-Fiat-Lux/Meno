@@ -59,6 +59,7 @@ public:
 private:
 // private 멤버변수 필드
     int layer_{0};
+    bool pending_delete_{false};
     Transform transform_;
     Sprite sprite_;
 

@@ -8,4 +8,5 @@ meno_add_test(application
 
 meno_add_test(scene_manager
         ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
 )

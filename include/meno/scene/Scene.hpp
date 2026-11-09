@@ -28,6 +28,11 @@ private:
     std::unordered_map<
         GameObject::GameObjectID, std::unique_ptr<GameObject>
     > objects_;
+    decltype(objects_) pending_objects_;
+    bool updating_{false};
+    bool pending_deletions_{false};
+    void applyObjectChanges();
+
     mutable std::vector<const GameObject*> draw_order_;
     mutable bool draw_order_dirty_{true};
     GameObject::GameObjectID next_id_{1};
@@ -73,10 +78,7 @@ private:
             enter_handler_();
     }
 
-    void onUpdate(double dt) const {
-        if (update_handler_)
-            update_handler_(dt);
-    }
+    void onUpdate(double dt);
 
     void onExit() const {
         if (exit_handler_)
@@ -84,6 +86,8 @@ private:
     }
 
 public:
+    /// 업데이트 중에는 등록을 예약한다. 반환 참조와 ID로 즉시 설정/조회할 수 있다.
+    /// 그리기 목록에는 업데이트 종료 시(예외 발생 시도 포함) 추가한다.
     GameObject& createGameObject() {
         const GameObject::GameObjectID id = next_id_++;
 
@@ -92,8 +96,12 @@ public:
         };
 
         GameObject& ref = *object;
-        objects_.emplace(id, std::move(object));
-        draw_order_dirty_ = true;
+        if (updating_) {
+            pending_objects_.emplace(id, std::move(object));
+        } else {
+            objects_.emplace(id, std::move(object));
+            draw_order_dirty_ = true;
+        }
 
         return ref;
     }
@@ -102,6 +110,8 @@ public:
     GameObject* getGameObject(GameObject::GameObjectID) noexcept;
     [[nodiscard]]
     const GameObject* getGameObject(GameObject::GameObjectID) const noexcept;
+    /// 업데이트 중에는 삭제 표시만 한다. 객체와 조회 결과는 종료까지 유지한다.
+    /// 없는 ID 또는 이미 삭제 예약된 ID는 false를 반환한다.
     [[nodiscard]]
     bool deleteGameObject(GameObject::GameObjectID) noexcept;
 
