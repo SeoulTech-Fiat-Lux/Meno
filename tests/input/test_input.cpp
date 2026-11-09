@@ -348,14 +348,15 @@ void testEventsBeforeUpdate() {
 void testEventsInUpdate() {
     auto clock = simulatedClock({20ms, 10ms});
 
-    ScriptedApplication app({
-        {ev::TextEntered{U'a'}, {}},
+    ScriptedApplication app(
+        {
+            {ev::TextEntered{U'a'}, {}},
+        },
         {
             {ev::KeyPressed{Key::Space}, ev::TextEntered{U'b'}, ev::MouseWheelScrolled{1.f, {}}},
             {},
             {ev::KeyReleased{Key::Space}},
-        }
-    });
+        });
     app.run(clock);
 
     const auto& u = app.updates;
