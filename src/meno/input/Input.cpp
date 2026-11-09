@@ -57,8 +57,10 @@ std::string toUtf8(char32_t c) {
 // --- 틱 ----------------------------------------------------
 
 Input::Tick Input::now() const noexcept {
-    // update 밖에서 들어온 이벤트는 다음에 동작하는 update에서 처리한다.
-    return Tick{frame_, TimeAccess::stepNumber() + 1};
+    // update 안에서 들어온 이벤트는 현재 update에서 처리하고,
+    // 밖에서 들어온 이벤트는 다음에 동작하는 update에서 처리한다.
+    const std::uint64_t step = TimeAccess::stepNumber();
+    return Tick{frame_, TimeAccess::isInStep() ? step : step + 1 };
 }
 
 bool Input::isCurrent(const Tick& tick) const noexcept {

@@ -19,6 +19,7 @@ using meno::Key;
 using meno::MouseButton;
 using meno::Vec2i;
 namespace ev = meno::event;
+using namespace std::chrono_literals;
 
 // 창 없이 한 프레임을 흉내낸다. Window::pollEvents가 하는 일과 같다.
 void frame(Input& input, std::initializer_list<meno::Event> events) {
@@ -26,6 +27,21 @@ void frame(Input& input, std::initializer_list<meno::Event> events) {
     for (const meno::Event& event : events) {
         input.handleEvent(event);
     }
+}
+
+// 가상시계: 생성 시각은 0이고 이후 restart()마다 frameIntervals를 차례로 더해서 돌려준다.
+// 준비한 간격보다 프레임이 더 돌 경우, at()이 예외를 던진다.
+meno::Clock simulatedClock(std::vector<std::chrono::milliseconds> frameIntervals) {
+    return meno::Clock([intervals = std::move(frameIntervals), next = std::size_t{0},
+                        now = meno::Clock::TimePoint{}]()
+                        mutable {
+                            if (next > 0) {
+                                now += intervals.at(next - 1);
+                            }
+                            ++next;
+                            return now;
+                        },
+                        [](meno::Clock::Duration) {});
 }
 
 // --- update 밖: 틱 = 프레임 ---------------------------------------
@@ -239,8 +255,8 @@ class ScriptedApplication final : public meno::Application {
 public:
     using Script = std::vector<std::vector<meno::Event>>;
 
-    explicit ScriptedApplication(Script script)
-        : Application({.fixedTimeStep = 0.01}), script_(std::move(script)) {}
+    explicit ScriptedApplication(Script script, Script updateScript = {})
+        : Application({.fixedTimeStep = 0.01}), script_(std::move(script)), updateScript_(std::move(updateScript)) {}
 
     Input input;
     std::vector<Observation> updates;
@@ -259,7 +275,14 @@ private:
         }
     }
 
-    void update(double) override { updates.push_back(observe()); }
+    void update(double) override {
+        if (const std::size_t i = updates.size(); i < updateScript_.size()) {
+            for (const meno::Event& event : updateScript_[i]) {
+                input.handleEvent(event);
+            }
+        }
+        updates.push_back(observe());
+    }
 
     void render(double) override {
         renders.push_back(observe());
@@ -268,20 +291,12 @@ private:
         }
     }
 
-    Script script_;
+    Script script_, updateScript_;
     std::size_t frame_ = 0;
 };
 
-void testFixedUpdate() {
-    using namespace std::chrono_literals;
-    using TimePoint = meno::Clock::TimePoint;
-
-    // 프레임 간격 4, 10, 30, 30, 10ms라고 가정할 때,
-    // fixedTimeStep이 10ms이므로 프레임마다 update는 각각 0, 1, 3, 3, 1번 동작한다.
-    const std::vector<TimePoint> times{TimePoint{},        TimePoint{} + 4ms,  TimePoint{} + 14ms,
-                                       TimePoint{} + 44ms, TimePoint{} + 74ms, TimePoint{} + 84ms};
-    std::size_t nextTime = 0;
-    meno::Clock clock([&] { return times.at(nextTime++); }, [](meno::Clock::Duration) {});
+void testEventsBeforeUpdate() {
+    auto clock = simulatedClock({4ms, 10ms, 30ms, 30ms, 10ms});
 
     ScriptedApplication app({
         {ev::KeyPressed{Key::Space}, ev::TextEntered{U'a'}, ev::MouseWheelScrolled{1.f, {}}},
@@ -294,8 +309,7 @@ void testFixedUpdate() {
 
     const auto& u = app.updates;
     const auto& r = app.renders;
-    MENO_CHECK(u.size() == 8);
-    MENO_CHECK(r.size() == 5);
+    MENO_CHECK(u.size() == 8 && r.size() == 5);
     if (u.size() != 8 || r.size() != 5) {
         return;
     }
@@ -331,6 +345,41 @@ void testFixedUpdate() {
     MENO_CHECK(r[4].pressed && r[4].released);
 }
 
+void testEventsInUpdate() {
+    auto clock = simulatedClock({0ms, 20ms, 30ms});
+
+    ScriptedApplication app({
+        {ev::TextEntered{U'a'}, {}},
+        {ev::KeyPressed{Key::Space}, ev::TextEntered{U'b'}, ev::MouseWheelScrolled{1.f, {}}},
+        {},
+        {ev::KeyReleased{Key::Space}},
+    });
+    app.run(clock);
+
+    const auto& u = app.updates;
+    const auto& r = app.renders;
+    MENO_CHECK(u.size() == 3 && r.size() == 5);
+    if (u.size() != 3 || r.size() != 2) {
+        return;
+    }
+
+    // update 안에서 넣은 입력은 같은 update에서 보인다.
+    // update 밖에서 넣은 'a'와 같은 update로 묶인다.
+    MENO_CHECK(u[0].down && u[0].pressed);
+    MENO_CHECK(u[0].text == "ab" && u[0].wheel == 1.f);
+
+    // 다음 update는 같은 입력을 다시 보지 않는다.
+    MENO_CHECK(u[1].down && !u[1].pressed);
+    MENO_CHECK(u[1].text.empty() && u[1].wheel == 0.f);
+
+    // release도 마찬가지다.
+    MENO_CHECK(!u[2].down && u[2].released);
+
+    // render는 프레임을 기준으로 판정하므로 update 안에서 넣은 입력도 같은 프레임에서 보인다.
+    MENO_CHECK(r[0].pressed && r[0].text == "ab" && r[0].wheel == 1.f);
+    MENO_CHECK(r[1].released);
+}
+
 // update 한 번을 수행할 수 있는 프레임을 돈 뒤, 해당 update에서 A가 눌렸는지를 검사한다.
 class PressCounter final : public meno::Application {
 public:
@@ -364,14 +413,14 @@ void testRunRestart() {
     Input input;
     frame(input, {ev::KeyPressed{Key::A}});
     PressCounter first(input);
-    meno::Clock firstClock = oneUpdateClock();
+    auto firstClock = simulatedClock({15ms});
     first.run(firstClock);
     MENO_CHECK(first.presses == 1);
 
     // run을 다시 시작해도 update 번호를 0부터 다시 매기지 않는다.
     // 따라서 이전 run에서 본 KeyPressed를 다시 확인하지 않아도 된다.
     PressCounter second(input);
-    meno::Clock secondClock = oneUpdateClock();
+    auto secondClock = simulatedClock({15ms});
     second.run(secondClock);
     MENO_CHECK(second.presses == 0);
 }
@@ -382,12 +431,7 @@ private:
 };
 
 void testStepFlagClearedAfterException() {
-    using namespace std::chrono_literals;
-    using TimePoint = meno::Clock::TimePoint;
-
-    const std::vector<TimePoint> times{TimePoint{}, TimePoint{} + 20ms};
-    std::size_t nextTime = 0;
-    meno::Clock clock([&] { return times.at(nextTime++); }, [](meno::Clock::Duration) {});
+    auto clock = simulatedClock({20ms});
 
     ThrowingApplication app;
     try {
@@ -410,7 +454,8 @@ int main() {
     testText();
     testFocusLost();
     testActions();
-    testFixedUpdate();
+    testEventsBeforeUpdate();
+    testEventsInUpdate();
     testRunRestart();
     testStepFlagClearedAfterException();
     return meno::test::report();
