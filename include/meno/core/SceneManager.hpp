@@ -26,7 +26,7 @@ private:
     void applyPending();
     
 public:
-    static SceneManager& instance();
+    [[nodiscard]] static SceneManager& instance();
 
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;
@@ -34,7 +34,7 @@ public:
     SceneManager& operator=(SceneManager&&) = delete;
 
     /// 비활성 Scene을 생성한다. 참조는 해당 Scene 삭제/shutdown까지 유효하다.
-    Scene& createScene();
+    [[nodiscard]] Scene& createScene();
     [[nodiscard]] Scene* getScene(Scene::SceneID id) noexcept;
     [[nodiscard]] const Scene* getScene(Scene::SceneID id) const noexcept;
     [[nodiscard]] Scene* activeScene() noexcept { return active_; }

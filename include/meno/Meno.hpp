@@ -34,6 +34,7 @@
 #include <meno/core/Clock.hpp>
 #include <meno/core/Time.hpp>
 #include <meno/core/Window.hpp>
+#include <meno/core/SceneManager.hpp>
 
 // --- 씬 -----------------------------------------------------------------
 #include <meno/scene/Collider.hpp>
