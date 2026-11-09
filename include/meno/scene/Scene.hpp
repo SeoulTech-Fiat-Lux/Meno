@@ -4,7 +4,6 @@
 #include <meno/scene/GameObject.hpp>
 
 #include <memory>
-#include <cstdint>
 #include <unordered_map>
 #include <functional>
 
@@ -36,6 +35,11 @@ private:
     UpdateHandler update_handler_;
     ExitHandler exit_handler_;
 
+    using StateDeleter = void (*)(void*);
+    std::unique_ptr<void, StateDeleter> state_{
+        nullptr, +[](void*) {}
+    };
+
 public:
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
@@ -57,6 +61,8 @@ public:
         exit_handler_ = std::move(handler);
     }
 
+private:
+    // SceneManager의 재진입 가드 안에서만 핸들러를 실행한다.
     void onEnter() const {
         if (enter_handler_)
             enter_handler_();
@@ -72,6 +78,7 @@ public:
             exit_handler_();
     }
 
+public:
     GameObject& createGameObject() {
         const GameObject::GameObjectID id = next_id_++;
 
@@ -96,6 +103,20 @@ public:
         for (const auto& obj : objects_) {
             obj.second->draw(renderer);
         }
+    }
+
+    template <typename T>
+    void setState(std::unique_ptr<T> state) {
+        if (state_) {
+            throw std::logic_error("Scene state already exists");
+        }
+
+        state_ = decltype(state_){
+            state.release(),
+            +[](void* ptr) {
+                delete static_cast<T*>(ptr);
+            }
+        };
     }
 };
 
