@@ -119,7 +119,7 @@ inline constexpr float kPi = 3.14159265358979323846f;
     double left = static_cast<double>(ratio.left()) * screenWidth;
     double top = static_cast<double>(ratio.top()) * screenHeight;
     double right = static_cast<double>(ratio.left() + ratio.size.x) * screenWidth;
-    float bottom = static_cast<double>(ratio.top() + ratio.size.y) * screenHeight;
+    double bottom = static_cast<double>(ratio.top() + ratio.size.y) * screenHeight;
     if (!std::isfinite(left) || !std::isfinite(top) || !std::isfinite(right) || !std::isfinite(bottom)) {
         return {};
     }
