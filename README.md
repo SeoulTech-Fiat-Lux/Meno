@@ -144,7 +144,7 @@ if (click) {
 ```cpp
 meno::ResourceManager resources;
 
-auto texture = resources.loadTexture("assets/player.png");
+auto texture = resources.loadTexture("assets/player.png", {.smooth = true});
 if (texture) {
     gameObject.sprite().setTexture(texture);
 }
@@ -155,15 +155,15 @@ if (font) {
 }
 
 auto shotBuffer = resources.loadSoundBuffer("assets/shot.wav");
-if (shotBuffer) {
-    meno::Sound first{shotBuffer};
-    meno::Sound second{shotBuffer};
-    first.play();
-    second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
-}
+// 재생이 끝날 때까지 아래 객체를 유지해야 한다.
+meno::Sound first{shotBuffer};
+meno::Sound second{shotBuffer};
+first.play();
+second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
 ```
 
-동일한 정규화 경로를 다시 요청하면 같은 객체를 가리키는 `shared_ptr`을 반환한다.
+동일한 정규화 경로와 옵션을 다시 요청하면 같은 객체를 가리키는 `shared_ptr`을 반환한다.
+텍스처의 `smooth` 옵션이 다르면 별도의 텍스처로 캐시한다.
 로드 실패는 캐시하지 않으므로 파일을 수정한 뒤 다시 요청할 수 있다.
 
 ## 디렉터리 구조

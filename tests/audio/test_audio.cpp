@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <type_traits>
 
@@ -52,6 +53,12 @@ MusicCommand volatile      musicPlayFunction  = &meno::Music::play;
 } // namespace
 
 int main() {
+    meno::Sound empty{std::shared_ptr<const meno::SoundBuffer>{}};
+    empty.play();
+    MENO_CHECK(!empty.isPlaying());
+    empty.setVolume(0.5F);
+    MENO_CHECK(empty.volume() == 0.5F);
+
     // 빈 컴포넌트는 실제 Sound 구현과 링크하되 장치를 생성하지 않는다.
     meno::Audio audio;
     audio.play();

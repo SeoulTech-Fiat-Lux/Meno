@@ -35,7 +35,9 @@ int soundBufferLoads = 0;
 // ResourceManager의 캐시 로직만 검사하기 위한 최소 테스트 대역이다.
 namespace meno {
 
-struct Texture::Impl {};
+struct Texture::Impl {
+    bool smooth{false};
+};
 Texture::Texture() : impl_(std::make_unique<Impl>()) {}
 Texture::~Texture() = default;
 Texture::Texture(Texture&&) noexcept = default;
@@ -47,6 +49,8 @@ std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& path) 
     }
     return Texture{};
 }
+void Texture::setSmooth(bool smooth) { impl_->smooth = smooth; }
+bool Texture::isSmooth() const { return impl_ != nullptr && impl_->smooth; }
 
 struct Font::Impl {};
 Font::Font() : impl_(std::make_unique<Impl>()) {}
@@ -87,6 +91,22 @@ int main() {
         MENO_CHECK(texture == sameTexture);
         MENO_CHECK(textureLoads == 1);
 
+        const auto smoothTexture =
+            resources.loadTexture("assets/player.png", {.smooth = true});
+        const auto sameSmoothTexture =
+            resources.loadTexture("assets/./player.png", {.smooth = true});
+        MENO_CHECK(smoothTexture != texture);
+        MENO_CHECK(smoothTexture == sameSmoothTexture);
+        MENO_CHECK(smoothTexture->isSmooth());
+        MENO_CHECK(textureLoads == 2);
+
+        const std::filesystem::path unicodePath{u8"assets/\uD55C\uAE00.png"};
+        const auto unicodeTexture = resources.loadTexture(unicodePath);
+        const auto sameUnicodeTexture =
+            resources.loadTexture(unicodePath.parent_path() / "." / unicodePath.filename());
+        MENO_CHECK(unicodeTexture == sameUnicodeTexture);
+        MENO_CHECK(textureLoads == 3);
+
         const auto font = resources.loadFont("assets/main.ttf");
         const auto sameFont = resources.loadFont("assets/./main.ttf");
         MENO_CHECK(font != nullptr);
@@ -103,7 +123,7 @@ int main() {
 
         MENO_CHECK(resources.loadTexture("missing.png") == nullptr);
         MENO_CHECK(resources.loadTexture("missing.png") == nullptr);
-        MENO_CHECK(textureLoads == 3); // 실패는 캐시하지 않아 두 번 모두 로드한다.
+        MENO_CHECK(textureLoads == 5); // 실패는 캐시하지 않아 두 번 모두 로드한다.
 
         MENO_CHECK(resources.loadFont("missing.ttf") == nullptr);
         MENO_CHECK(resources.loadFont("missing.ttf") == nullptr);
@@ -115,7 +135,7 @@ int main() {
     }
 
     // 매니저가 먼저 소멸해도 외부 shared_ptr이 리소스 수명을 유지한다.
-    MENO_CHECK(retainedTexture != nullptr);
+    MENO_CHECK(retainedTexture.use_count() == 1);
 
     return meno::test::report();
 }
