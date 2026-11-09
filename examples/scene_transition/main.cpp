@@ -55,7 +55,7 @@ private:
             elapsed_ += dt;
             object.transform().pos.x =
                 400.f + direction * 180.f * static_cast<float>(std::sin(elapsed_ * 2.0));
-            object.transform().rotation = static_cast<int>(direction * elapsed_ * 90.0);
+            object.transform().rotation = static_cast<float>(direction * elapsed_ * 90.0);
 
             if (elapsed_ >= sceneDuration) {
                 // 콜백 실행 중에는 예약만 한다. update()가 콜백을 마친 뒤
