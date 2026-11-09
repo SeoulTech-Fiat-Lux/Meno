@@ -53,12 +53,12 @@ class Scene; // friend 선언을 위한 전방선언
  */
 class GameObject final {
     friend class Scene;
-
 public:
     using GameObjectID = std::uint64_t;
 
 private:
 // private 멤버변수 필드
+    int layer_{0};
     Transform transform_;
     Sprite sprite_;
 
@@ -84,6 +84,7 @@ public:
     /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
     void draw(Renderer& renderer) const { sprite_.draw(renderer); }
     [[nodiscard]] GameObjectID id() const noexcept { return id_; }
+    [[nodiscard]] int layer() const noexcept { return layer_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.

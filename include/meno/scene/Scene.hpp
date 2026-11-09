@@ -5,7 +5,10 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
+#include <algorithm>
 #include <functional>
+
 
 namespace meno {
 
@@ -25,6 +28,8 @@ private:
     std::unordered_map<
         GameObject::GameObjectID, std::unique_ptr<GameObject>
     > objects_;
+    mutable std::vector<const GameObject*> draw_order_;
+    mutable bool draw_order_dirty_{true};
     GameObject::GameObjectID next_id_{1};
 
     using EnterHandler  = std::function<void()>;
@@ -88,6 +93,7 @@ public:
 
         GameObject& ref = *object;
         objects_.emplace(id, std::move(object));
+        draw_order_dirty_ = true;
 
         return ref;
     }
@@ -99,10 +105,28 @@ public:
     [[nodiscard]]
     bool deleteGameObject(GameObject::GameObjectID) noexcept;
 
-    void drawScene(Renderer& renderer) const { 
-        for (const auto& obj : objects_) {
-            obj.second->draw(renderer);
+    /// 객체가 없으면 false. 실제 레이어 변경 시에만 그리기 순서를 무효화한다.
+    [[nodiscard]] bool setLayer(GameObject::GameObjectID id, int layer) noexcept;
+
+    /// 작은 레이어부터, 같은 레이어는 ID 순으로 그린다.
+    void drawScene(Renderer& renderer) const {
+        if (draw_order_dirty_) {
+            draw_order_.clear();
+            draw_order_.reserve(objects_.size());
+            for (const auto& [id, object] : objects_)
+                draw_order_.push_back(object.get());
+
+            std::sort(draw_order_.begin(), draw_order_.end(),
+                [](const GameObject* a, const GameObject* b) {
+                    if (a->layer() != b->layer())
+                        return a->layer() < b->layer();
+                    return a->id() < b->id();
+                });
+            draw_order_dirty_ = false;
         }
+
+        for (const auto* object : draw_order_)
+            object->draw(renderer);
     }
 
     template <typename T>
