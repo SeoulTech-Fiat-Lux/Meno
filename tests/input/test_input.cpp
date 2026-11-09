@@ -350,7 +350,8 @@ void testEventsInUpdate() {
 
     ScriptedApplication app(
         {
-            {ev::TextEntered{U'a'}, {}},
+            {ev::TextEntered{U'a'}},
+            {},
         },
         {
             {ev::KeyPressed{Key::Space}, ev::TextEntered{U'b'}, ev::MouseWheelScrolled{1.f, {}}},
@@ -361,7 +362,7 @@ void testEventsInUpdate() {
 
     const auto& u = app.updates;
     const auto& r = app.renders;
-    MENO_CHECK(u.size() == 3 && r.size() == 5);
+    MENO_CHECK(u.size() == 3 && r.size() == 2);
     if (u.size() != 3 || r.size() != 2) {
         return;
     }
