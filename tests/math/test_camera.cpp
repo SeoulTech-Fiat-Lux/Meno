@@ -180,6 +180,17 @@ void checkViewport() {
     check(a.left() == 0.f && a.right() == b.left() && b.right() == c.left() && c.right() == 640.f,
           "3등분 뷰포트: 맞닿은 경계가 같아 틈이 없다");
 
+    // 비율 경계가 같으면 비균등 분할에서도 틈이나 겹침이 없다.
+    // 픽셀 단위에서 left + width를 반올림하면 아래 값들에서 1픽셀 틈(1614/1615)과 겹침(3154/3153)이 생겼다.
+    struct Split { unsigned screen; float left; float width; };
+    for (const Split s : {Split{3626u, 0.339933515f, 0.105322957f}, Split{3529u, 0.415888608f, 0.477707267f}}) {
+        const float boundary = s.left + s.width;
+        const Camera2D lhs{.viewport = {s.left, 0.f, s.width, 1.f}, .fit = CameraFit::Stretch};
+        const Camera2D rhs{.viewport = {boundary, 0.f, 1.f - boundary, 1.f}, .fit = CameraFit::Stretch};
+        check(viewportPixels(lhs, {s.screen, 100u}).right() == viewportPixels(rhs, {s.screen, 100u}).left(),
+          "비균등 분할: 맞닿은 경계가 같다");
+    }
+
     bool integral = true;
     for (const Rectf& r : {a, b, c}) {
         integral = integral && r.left() == std::round(r.left()) && r.size.x == std::round(r.size.x);
@@ -227,6 +238,14 @@ void checkLetterbox() {
     check(same(viewportPixels({.size = {320.f, 180.f}, .fit = CameraFit::Stretch}, {800u, 800u}),
                Rectf{0.f, 0.f, 800.f, 800.f}),
           "Stretch: 뷰포트를 꽉 채운다");
+
+    // 아주 작은 size: float로 나누면 무한대가 되어 NaN이 나왔다. double로 계산하므로 정상적인 레터박스가 나온다.
+    check(same(viewportPixels({.size = {1e-36f, 1e-36f}}, kScreen), Rectf{100.f, 0.f, 600.f, 600.f}),
+      "Letterbox: 아주 작은 size에서도 넘치지 않는다");
+
+    // 극단적인 종횡비: 결과가 유한하다. (높이가 0으로 줄어 빈 영역이 된다)
+    const Rectf extreme = viewportPixels({.size = {1e38f, 1e-38f}}, kScreen);
+    check(finite(extreme.position) && finite(extreme.size), "Letterbox: 극단적인 종횡비에서도 NaN이나 무한대가 없다");
 
     // size가 {0,0}이면 맞출 종횡비가 없으므로 Stretch와 같다.
     check(same(viewportPixels({.fit = CameraFit::Letterbox}, kScreen), Rectf{0.f, 0.f, 800.f, 600.f}),

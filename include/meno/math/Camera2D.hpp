@@ -113,33 +113,40 @@ inline constexpr float kPi = 3.14159265358979323846f;
 // viewport에 NaN이나 무한대가 있거나 크기가 음수면 빈 사각형이 되어 아무것도 그려지지 않는다.
 [[nodiscard]] inline Rectf viewportPixels(const Camera2D& camera, Vec2u framebuffer) {
     const Rectf& ratio = camera.viewport;
-    const auto screen = static_cast<Vec2f>(framebuffer);
+    const double screenWidth = framebuffer.x;
+    const double screenHeight = framebuffer.y;
 
-    float left = ratio.left() * screen.x;
-    float top = ratio.top() * screen.y;
-    float width = std::max(ratio.size.x * screen.x, 0.f);
-    float height = std::max(ratio.size.y * screen.y, 0.f);
-    if (!std::isfinite(left) || !std::isfinite(top) || !std::isfinite(width) || !std::isfinite(height)) {
+    double left = static_cast<double>(ratio.left()) * screenWidth;
+    double top = static_cast<double>(ratio.top()) * screenHeight;
+    double right = static_cast<double>(ratio.left() + ratio.size.x) * screenWidth;
+    float bottom = static_cast<double>(ratio.top() + ratio.size.y) * screenHeight;
+    if (!std::isfinite(left) || !std::isfinite(top) || !std::isfinite(right) || !std::isfinite(bottom)) {
         return {};
     }
+    // 크기가 음수면 빈 사각형.
+    right = std::max(right, left);
+    bottom = std::max(bottom, top);
 
     if (camera.fit == CameraFit::Letterbox && detail::isPositiveFinite(camera.size.x) &&
         detail::isPositiveFinite(camera.size.y)) {
         // 두 축 중 덜 늘어나는 쪽에 맞춰야 size 전체가 뷰포트 안에 들어간다.
-        const float scale = std::min(width / camera.size.x, height / camera.size.y);
-        const float fittedWidth = camera.size.x * scale;
-        const float fittedHeight = camera.size.y * scale;
-        left += (width - fittedWidth) / 2.f;
-        top += (height - fittedHeight) / 2.f;
-        width = fittedWidth;
-        height = fittedHeight;
+        const double width = right - left;
+        const double height = bottom - top;
+        const double scale = std::min(width / camera.size.x, height / camera.size.y);
+        const double fittedWidth = camera.size.x * scale;
+        const double fittedHeight = camera.size.y * scale;
+        left += (width - fittedWidth) / 2.0;
+        top += (height - fittedHeight) / 2.0;
+        right = left + fittedWidth;
+        bottom = top + fittedHeight;
     }
 
-    const float roundedLeft = std::round(left);
-    const float roundedTop = std::round(top);
-    const float roundedRight = std::max(std::round(left + width), roundedLeft);
-    const float roundedBottom = std::max(std::round(top + height), roundedTop);
-    return Rectf{roundedLeft, roundedTop, roundedRight - roundedLeft, roundedBottom - roundedTop};
+    const double roundedLeft = std::round(left);
+    const double roundedTop = std::round(top);
+    const double roundedRight = std::max(std::round(right), roundedLeft);
+    const double roundedBottom = std::max(std::round(bottom), roundedTop);
+    return Rectf{static_cast<float>(roundedLeft), static_cast<float>(roundedTop),
+                static_cast<float>(roundedRight - roundedLeft), static_cast<float>(roundedBottom - roundedTop)};
 }
 
 // 회전을 적용하기 전, 카메라가 담는 월드 사각형. center를 중심으로 하고 크기는 size / zoom이다.
