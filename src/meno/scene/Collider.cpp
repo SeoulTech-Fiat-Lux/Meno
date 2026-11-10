@@ -86,6 +86,16 @@ bool intersects_circle_circle(const CircleCollider& a, const CircleCollider& b) 
 }
 } // namespace
 
+bool BoxCollider::contains(Vec2f worldPoint) const {
+    if (!valid(*this))
+        return false;
+
+    const auto bounds = worldBox(*this);
+    const Vec2f delta = worldPoint - bounds.center;
+    return std::abs(dot(delta, bounds.xAxis)) < bounds.halfSize.x
+        && std::abs(dot(delta, bounds.yAxis)) < bounds.halfSize.y;
+}
+
 bool intersects(const GameObject& a, const GameObject& b) {
 
     if (const auto* boxA = a.getComponent<BoxCollider>()) {

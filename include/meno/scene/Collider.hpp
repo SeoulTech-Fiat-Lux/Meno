@@ -32,6 +32,12 @@ struct BoxCollider final : public Collider {
 
     BoxCollider() = default;
     BoxCollider(const Vec2f& offset, const Vec2f& size) : Collider(offset), size(size) {}
+
+    /// 월드 좌표의 점이 내부에 있는지 검사한다. 모든 변과 꼭짓점은 제외한다.
+    /// 부모 Transform의 위치, 회전, 균일 배율(음수 포함)과 offset을 반영한다.
+    /// 부모가 없거나 크기가 0 이하이거나 배율이 0/비유한이면 false이다.
+    /// isTrigger와 layer는 필터링하지 않는다.
+    [[nodiscard]] bool contains(Vec2f worldPoint) const;
 };
 
 /// <summary>
