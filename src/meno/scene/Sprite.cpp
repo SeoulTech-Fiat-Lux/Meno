@@ -15,7 +15,7 @@ SpriteParams Sprite::drawParams() const {
     if (parent != nullptr) {
         const auto& transform = parent->transform();
         params.position = transform.transformPoint(offset);
-        params.rotation = static_cast<float>(transform.rotation % 360);
+        params.rotation = std::fmod(transform.rotation, 360.f);
         const float scale = transform.magnitude;
         params.scale = {scale, scale};
     }

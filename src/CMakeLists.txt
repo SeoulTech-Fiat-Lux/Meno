@@ -17,8 +17,10 @@
 add_library(meno STATIC
         meno/audio/Music.cpp
         meno/audio/Sound.cpp
+        meno/audio/SoundBuffer.cpp
         meno/core/Application.cpp
         meno/scene/Audio.cpp
+        meno/core/SceneManager.cpp
         meno/core/Clock.cpp
         meno/core/Time.cpp
         meno/core/Window.cpp
@@ -32,6 +34,7 @@ add_library(meno STATIC
         meno/graphics/Texture.cpp
         meno/input/Input.cpp
         meno/sfml_backend/InputConvert.cpp
+        meno/resources/ResourceManager.cpp
 )
 add_library(meno::meno ALIAS meno)
 

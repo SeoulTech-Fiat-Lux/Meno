@@ -44,6 +44,14 @@ cmake --build build
 ./build/examples/meno_example_input_demo
 ```
 
+자동 이동·점프 예제: `./build/examples/meno_example_jumping_box`
+— 바닥과 상자 GameObject를 만들고, 상자가 좌우로 왕복하며 점프한다.
+[예제 안내](examples/jumping_box/README.md)에서 구성과 조절 가능한 값을 확인할 수 있다.
+
+씬 전환 예제: `./build/examples/meno_example_scene_transition`
+— 파란 씬과 주황 씬이 3초마다 전환된다.
+콜백 흐름과 빌드 방법은 [씬 전환 예제 안내](examples/scene_transition/README.md)를 참고한다.
+
 테스트:
 
 ```bash
@@ -95,8 +103,8 @@ int main() {
 
 ## 오디오
 
-짧은 효과음은 파일 전체를 메모리에 올리는 `Sound`, 긴 배경음악은 파일에서
-스트리밍하는 `Music`을 사용한다. 둘 다 복사할 수 없고 이동할 수 있으며, 볼륨은
+짧은 효과음은 파일 전체를 메모리에 올리는 `SoundBuffer`와 이를 재생하는 `Sound`,
+긴 배경음악은 파일에서 스트리밍하는 `Music`을 사용한다. 이 타입들은 복사할 수 없고 이동할 수 있으며, 볼륨은
 `0.0f`(무음)부터 `1.0f`(최대)까지 지정한다.
 
 ```cpp
@@ -116,6 +124,10 @@ if (bgm) {
 `Sound`와 `Music` 객체가 소멸하면 재생도 즉시 중단된다. 따라서 다음처럼 임시
 객체에서 바로 `play()`를 호출하지 말고, 재생이 끝날 때까지 지역 변수나 게임 객체의
 멤버로 보관해야 한다.
+
+`Sound::loadFromFile()`은 단독 사용을 위한 편의 함수라 호출할 때마다 파일을 로드한다.
+같은 효과음을 여러 재생 객체가 공유해야 하면 아래의 `ResourceManager`에서
+`SoundBuffer`를 불러와 각각의 `Sound`에 전달한다.
 
 ```cpp
 // 잘못된 예: 문장이 끝날 때 임시 객체가 소멸하여 소리가 재생되지 않는다.
@@ -169,6 +181,37 @@ if (input.wasActionPressed("jump")) { /* Space를 누른 채 W를 더 눌러도 
 
 포커스를 잃었을 때, 텍스트 입력, 액션 판정 규칙은 [docs/input-api.md](docs/input-api.md)에 있다.
 
+## 리소스 캐시
+
+`ResourceManager`는 같은 경로의 `Texture`, `Font`, `SoundBuffer`를 한 번만 로드하고 공유한다.
+성공하면 `std::shared_ptr<const T>`, 실패하면 빈 `shared_ptr`을 반환한다. 반환된
+리소스는 매니저가 소멸해도 이를 참조하는 `shared_ptr`이 남아 있는 동안 유지된다.
+
+```cpp
+meno::ResourceManager resources;
+
+auto texture = resources.loadTexture("assets/player.png", {.smooth = true});
+if (texture) {
+    gameObject.sprite().setTexture(texture);
+}
+
+auto font = resources.loadFont("assets/main.ttf");
+if (font) {
+    renderer.drawText(*font, "Hello", {10.0f, 10.0f});
+}
+
+auto shotBuffer = resources.loadSoundBuffer("assets/shot.wav");
+// 재생이 끝날 때까지 아래 객체를 유지해야 한다.
+meno::Sound first{shotBuffer};
+meno::Sound second{shotBuffer};
+first.play();
+second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
+```
+
+동일한 정규화 경로와 옵션을 다시 요청하면 같은 객체를 가리키는 `shared_ptr`을 반환한다.
+텍스처의 `smooth` 옵션이 다르면 별도의 텍스처로 캐시한다.
+로드 실패는 캐시하지 않으므로 파일을 수정한 뒤 다시 요청할 수 있다.
+
 ## 디렉터리 구조
 
 ```
@@ -177,7 +220,8 @@ include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   core/             Window, Application, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
-  audio/            Sound, Music
+  resources/        ResourceManager
+  audio/            SoundBuffer, Sound, Music
   input/            Input, Key, MouseButton, Event
   scene/            Scene, GameObject, Component와 파생 Components
 src/meno/         구현 — 사용자에게 배포되지 않는다

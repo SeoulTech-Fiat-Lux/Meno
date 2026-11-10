@@ -22,6 +22,7 @@
 // --- 오디오 ---------------------------------------------------------------
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
+#include <meno/audio/SoundBuffer.hpp>
 
 // --- 그래픽 ---------------------------------------------------------------
 #include <meno/graphics/DrawParams.hpp>
@@ -29,11 +30,15 @@
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
 
+// --- 리소스 ---------------------------------------------------------------
+#include <meno/resources/ResourceManager.hpp>
+
 // --- 코어 -----------------------------------------------------------------
 #include <meno/core/Application.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/core/Time.hpp>
 #include <meno/core/Window.hpp>
+#include <meno/core/SceneManager.hpp>
 
 // --- 입력 -----------------------------------------------------------------
 #include <meno/input/Event.hpp>
@@ -50,6 +55,5 @@
 #include <meno/scene/Sprite.hpp>
 
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
-//   #include <meno/resources/ResourceManager.hpp>
 
 #endif  // MENO_HPP

@@ -20,3 +20,8 @@ meno_add_example(gameobject_demo)
 
 # 키보드·마우스 폴링과 액션 매핑. Application의 update에서 입력을 읽는다.
 meno_add_example(input_demo)
+# SceneManager의 콜백과 예약 전환을 보여주는 자동 전환 예제.
+meno_add_example(scene_transition)
+
+# 바닥과 상자 GameObject, 충돌 판정으로 자동 이동/점프를 구성한다.
+meno_add_example(jumping_box)

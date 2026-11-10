@@ -67,6 +67,44 @@ std::optional<meno::Font> findSystemFont() {
     return std::nullopt;
 }
 
+/// 월드에 놓인 것들을 그린다. 메인 카메라와 미니맵이 같은 월드를 서로 다른 카메라로 비춘다.
+void drawWorld(meno::Renderer& renderer, const meno::Texture& checker, double elapsed) {
+    // 기준선. 원점이 어디인지 보여준다.
+    renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, meno::colors::Gray, 1.f);
+    renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, meno::colors::Gray, 1.f);
+
+    // 도형: 채우기 + 외곽선
+    renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
+                      {.fill = meno::Color::fromRgb(0x4C6EF5),
+                       .outline = meno::colors::White,
+                       .outlineThickness = 2.f});
+
+    renderer.drawCircle({-260.f, 120.f}, 45.f,
+                        {.fill = meno::Color::fromRgb(0x51CF66),
+                         .outline = meno::colors::Black,
+                         .outlineThickness = 3.f});
+
+    // 스프라이트: 중심 회전 + 확대
+    // origin을 텍스처 크기의 절반으로 두면 제자리에서 돈다.
+    const auto textureSize = static_cast<meno::Vec2f>(checker.size());
+    renderer.draw(checker, {.position = {0.f, 0.f},
+                            .origin = textureSize / 2.f,
+                            .scale = {10.f, 10.f},
+                            .rotation = static_cast<float>(elapsed * 45.0)});
+
+    // 같은 텍스처를 tint와 반투명으로 재사용
+    renderer.draw(checker, {.position = {200.f, -80.f},
+                            .origin = textureSize / 2.f,
+                            .scale = {6.f, 6.f},
+                            .tint = meno::colors::Cyan.withAlpha(160)});
+
+    // 좌우 반전
+    renderer.draw(checker, {.position = {200.f, 100.f},
+                            .origin = textureSize / 2.f,
+                            .scale = {6.f, 6.f},
+                            .flipX = true});
+}
+
 } // namespace
 
 int main() {
@@ -85,52 +123,46 @@ int main() {
 
         window.pollEvents();
 
+        // 창 크기를 바꿔도 따로 할 일이 없다. beginFrame이 지금 창 크기로 카메라를 다시 적용한다.
         renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
 
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
-        meno::Camera2D camera;
-        camera.center = {0.f, 0.f};
-        camera.zoom =
-            1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7));
+        // size를 정하지 않았으므로 1월드유닛 = 1픽셀이다. 창을 키우면 월드가 더 넓게 보인다.
+        // 카메라가 시계 방향으로 돌면 화면 속 월드는 반시계 방향으로 돈다.
+        const meno::Camera2D camera{
+            .center = {0.f, 0.f},
+            .zoom = 1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7)),
+            .rotation = 12.f * static_cast<float>(std::sin(elapsed * 0.4))};
         renderer.setCamera(camera);
+        drawWorld(renderer, checker, elapsed);
 
-        // 기준선. 원점이 어디인지 보여준다.
-        renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, meno::colors::Gray, 1.f);
-        renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, meno::colors::Gray, 1.f);
-
-        // 도형: 채우기 + 외곽선
-        renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
-                          {.fill = meno::Color::fromRgb(0x4C6EF5),
-                           .outline = meno::colors::White,
-                           .outlineThickness = 2.f});
-
-        renderer.drawCircle({-260.f, 120.f}, 45.f,
-                            {.fill = meno::Color::fromRgb(0x51CF66),
-                             .outline = meno::colors::Black,
-                             .outlineThickness = 3.f});
-
-        // 스프라이트: 중심 회전 + 확대
-        // origin을 텍스처 크기의 절반으로 두면 제자리에서 돈다.
-        const auto textureSize = static_cast<meno::Vec2f>(checker.size());
-        renderer.draw(checker, {.position = {0.f, 0.f},
-                                .origin = textureSize / 2.f,
-                                .scale = {10.f, 10.f},
-                                .rotation = static_cast<float>(elapsed * 45.0)});
-
-        // 같은 텍스처를 tint와 반투명으로 재사용
-        renderer.draw(checker, {.position = {200.f, -80.f},
-                                .origin = textureSize / 2.f,
-                                .scale = {6.f, 6.f},
-                                .tint = meno::colors::Cyan.withAlpha(160)});
-
-        // 좌우 반전
-        renderer.draw(checker, {.position = {200.f, 100.f},
-                                .origin = textureSize / 2.f,
-                                .scale = {6.f, 6.f},
-                                .flipX = true});
+        // --- 미니맵: 화면 우상단의 작은 뷰포트 ----------------------------
+        // 월드 1920x1080을 16:9 고정 비율로 담는다. 창의 종횡비가 달라도 Letterbox가 비율을 지키고 남는 부분은 비운다.
+        const meno::Camera2D minimap{.center = {0.f, 0.f},
+                                     .size = {1920.f, 1080.f},
+                                     .viewport = {0.70f, 0.03f, 0.27f, 0.27f},
+                                     .fit = meno::CameraFit::Letterbox};
+        renderer.setCamera(minimap);
+        // 뷰포트 밖으로는 그려지지 않는다. 아주 큰 사각형으로 미니맵 배경만 칠할 수 있다.
+        renderer.drawRect({{-5000.f, -5000.f}, {10000.f, 10000.f}},
+                          {.fill = meno::Color::fromRgb(0x10141C)});
+        drawWorld(renderer, checker, elapsed);
+        // 메인 카메라가 지금 보고 있는 영역. 회전하면 그것을 감싸는 사각형이 된다.
+        // math/Camera2D.hpp의 함수는 Renderer 없이도 같은 규칙으로 계산한다.
+        renderer.drawRect(meno::visibleWorldBounds(camera, renderer.framebufferSize()),
+                          {.fill = meno::colors::Transparent,
+                           .outline = meno::colors::Yellow,
+                           .outlineThickness = 16.f});
 
         // --- UI: 카메라를 되돌려 화면 좌표로 그린다 ----------------------
+        // 화면 좌표는 창 크기를 따라간다. 창을 키워도 UI가 늘어나지 않는다.
         renderer.resetCamera();
+
+        // 미니맵 테두리. viewportPixels는 미니맵이 실제로 차지한 픽셀(레터박스 반영)을 돌려준다.
+        renderer.drawRect(meno::viewportPixels(minimap, renderer.framebufferSize()),
+                          {.fill = meno::colors::Transparent,
+                           .outline = meno::colors::White,
+                           .outlineThickness = 1.f});
 
         if (font) {
             const meno::TextParams title{.characterSize = 20,
@@ -144,7 +176,7 @@ int main() {
             // {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는 아래쪽이 몇 픽셀 어긋난다.
             const meno::TextParams hint{.characterSize = 14,
                                          .color = meno::colors::Gray};
-            const char* hintText = "카메라 줌이 자동으로 변합니다";
+            const char* hintText = "카메라가 자동으로 줌·회전합니다. 창 크기를 바꿔 보세요";
             const meno::Rectf hintBounds = renderer.measureTextBounds(*font, hintText, hint);
             const auto screen = static_cast<meno::Vec2f>(renderer.framebufferSize());
             const meno::Vec2f inkBottomRight{hintBounds.right(), hintBounds.bottom()};
