@@ -1,11 +1,13 @@
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
+#include <meno/audio/SoundBuffer.hpp>
 #include <meno/scene/Audio.hpp>
 
 #include "audio/Volume.hpp"
 
 #include <filesystem>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <type_traits>
 
@@ -16,6 +18,11 @@ static_assert(!std::is_copy_assignable_v<meno::Sound>);
 static_assert(std::is_nothrow_move_constructible_v<meno::Sound>);
 static_assert(std::is_nothrow_move_assignable_v<meno::Sound>);
 
+static_assert(!std::is_copy_constructible_v<meno::SoundBuffer>);
+static_assert(!std::is_copy_assignable_v<meno::SoundBuffer>);
+static_assert(std::is_nothrow_move_constructible_v<meno::SoundBuffer>);
+static_assert(std::is_nothrow_move_assignable_v<meno::SoundBuffer>);
+
 static_assert(!std::is_copy_constructible_v<meno::Music>);
 static_assert(!std::is_copy_assignable_v<meno::Music>);
 static_assert(std::is_nothrow_move_constructible_v<meno::Music>);
@@ -23,6 +30,8 @@ static_assert(std::is_nothrow_move_assignable_v<meno::Music>);
 
 static_assert(std::is_same_v<decltype(meno::Sound::loadFromFile(std::filesystem::path{})),
                              std::optional<meno::Sound>>);
+static_assert(std::is_same_v<decltype(meno::SoundBuffer::loadFromFile(std::filesystem::path{})),
+                             std::optional<meno::SoundBuffer>>);
 static_assert(std::is_same_v<decltype(meno::Music::openFromFile(std::filesystem::path{})),
                              std::optional<meno::Music>>);
 
@@ -30,11 +39,13 @@ namespace {
 
 // 구현 심볼을 참조해 meno와 SFML::Audio가 실제로 링크되는지 빌드 단계에서 검사한다.
 using SoundLoadFunction = std::optional<meno::Sound> (*)(const std::filesystem::path&);
+using BufferLoadFunction = std::optional<meno::SoundBuffer> (*)(const std::filesystem::path&);
 using MusicOpenFunction = std::optional<meno::Music> (*)(const std::filesystem::path&);
 using SoundCommand      = void (meno::Sound::*)();
 using MusicCommand      = void (meno::Music::*)();
 
 SoundLoadFunction volatile soundLoadFunction = &meno::Sound::loadFromFile;
+BufferLoadFunction volatile bufferLoadFunction = &meno::SoundBuffer::loadFromFile;
 MusicOpenFunction volatile musicOpenFunction = &meno::Music::openFromFile;
 SoundCommand volatile      soundPlayFunction  = &meno::Sound::play;
 MusicCommand volatile      musicPlayFunction  = &meno::Music::play;
@@ -42,6 +53,12 @@ MusicCommand volatile      musicPlayFunction  = &meno::Music::play;
 } // namespace
 
 int main() {
+    meno::Sound empty{std::shared_ptr<const meno::SoundBuffer>{}};
+    empty.play();
+    MENO_CHECK(!empty.isPlaying());
+    empty.setVolume(0.5F);
+    MENO_CHECK(empty.volume() == 0.5F);
+
     // 빈 컴포넌트는 실제 Sound 구현과 링크하되 장치를 생성하지 않는다.
     meno::Audio audio;
     audio.play();

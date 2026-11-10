@@ -9,6 +9,7 @@
 #   tests/core/      -- Application, Clock, Time
 #   tests/graphics/  -- Renderer, Texture, Font
 #   tests/audio/     -- Sound, Music
+#   tests/resources/ -- Texture, Font 캐시
 #   tests/scene/     -- Scene, GameObject, Component, Collider
 
 # 테스트를 추가할 때는 대상 코드가 무엇에 의존하는지에 따라 아래 셋 중 하나를 고른다.
@@ -58,6 +59,7 @@ add_subdirectory(audio)
 add_subdirectory(core)
 add_subdirectory(graphics)
 add_subdirectory(math)
+add_subdirectory(resources)
 add_subdirectory(scene)
 
 # ---------------------------------------------------------------------------
