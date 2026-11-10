@@ -1,7 +1,7 @@
 #include <meno/scene/Component.hpp>
 #include <meno/scene/Sprite.hpp>
 #include <meno/scene/GameObject.hpp>
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include "check.hpp"
 
@@ -40,7 +40,8 @@ int main() {
     static_assert(!CanAddComponent<meno::Transform>);
     static_assert(!CanAddComponent<meno::Sprite>);
 
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
     meno::GameObject& object = scene.createGameObject();
     MENO_CHECK(object.transform().parent == &object);
     meno::Sprite sprite(&object);
@@ -118,6 +119,21 @@ int main() {
     MENO_CHECK(object.sprite().drawParams().position == object.transform().pos);
     MENO_CHECK(object.sprite().drawParams().scale == meno::Vec2f{});
 
+    static_assert(std::is_same_v<decltype(meno::Transform::rotation), float>);
+    object.transform().rotation = 0.f;
+    for (int frame = 0; frame < 60; ++frame)
+        object.transform().rotation += 90.f * (1.f / 60.f);
+    MENO_CHECK(std::abs(object.transform().rotation - 90.f) < 0.0001f);
+    for (float angle : {361.5f, -361.5f}) {
+        object.transform().rotation = angle;
+        const float expected = angle > 0.f ? 1.5f : -1.5f;
+        MENO_CHECK(std::abs(object.sprite().drawParams().rotation - expected) < 0.0001f);
+        const auto direction = object.transform().rotateVector({1.f, 0.f});
+        const float radians = expected * std::numbers::pi_v<float> / 180.f;
+        MENO_CHECK(std::abs(direction.x - std::cos(radians)) < 0.0001f);
+        MENO_CHECK(std::abs(direction.y - std::sin(radians)) < 0.0001f);
+    }
+
     detachedSprite.offset = {-10.f, 20.f};
     MENO_CHECK(detachedSprite.drawParams().position == meno::Vec2f{-10.f, 20.f});
 
@@ -145,5 +161,6 @@ int main() {
     MENO_CHECK(constObject->getComponent<Health>() != nullptr);
     MENO_CHECK(constObject->getComponent<Health>()->value == 25);
 
+    MENO_CHECK(manager.shutdown());
     return meno::test::report();
 }
