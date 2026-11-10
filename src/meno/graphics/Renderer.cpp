@@ -14,6 +14,7 @@
 #include <SFML/Graphics/View.hpp>
 
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace meno {
@@ -60,6 +61,28 @@ struct Renderer::Impl {
     // 생성자가 nullptr을 거부하며, 동시에 이동을 막아 Renderer의 빈 껍데기는 생기지 않기 때문이다.
     // 그래서 아래 맴버 함수들은 검사 없이 역참조한다. (impl_이 nullptr이면 target도 nullptr이므로, 둘 중 하나만 검사해도 된다.)
     sf::RenderWindow* target{nullptr};
+
+    // 마지막으로 setCamera한 카메라. 비어 있으면 resetCamera() 상태(화면 좌표)다.
+    // sf::View로 바꿔 던지지 않고 원본을 기억해야, 창 크기가 바뀐 뒤에도 같은 규칙으로 다시 계산할 수 있다.
+    std::optional<Camera2D> camera;
+
+    // 지금 그리기와 좌표 계산에 쓸 카메라.
+    // 화면 좌표는 "center가 창 크기의 절반이고 size가 {0,0}인 카메라"로 표현한다. 픽셀 좌표 == 월드 좌표가 된다.
+    // SFML의 getDefaultView()는 창을 만들 때 한 번만 정해져 리사이즈를 따라가지 않으므로 쓰지 않는다.
+    [[nodiscard]] Camera2D activeCamera() const {
+        if (camera) {
+            return *camera;
+        }
+        return Camera2D{.center = static_cast<Vec2f>(framebuffer()) / 2.f};
+    }
+
+    // 창 크기는 Window::pollEvents가 SFML 이벤트를 꺼낼 때 SFML이 갱신한다.
+    [[nodiscard]] Vec2u framebuffer() const { return backend::fromSf(target->getSize()); }
+
+    // 현재 카메라를 현재 창 크기로 SFML에 적용한다.
+    // 크기가 그대로인지 비교해 건너뛰지 않는다. Core가 같은 크기로 창을 다시 만들면(sf::RenderWindow::create)
+    // SFML의 뷰가 기본값으로 돌아가는데, 크기 비교로는 이를 알아챌 수 없다. setView는 값만 바꾸므로 싸다.
+    void applyView() { target->setView(backend::toSfView(activeCamera(), framebuffer())); }
 };
 
 Renderer::Renderer(Window& window) : impl_(std::make_unique<Impl>()) {
@@ -76,6 +99,8 @@ Renderer::~Renderer() = default;
 // --- 프레임 ---------------------------------------------------------------
 
 void Renderer::beginFrame(Color clearColor) {
+    // 직전 프레임 이후 창 크기가 바뀌었을 수 있다. 리사이즈를 따로 통지받지 않고 매 프레임 다시 적용한다.
+    impl_->applyView();
     impl_->target->clear(backend::toSf(clearColor));
 }
 
@@ -198,57 +223,39 @@ Rectf Renderer::measureTextBounds(const Font& font, std::string_view text,
 }
 
 // --- 카메라 ---------------------------------------------------------------
+// 계산은 math/Camera2D.hpp의 자유 함수가 한다. 그리기(toSfView)도 같은 함수를 쓰므로 둘은 항상 일치한다.
+// 자유 함수는 이 클래스의 멤버와 이름이 같아서, 멤버 안에서 그냥 부르면 멤버 자신이 불린다. 반드시 meno::를 붙인다.
 
 void Renderer::setCamera(const Camera2D& camera) {
-    // size가 {0,0}이면 프레임버퍼 크기를 써서 1픽셀 = 1월드유닛이 된다.
-    Vec2f viewSize = camera.size;
-    if (viewSize.x <= 0.f || viewSize.y <= 0.f) {
-        viewSize = static_cast<Vec2f>(framebufferSize());
-    }
-
-    const float zoom = camera.zoom > 0.f ? camera.zoom : 1.f;
-    viewSize /= zoom;
-
-    sf::View view{backend::toSf(camera.center), backend::toSf(viewSize)};
-    view.setRotation(backend::toSfAngle(camera.rotation));
-
-    impl_->target->setView(view);
+    impl_->camera = camera;
+    impl_->applyView();
 }
 
 void Renderer::resetCamera() {
-    impl_->target->setView(impl_->target->getDefaultView());
+    impl_->camera.reset();
+    impl_->applyView();
+}
+
+std::optional<Camera2D> Renderer::camera() const {
+    return impl_->camera;
 }
 
 Vec2f Renderer::worldToScreen(Vec2f worldPoint) const {
-    const sf::Vector2i pixel = impl_->target->mapCoordsToPixel(backend::toSf(worldPoint));
-    return Vec2f{static_cast<float>(pixel.x), static_cast<float>(pixel.y)};
+    return meno::worldToScreen(impl_->activeCamera(), impl_->framebuffer(), worldPoint);
 }
 
 Vec2f Renderer::screenToWorld(Vec2f screenPoint) const {
-    const sf::Vector2i pixel{static_cast<int>(screenPoint.x), static_cast<int>(screenPoint.y)};
-    return backend::fromSf(impl_->target->mapPixelToCoords(pixel));
+    return meno::screenToWorld(impl_->activeCamera(), impl_->framebuffer(), screenPoint);
 }
 
 Rectf Renderer::visibleWorldBounds() const {
-    const sf::View& view = impl_->target->getView();
-    const Vec2f size = backend::fromSf(view.getSize());
-    const Vec2f center = backend::fromSf(view.getCenter());
-
-    // 뷰가 θ만큼 회전하면, 화면에 보이는 영역은 size짜리의 사각형을 center 기준으로 돌린 모양이 된다.
-    // 이때 그 사각형을 감싸는 축 정렬 사각형의 크기를 계산하면 아래와 같이 폭과 넓이가 나온다.
-    // θ == 0이면 cosAbs == 1, sinAbs == 0이므로 size 그대로 나온다.
-    const float radians = view.getRotation().asRadians();
-    const float cosAbs = std::abs(std::cos(radians));
-    const float sinAbs = std::abs(std::sin(radians));
-    const Vec2f extent{size.x * cosAbs + size.y * sinAbs, size.x * sinAbs + size.y * cosAbs};
-
-    return Rectf{center - extent / 2.f, extent};
+    return meno::visibleWorldBounds(impl_->activeCamera(), impl_->framebuffer());
 }
 
 // --- 정보 -----------------------------------------------------------------
 
 Vec2u Renderer::framebufferSize() const {
-    return backend::fromSf(impl_->target->getSize());
+    return impl_->framebuffer();
 }
 
 } // namespace meno

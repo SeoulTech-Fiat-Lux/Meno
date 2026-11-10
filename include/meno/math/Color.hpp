@@ -1,7 +1,6 @@
 #ifndef MENO_COLOR_HPP
 #define MENO_COLOR_HPP
 
-#include <cassert>
 #include <cstdint>
 
 namespace meno {
