@@ -8,6 +8,7 @@
 
 namespace meno {
 
+class Input;
 namespace backend {
 struct WindowAccess;
 }
@@ -44,10 +45,16 @@ public:
     [[nodiscard]] bool isOpen() const;
     void close();
 
-    /// OS 이벤트를 처리한다. 지금은 닫기 버튼만 다룬다.
-    /// 실제 입력 처리는 Input 서비스 담당자가 가져갈 부분.
+    /// OS 이벤트를 처리한다. 닫기 버튼은 창을 닫고, 입력 이벤트는 Input으로 넘긴다.
     /// 창 크기 변경은 여기서 이벤트를 꺼낼 때 SFML이 반영한다. Renderer::beginFrame보다 먼저 부를 것.
     void pollEvents();
+
+    // 이 창으로 들어온 키보드 및 마우스 입력을 관리하는 부분.
+    // pollEvents()가 갱신하며, 반환한 참조는 창과 수명이 동일하다.
+    // 이동 생성한 새 창으로 그대로 따라가나, 다른 창을 이동 대입받는다면 기존 참조는 무효가 된다.
+    // 혹시 이동당한 Window에서 호출한다면, std::logic_error를 던진다.
+    [[nodiscard]] Input& input();
+    [[nodiscard]] const Input& input() const;
 
     [[nodiscard]] Vec2u size() const;
 

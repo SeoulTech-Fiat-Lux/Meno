@@ -1,9 +1,12 @@
 #ifndef MENO_TIME_HPP
 #define MENO_TIME_HPP
 
+#include <cstdint>
+
 namespace meno {
 
 class Application;
+namespace detail { struct TimeAccess; }
 
 /// Application이 관리하는 게임 시간 정보.
 class Time final {
@@ -21,16 +24,26 @@ public:
 
 private:
     friend class Application;
+    // 라이브러리 내부 Input이 update 단계 정보를 읽어들이는 통로.
+    // 정의는 src/meno/core/TimeAccess.hpp에 선언되어 있다.
+    friend struct detail::TimeAccess;
 
     static void beginRun(double fixedDeltaTime) noexcept;
     static void beginFrame(double frameDeltaTime, double realDeltaTime) noexcept;
+    // update 직전에 호출한다. 단계 번호를 1 올리고서 해당 스텝이 update 안에 있다고 표시한다.
     static void advanceStep(double deltaTime) noexcept;
+    // update가 끝나거나 update 상태를 벗어날 때 호출한다.
+    static void endStep() noexcept;
 
     static double deltaTime_;
     static double fixedDeltaTime_;
     static double elapsedTime_;
     static double frameDeltaTime_;
     static double realElapsedTime_;
+    // 현재까지 수행된 update 횟수. run이 다시 시작해도 초기화되지 않는다.
+    static std::uint64_t stepNumber_;
+    // 현재 update 안에 있는지 여부.
+    static bool inStep_;
 };
 
 } // namespace meno

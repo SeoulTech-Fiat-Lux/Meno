@@ -1,17 +1,21 @@
 #include <meno/core/Window.hpp>
+#include <meno/input/Input.hpp>
 
 #include "sfml_backend/Access.hpp"
 #include "sfml_backend/Convert.hpp"
+#include "sfml_backend/InputConvert.hpp"
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <stdexcept>
 #include <utility>
 
 namespace meno {
 
 struct Window::Impl {
     sf::RenderWindow window;
+    Input input;
 
     Impl(Vec2u size, std::string_view title)
         // SFML 3의 VideoMode는 폭/높이를 따로 받지 않고 Vector2u 하나를 받는다.
@@ -45,12 +49,29 @@ void Window::pollEvents() {
     if (impl_ == nullptr) {
         return;
     }
+    impl_->input.beginFrame();
     // SFML 3의 pollEvent는 std::optional<sf::Event>를 돌려준다.
     while (const std::optional event = impl_->window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             impl_->window.close();
+        } else if (const std::optional converted = backend::fromSf(*event)) {
+            impl_->input.handleEvent(*converted);
         }
     }
+}
+
+Input& Window::input() {
+    if (impl_ == nullptr) {
+        throw std::logic_error("Window::input called on a moved-from Window");
+    }
+    return impl_->input;
+}
+
+const Input& Window::input() const {
+    if (impl_ == nullptr) {
+        throw std::logic_error("Window::input called on a moved-from Window");
+    }
+    return impl_->input;
 }
 
 Vec2u Window::size() const {

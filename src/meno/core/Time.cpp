@@ -1,5 +1,7 @@
 #include <meno/core/Time.hpp>
 
+#include "TimeAccess.hpp"
+
 namespace meno {
 
 double Time::deltaTime_ = 0.0;
@@ -7,6 +9,8 @@ double Time::fixedDeltaTime_ = 1.0 / 60.0;
 double Time::elapsedTime_ = 0.0;
 double Time::frameDeltaTime_ = 0.0;
 double Time::realElapsedTime_ = 0.0;
+std::uint64_t Time::stepNumber_ = 0;
+bool Time::inStep_ = false;
 
 double Time::deltaTime() noexcept { return deltaTime_; }
 double Time::fixedDeltaTime() noexcept { return fixedDeltaTime_; }
@@ -20,6 +24,7 @@ void Time::beginRun(double fixedDeltaTime) noexcept {
     elapsedTime_ = 0.0;
     frameDeltaTime_ = 0.0;
     realElapsedTime_ = 0.0;
+    inStep_ = false;
 }
 
 void Time::beginFrame(double frameDeltaTime, double realDeltaTime) noexcept {
@@ -30,6 +35,17 @@ void Time::beginFrame(double frameDeltaTime, double realDeltaTime) noexcept {
 void Time::advanceStep(double deltaTime) noexcept {
     deltaTime_ = deltaTime;
     elapsedTime_ += deltaTime;
+    ++stepNumber_;
+    inStep_ = true;
 }
+
+void Time::endStep() noexcept { inStep_ = false; }
+
+namespace detail {
+
+std::uint64_t TimeAccess::stepNumber() noexcept { return Time::stepNumber_; }
+bool TimeAccess::isInStep() noexcept { return Time::inStep_; }
+
+} // namespace detail
 
 } // namespace meno

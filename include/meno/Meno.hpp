@@ -40,6 +40,12 @@
 #include <meno/core/Window.hpp>
 #include <meno/core/SceneManager.hpp>
 
+// --- 입력 -----------------------------------------------------------------
+#include <meno/input/Event.hpp>
+#include <meno/input/Input.hpp>
+#include <meno/input/Key.hpp>
+#include <meno/input/MouseButton.hpp>
+
 // --- 씬 -----------------------------------------------------------------
 #include <meno/scene/Collider.hpp>
 #include <meno/scene/Component.hpp>
@@ -49,6 +55,5 @@
 #include <meno/scene/Sprite.hpp>
 
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
-//   #include <meno/input/Input.hpp>
 
 #endif  // MENO_HPP

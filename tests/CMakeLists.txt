@@ -8,6 +8,7 @@
 #   tests/math/      -- 공용 값 타입
 #   tests/core/      -- Application, Clock, Time
 #   tests/graphics/  -- Renderer, Texture, Font
+#   tests/input/     -- Input, SFML 이벤트 변환
 #   tests/audio/     -- Sound, Music
 #   tests/resources/ -- Texture, Font 캐시
 #   tests/scene/     -- Scene, GameObject, Component, Collider
@@ -20,6 +21,7 @@
 #      *구현 일부를 테스트 대역으로 바꿀 때도 이 방식을 쓰고, meno는 링크하지 않는다.  예: audio_component
 #   3. SFML이 필요한 구현     meno_add_test(name)
 #                             target_link_libraries(meno_test_<name> PRIVATE meno::meno)  예: render, scene
+#      *내부 헤더(sfml_backend/)까지 검사하면 src/meno 경로와 SFML 타깃을 직접 붙인다.  예: input_convert
 
 # 값 타입 테스트는 SFML을 링크하지 않는다.
 # 헤더만으로 성립하므로 SFML 빌드(첫 회 약 10분) 없이도 점검할 수 있다.
@@ -58,6 +60,7 @@ meno_add_test(umbrella)
 add_subdirectory(audio)
 add_subdirectory(core)
 add_subdirectory(graphics)
+add_subdirectory(input)
 add_subdirectory(math)
 add_subdirectory(resources)
 add_subdirectory(scene)

@@ -41,6 +41,7 @@ cmake --build build
 
 ```bash
 ./build/examples/meno_example_render_basics
+./build/examples/meno_example_input_demo
 ```
 
 자동 이동·점프 예제: `./build/examples/meno_example_jumping_box`
@@ -143,6 +144,43 @@ if (click) {
 이동하거나 삭제하면 안 된다. 로딩 또는 열기에 실패하면 두 함수 모두
 `std::nullopt`를 반환한다.
 
+## 입력
+
+`Window`가 키보드·마우스 입력 상태(`Input`)를 하나 갖고 있고, `pollEvents()`가 그것을 갱신한다.
+
+```cpp
+void processEvents() override {
+    window.pollEvents();
+    if (!window.isOpen()) stop();
+}
+
+void update(double fixedDeltaTime) override {
+    const meno::Input& input = window.input();
+    if (input.isDown(meno::Key::D)) { /* 누르고 있는 동안 계속 */ }
+    if (input.wasPressed(meno::Key::Space)) { /* 한 번 누르면 한 번만 */ }
+    if (input.wasPressed(meno::MouseButton::Left)) {
+        const meno::Vec2i clicked = input.mousePosition(); // 창 기준 픽셀
+    }
+}
+```
+
+`wasPressed`·`wasReleased`·`mouseWheelDelta()`·`text()`는 "이번 틱"에 일어난 일만 돌려준다.
+`update()` 안에서는 fixed update 한 번이 한 틱이다. 프레임에 update가 0번 돌든 여러 번 돌든,
+한 번 누른 키는 그 뒤 처음 도는 update 한 번에서만 true다. `render()`나 직접 짠 루프에서는
+`pollEvents()` 한 번이 한 틱이다.
+
+키 여러 개를 이름 하나로 묶으려면 액션 매핑을 쓴다.
+
+```cpp
+input.bind("jump", meno::Key::Space);
+input.bind("jump", meno::Key::W);
+input.bind("jump", meno::MouseButton::Left);
+
+if (input.wasActionPressed("jump")) { /* Space를 누른 채 W를 더 눌러도 한 번만 */ }
+```
+
+포커스를 잃었을 때, 텍스트 입력, 액션 판정 규칙은 [docs/input-api.md](docs/input-api.md)에 있다.
+
 ## 리소스 캐시
 
 `ResourceManager`는 같은 경로의 `Texture`, `Font`, `SoundBuffer`를 한 번만 로드하고 공유한다.
@@ -184,6 +222,7 @@ include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   graphics/         Renderer, Texture, Font, DrawParams
   resources/        ResourceManager
   audio/            SoundBuffer, Sound, Music
+  input/            Input, Key, MouseButton, Event
   scene/            Scene, GameObject, Component와 파생 Components
 src/meno/         구현 — 사용자에게 배포되지 않는다
   sfml_backend/     SFML을 include하는 유일한 곳
@@ -208,6 +247,7 @@ python tools/check_headers.py
 | 문서 | 내용 |
 |---|---|
 | [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
+| [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
 | [docs/cpp-guide.md](docs/cpp-guide.md) | 이 코드로 배우는 현업 C++ — pimpl·RAII·소유권 |
 
 ## 개발
