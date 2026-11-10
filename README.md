@@ -248,6 +248,7 @@ python tools/check_headers.py
 |---|---|
 | [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
 | [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
+| [docs/collision-api.md](docs/collision-api.md) | 콜라이더 등록, 객체 간 충돌 검사, 점 포함 검사와 사용 예제 |
 | [docs/cpp-guide.md](docs/cpp-guide.md) | 이 코드로 배우는 현업 C++ — pimpl·RAII·소유권 |
 
 ## 개발
