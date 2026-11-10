@@ -43,6 +43,14 @@ cmake --build build
 ./build/examples/meno_example_render_basics
 ```
 
+자동 이동·점프 예제: `./build/examples/meno_example_jumping_box`
+— 바닥과 상자 GameObject를 만들고, 상자가 좌우로 왕복하며 점프한다.
+[예제 안내](examples/jumping_box/README.md)에서 구성과 조절 가능한 값을 확인할 수 있다.
+
+씬 전환 예제: `./build/examples/meno_example_scene_transition`
+— 파란 씬과 주황 씬이 3초마다 전환된다.
+콜백 흐름과 빌드 방법은 [씬 전환 예제 안내](examples/scene_transition/README.md)를 참고한다.
+
 테스트:
 
 ```bash

@@ -1,11 +1,12 @@
 #include <meno/scene/Collider.hpp>
-#include <meno/scene/Scene.hpp>
+#include <meno/core/SceneManager.hpp>
 
 #include "check.hpp"
 #include <limits>
 
 int main() {
-    meno::Scene scene;
+    auto& manager = meno::SceneManager::instance();
+    auto& scene = manager.createScene();
     auto& a = scene.createGameObject();
     auto& b = scene.createGameObject();
     MENO_CHECK(!meno::intersects(a, b));
@@ -132,5 +133,6 @@ int main() {
         MENO_CHECK(!meno::intersects(probe, roundProbe));
     }
 
+    MENO_CHECK(manager.shutdown());
     return meno::test::report();
 }

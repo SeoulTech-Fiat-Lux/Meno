@@ -3,6 +3,7 @@
 meno_add_test(audio_component
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Audio.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
 )
 
 meno_add_test(collider)
@@ -13,3 +14,9 @@ target_link_libraries(meno_test_gameobject PRIVATE meno::meno)
 
 meno_add_test(scene)
 target_link_libraries(meno_test_scene PRIVATE meno::meno)
+
+# 그래픽 장치 대신 Sprite 호출 기록으로 실제 그리기 순서를 검증한다.
+meno_add_test(scene_draw_order
+        ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
+)

@@ -21,12 +21,12 @@ namespace meno {
 struct Transform : public Component {
     Vec2f pos {0,0};       // 로컬 좌상단 원점의 월드 위치 (회전/배율의 기준점)
     float magnitude{1.f};  // 균일 배율. 음수는 원점 기준 반전, 0은 크기 없음.
-    int rotation{0};       // 360도 기준 회전
+    float rotation{0.f};       // 360도 기준 회전
     int width{0}, height{0}; // 크기, 너비
 
     /// 로컬 방향을 회전한다. 배율과 위치는 적용하지 않는다.
     [[nodiscard]] Vec2f rotateVector(const Vec2f& vector) const {
-        const float radians = static_cast<float>(rotation % 360) * std::numbers::pi_v<float> / 180.f;
+        const float radians = std::fmod(rotation, 360.f) * std::numbers::pi_v<float> / 180.f;
         const float cosine = std::cos(radians);
         const float sine = std::sin(radians);
         return {vector.x * cosine - vector.y * sine,
@@ -53,12 +53,13 @@ class Scene; // friend 선언을 위한 전방선언
  */
 class GameObject final {
     friend class Scene;
-
 public:
     using GameObjectID = std::uint64_t;
 
 private:
 // private 멤버변수 필드
+    int layer_{0};
+    bool pending_delete_{false};
     Transform transform_;
     Sprite sprite_;
 
@@ -84,6 +85,7 @@ public:
     /// 매 프레임 호출한다. Sprite가 공유하는 텍스처를 현재 Transform으로 그린다.
     void draw(Renderer& renderer) const { sprite_.draw(renderer); }
     [[nodiscard]] GameObjectID id() const noexcept { return id_; }
+    [[nodiscard]] int layer() const noexcept { return layer_; }
 
     /**
      * @brief 지정한 타입의 컴포넌트를 생성하여 GameObject에 등록합니다.
