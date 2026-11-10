@@ -19,8 +19,11 @@ struct WindowAccess;
 //
 // *Renderer가 Window에게 요구하는 사안
 // 1. backend::WindowAccess로 꺼낼 수 있는 렌더 타깃
-// 2. framebuffer 크기
-// 이 두 가지만 유지되면 Core 쪽이 어떻게 바뀌든 Renderer는 영향받지 X.
+// 2. 매 프레임 SFML 이벤트 큐를 비울 것 (지금은 pollEvents가 한다)
+//    SFML은 이벤트를 꺼낼 때(sf::Window::pollEvent) 창 크기를 새 값으로 갱신한다.
+//    Renderer는 beginFrame마다 그 크기로 카메라를 다시 적용하므로, 리사이즈를 Renderer에 따로 알릴 필요는 없다.
+//    대신 이벤트를 꺼내지 않으면 창 크기가 갱신되지 않아 화면이 옛 크기에 묶인다.
+// 이 두 가지만 유지되면 Core 쪽이 어떻게 바뀌든 Renderer는 영향받지 X. (size()는 Renderer가 쓰지 않는다.)
 class Window {
 public:
     // 생성자: 윈도우 크기와 제목을 받아 객체를 초기화.
@@ -43,6 +46,7 @@ public:
 
     /// OS 이벤트를 처리한다. 지금은 닫기 버튼만 다룬다.
     /// 실제 입력 처리는 Input 서비스 담당자가 가져갈 부분.
+    /// 창 크기 변경은 여기서 이벤트를 꺼낼 때 SFML이 반영한다. Renderer::beginFrame보다 먼저 부를 것.
     void pollEvents();
 
     [[nodiscard]] Vec2u size() const;
