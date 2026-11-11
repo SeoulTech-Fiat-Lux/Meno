@@ -10,12 +10,9 @@ Game::Game(GameConfig config)
       clearColor_(config.clearColor) {}
 
 Game::~Game() noexcept {
-    // onStart/update/render의 예외로 onStop까지 도달하지 못한 경우에도 장면이
-    // 리소스와 창보다 먼저 정리되어야 한다. 소멸자에서는 예외를 전파하지 않는다.
-    try {
-        (void)scenes_.shutdown();
-    } catch (...) {
-    }
+    // 이 시점에는 파생 Game의 멤버가 이미 파괴됐다. onExit을 호출하면 콜백이
+    // 소멸한 멤버를 참조할 수 있으므로, 콜백 없이 Scene 소유권만 정리한다.
+    scenes_.discard();
 }
 
 void Game::run() {

@@ -16,7 +16,9 @@ Application::Application(ApplicationConfig config) : config_(config) {
 
 void Application::run() {
     Clock clock;
-    run(clock);
+    // 가상 dispatch는 공개 run() 진입 시 이미 끝났다. 같은 객체의 Clock 버전을
+    // 직접 호출해 파생 클래스 wrapper가 중복 실행되지 않게 한다.
+    Application::run(clock);
 }
 
 void Application::run(Clock& clock) {

@@ -37,8 +37,8 @@ public:
 
     /// Application 루프를 실행한다. 콜백이 예외를 던져도 파생 클래스의 멤버가
     /// 파괴되기 전에 Scene을 정리한 뒤 원래 예외를 다시 던진다.
-    void run();
-    void run(Clock& clock);
+    void run() final;
+    void run(Clock& clock) final;
 
     [[nodiscard]] Window& window() noexcept { return window_; }
     [[nodiscard]] const Window& window() const noexcept { return window_; }

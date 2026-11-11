@@ -58,8 +58,12 @@ int main() {
 종료 시 Scene을 가장 먼저 비운 뒤 `ResourceManager`, `Renderer`, `Window` 순서로
 정리한다. 정상 종료의 Scene exit handler가 던진 예외는 `run()` 호출자에게 전달한다.
 `onStart`, update 또는 render가 예외를 던지면 `Game::run()`이 파생 클래스의 멤버가
-파괴되기 전에 Scene을 정리하고 원래 예외를 다시 던진다. 마지막 방어선인 소멸자도
-장면 정리를 재시도하지만 소멸자 밖으로 새 예외를 던지지는 않는다.
+파괴되기 전에 Scene을 정리하고 원래 예외를 다시 던진다. `Application&` 또는
+`Application*`로 실행해도 가상 `run()`을 통해 같은 정리 경로를 사용한다.
+
+마지막 방어선인 `Game` 소멸자가 실행될 때는 파생 클래스 멤버가 이미 파괴된
+상태다. 따라서 이 경로에서는 `onExit`을 호출하지 않고 남은 Scene만 폐기한다.
+정상 종료와 `run()` 내부 예외에서는 파생 객체가 살아 있을 때 `onExit`을 호출한다.
 
 ## 예제 변경량
 

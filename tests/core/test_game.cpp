@@ -125,7 +125,9 @@ int main() {
         meno::Clock clock(
             [&] { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 20ms); },
             [](meno::Clock::Duration) {});
-        game.run(clock);
+        // Application 참조로 실행해도 가상 dispatch를 통해 Game의 정리 경로를 탄다.
+        meno::Application& application = game;
+        application.run(clock);
         MENO_CHECK(exited);
         MENO_CHECK(normalDestroyed);
         MENO_CHECK(normalDependenciesAlive);
@@ -138,7 +140,8 @@ int main() {
     {
         ThrowingStartGame game(exceptionalDestroyed, exceptionalDependenciesAlive);
         try {
-            game.run();
+            meno::Application& application = game;
+            application.run();
         } catch (const std::runtime_error&) {
             caught = true;
         }
@@ -153,6 +156,24 @@ int main() {
     MENO_CHECK(reentrant.rejected);
     MENO_CHECK(reentrant.sceneSurvived);
     MENO_CHECK(reentrant.scenes().activeScene() == nullptr);
+
+    bool discarded = false;
+    bool discardDependenciesAlive = false;
+    bool exitCalledFromDestructor = false;
+    {
+        meno::Game game({.windowSize = {160u, 90u}, .title = "meno game discard test"});
+        auto& scene = game.scenes().createScene();
+        scene.createGameObject().addComponent<LifetimeProbe>(
+            game, discarded, discardDependenciesAlive);
+        scene.setExitHandler([&] { exitCalledFromDestructor = true; });
+        MENO_CHECK(game.scenes().changeScene(scene.id()));
+        // run()하지 않은 Game도 소유 Scene을 폐기해야 하지만, 이 시점의
+        // 파생 멤버는 이미 파괴됐을 수 있으므로 onExit은 호출하지 않는다.
+    }
+    MENO_CHECK(discarded);
+    MENO_CHECK(discardDependenciesAlive);
+    MENO_CHECK(!exitCalledFromDestructor);
+    MENO_CHECK(meno::SceneManager::instance().activeScene() == nullptr);
 
     return meno::test::report();
 }
