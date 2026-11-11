@@ -53,19 +53,15 @@ meno::Texture makeTexture(bool floor) {
     return std::move(*texture);
 }
 
-class JumpingBoxDemo final : public meno::Application {
+class JumpingBoxDemo final : public meno::Game {
 public:
-    JumpingBoxDemo() : Application({.framerateLimit = 60}) {}
-
-    ~JumpingBoxDemo() override {
-        // 이 예제는 exit handler를 등록하지 않는다. 창보다 먼저 Sprite를 정리한다.
-        (void)manager_.shutdown();
-    }
+    JumpingBoxDemo()
+        : Game({.application = {.framerateLimit = 60},
+                .windowSize = {960u, 600u},
+                .title = "meno - Jumping box",
+                .clearColor = meno::Color::fromRgb(0x182331)}) {}
 
 private:
-    meno::Window window_{{960u, 600u}, "meno - Jumping box"};
-    meno::Renderer renderer_{window_};
-    meno::SceneManager& manager_ = meno::SceneManager::instance();
     meno::GameObject* floor_ = nullptr; // 소유자는 Scene이다.
     meno::GameObject* crate_ = nullptr;
     float direction_ = 1.f;
@@ -74,7 +70,7 @@ private:
     double pause_ = jumpPause;
 
     void onStart() override {
-        auto& scene = manager_.createScene();
+        auto& scene = scenes().createScene();
         floor_ = &scene.createGameObject();
         floor_->transform().pos = {floorX, floorY};
         floor_->transform().magnitude = scale;
@@ -91,7 +87,7 @@ private:
             meno::Vec2f{static_cast<float>(cratePixels), static_cast<float>(cratePixels)});
 
         scene.setUpdateHandler([this](double dt) { moveBox(dt); });
-        if (!manager_.changeScene(scene.id())) {
+        if (!scenes().changeScene(scene.id())) {
             throw std::runtime_error("Failed to activate demo scene");
         }
     }
@@ -129,20 +125,6 @@ private:
         }
     }
 
-    void processEvents() override {
-        window_.pollEvents();
-        if (!window_.isOpen()) stop();
-    }
-
-    void update(double dt) override { manager_.update(dt); }
-
-    void render(double) override {
-        renderer_.beginFrame(meno::Color::fromRgb(0x182331));
-        manager_.draw(renderer_);
-        renderer_.endFrame();
-    }
-
-    void onStop() override { (void)manager_.shutdown(); }
 };
 
 } // namespace
