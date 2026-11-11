@@ -28,6 +28,16 @@ int main() {
     boxB.size.x = -2.f;
     MENO_CHECK(!meno::intersects(a, b));
 
+    // A NaN position must not report box-box overlap in either argument order.
+    auto& invalidBox = scene.createGameObject();
+    auto& distantBox = scene.createGameObject();
+    invalidBox.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{10.f, 10.f});
+    distantBox.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{10.f, 10.f});
+    invalidBox.transform().pos = {std::numeric_limits<float>::quiet_NaN(), 0.f};
+    distantBox.transform().pos = {1000.f, 1000.f};
+    MENO_CHECK(!meno::intersects(invalidBox, distantBox));
+    MENO_CHECK(!meno::intersects(distantBox, invalidBox));
+
     auto& c = scene.createGameObject();
     c.transform().pos = {100.f, 200.f};
     auto& circleC = c.addComponent<meno::CircleCollider>(meno::Vec2f{15.f, 25.f}, 2.f);
@@ -132,6 +142,54 @@ int main() {
         MENO_CHECK(!meno::intersects(roundProbe, round));
         MENO_CHECK(!meno::intersects(probe, roundProbe));
     }
+
+    auto& pointTarget = scene.createGameObject();
+    auto& pointBox = pointTarget.addComponent<meno::BoxCollider>(
+        meno::Vec2f{2.f, 4.f}, meno::Vec2f{8.f, 4.f});
+    pointTarget.transform().pos = {10.f, 20.f};
+    MENO_CHECK(pointBox.contains({16.f, 26.f}));
+    MENO_CHECK(!pointBox.contains({11.f, 26.f}));
+    // Half-open bounds include the left/top edges and the top-left corner.
+    for (const meno::Vec2f point : {meno::Vec2f{12.f, 26.f}, {16.f, 24.f}, {12.f, 24.f}})
+        MENO_CHECK(pointBox.contains(point));
+    for (const meno::Vec2f point : {meno::Vec2f{20.f, 26.f}, {16.f, 28.f},
+                                  {20.f, 24.f}, {12.f, 28.f}, {20.f, 28.f}})
+        MENO_CHECK(!pointBox.contains(point));
+
+    pointTarget.transform().rotation = 90.f;
+    pointTarget.transform().magnitude = 0.5f;
+    MENO_CHECK(pointBox.contains({7.f, 23.f}));
+    MENO_CHECK(!pointBox.contains({16.f, 26.f}));
+    pointTarget.transform().magnitude = -0.5f;
+    MENO_CHECK(pointBox.contains({13.f, 17.f}));
+    MENO_CHECK(!pointBox.contains({7.f, 23.f}));
+
+    // Inside the enclosing AABB but outside the rotated thin box.
+    pointTarget.transform().pos = {};
+    pointTarget.transform().rotation = 45.f;
+    pointTarget.transform().magnitude = 1.f;
+    pointBox.offset = {};
+    pointBox.size = {10.f, 1.f};
+    MENO_CHECK(!pointBox.contains({0.f, 6.f}));
+    MENO_CHECK(pointBox.contains({3.f, 3.5f}));
+    pointBox.isTrigger = true;
+    pointBox.layer = 7;
+    MENO_CHECK(pointBox.contains({3.f, 3.5f}));
+
+    for (float scale : {0.f, std::numeric_limits<float>::infinity(),
+                        std::numeric_limits<float>::quiet_NaN()}) {
+        pointTarget.transform().magnitude = scale;
+        MENO_CHECK(!pointBox.contains({3.f, 3.5f}));
+    }
+    pointTarget.transform().magnitude = 1.f;
+    for (const meno::Vec2f size : {meno::Vec2f{0.f, 1.f}, {-1.f, 1.f},
+                                 {10.f, 0.f}, {10.f, -1.f}}) {
+        pointBox.size = size;
+        MENO_CHECK(!pointBox.contains({3.f, 3.5f}));
+    }
+    pointBox.size = {10.f, 1.f};
+    pointBox.parent = nullptr;
+    MENO_CHECK(!pointBox.contains({3.f, 3.5f}));
 
     MENO_CHECK(manager.shutdown());
     return meno::test::report();

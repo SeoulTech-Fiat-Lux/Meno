@@ -69,7 +69,7 @@ bool intersects_box_box(const BoxCollider& a, const BoxCollider& b) {
                             + boundsA.halfSize.y * std::abs(dot(boundsA.yAxis, axis));
         const float extentB = boundsB.halfSize.x * std::abs(dot(boundsB.xAxis, axis))
                             + boundsB.halfSize.y * std::abs(dot(boundsB.yAxis, axis));
-        if (std::abs(dot(delta, axis)) >= extentA + extentB)
+        if (!(std::abs(dot(delta, axis)) < extentA + extentB))
             return false;
     }
     return true;
@@ -85,6 +85,18 @@ bool intersects_circle_circle(const CircleCollider& a, const CircleCollider& b) 
     return (centerA - centerB).lengthSquared() < radiusSum * radiusSum;
 }
 } // namespace
+
+bool BoxCollider::contains(Vec2f worldPoint) const {
+    if (!valid(*this))
+        return false;
+
+    const auto bounds = worldBox(*this);
+    const Vec2f delta = worldPoint - bounds.center;
+    const float x = dot(delta, bounds.xAxis);
+    const float y = dot(delta, bounds.yAxis);
+    return -bounds.halfSize.x <= x && x < bounds.halfSize.x
+        && -bounds.halfSize.y <= y && y < bounds.halfSize.y;
+}
 
 bool intersects(const GameObject& a, const GameObject& b) {
 
