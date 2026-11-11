@@ -69,7 +69,7 @@ bool intersects_box_box(const BoxCollider& a, const BoxCollider& b) {
                             + boundsA.halfSize.y * std::abs(dot(boundsA.yAxis, axis));
         const float extentB = boundsB.halfSize.x * std::abs(dot(boundsB.xAxis, axis))
                             + boundsB.halfSize.y * std::abs(dot(boundsB.yAxis, axis));
-        if (std::abs(dot(delta, axis)) >= extentA + extentB)
+        if (!(std::abs(dot(delta, axis)) < extentA + extentB))
             return false;
     }
     return true;

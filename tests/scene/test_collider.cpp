@@ -28,6 +28,16 @@ int main() {
     boxB.size.x = -2.f;
     MENO_CHECK(!meno::intersects(a, b));
 
+    // A NaN position must not report box-box overlap in either argument order.
+    auto& invalidBox = scene.createGameObject();
+    auto& distantBox = scene.createGameObject();
+    invalidBox.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{10.f, 10.f});
+    distantBox.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{10.f, 10.f});
+    invalidBox.transform().pos = {std::numeric_limits<float>::quiet_NaN(), 0.f};
+    distantBox.transform().pos = {1000.f, 1000.f};
+    MENO_CHECK(!meno::intersects(invalidBox, distantBox));
+    MENO_CHECK(!meno::intersects(distantBox, invalidBox));
+
     auto& c = scene.createGameObject();
     c.transform().pos = {100.f, 200.f};
     auto& circleC = c.addComponent<meno::CircleCollider>(meno::Vec2f{15.f, 25.f}, 2.f);
