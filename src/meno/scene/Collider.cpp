@@ -92,8 +92,10 @@ bool BoxCollider::contains(Vec2f worldPoint) const {
 
     const auto bounds = worldBox(*this);
     const Vec2f delta = worldPoint - bounds.center;
-    return std::abs(dot(delta, bounds.xAxis)) < bounds.halfSize.x
-        && std::abs(dot(delta, bounds.yAxis)) < bounds.halfSize.y;
+    const float x = dot(delta, bounds.xAxis);
+    const float y = dot(delta, bounds.yAxis);
+    return -bounds.halfSize.x <= x && x < bounds.halfSize.x
+        && -bounds.halfSize.y <= y && y < bounds.halfSize.y;
 }
 
 bool intersects(const GameObject& a, const GameObject& b) {

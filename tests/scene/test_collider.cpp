@@ -149,9 +149,10 @@ int main() {
     pointTarget.transform().pos = {10.f, 20.f};
     MENO_CHECK(pointBox.contains({16.f, 26.f}));
     MENO_CHECK(!pointBox.contains({11.f, 26.f}));
-    // All four edges and corners are excluded, unlike Rect::contains.
-    for (const meno::Vec2f point : {meno::Vec2f{12.f, 26.f}, {20.f, 26.f},
-                                  {16.f, 24.f}, {16.f, 28.f}, {12.f, 24.f},
+    // Half-open bounds include the left/top edges and the top-left corner.
+    for (const meno::Vec2f point : {meno::Vec2f{12.f, 26.f}, {16.f, 24.f}, {12.f, 24.f}})
+        MENO_CHECK(pointBox.contains(point));
+    for (const meno::Vec2f point : {meno::Vec2f{20.f, 26.f}, {16.f, 28.f},
                                   {20.f, 24.f}, {12.f, 28.f}, {20.f, 28.f}})
         MENO_CHECK(!pointBox.contains(point));
 
