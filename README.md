@@ -101,6 +101,41 @@ int main() {
 `run(Clock&)`은 사용자 정의 또는 테스트용 `Clock`을 주입할 때 사용하며, 이 경우에도
 설정된 프레임 제한이 적용된다.
 
+## 씬 상태
+
+`Scene::setState<T>(std::unique_ptr<T>)`는 씬 고유 상태의 소유권을 Scene으로 이전한다.
+`getState<T>()`로 같은 객체를 조회할 수 있으므로, 등록 전에 포인터를 따로 꺼낼 필요가 없다.
+상태를 먼저 등록한 뒤 해당 상태를 사용하는 핸들러를 설정한다.
+
+```cpp
+struct GameState {
+    double elapsed = 0.0;
+    int score = 0;
+};
+
+auto& scenes = meno::SceneManager::instance();
+auto& scene = scenes.createScene();
+scene.setState(std::make_unique<GameState>());
+
+scene.setUpdateHandler([&scene](double dt) {
+    auto* state = scene.getState<GameState>();
+    state->elapsed += dt;
+});
+
+const meno::Scene& view = scene;
+const GameState* state = view.getState<GameState>();
+```
+
+- `getState<T>()`의 `T`는 등록할 때 사용한 타입과 같아야 한다. 런타임 타입 검사는
+  하지 않으며, 잘못된 타입으로 객체에 접근하면 정의되지 않은 동작이 발생할 수 있다.
+- 상태가 없으면 `nullptr`을 반환한다. `const Scene`에서는 `const T*`를 반환한다.
+- 반환 포인터는 빌린 포인터다. 호출자가 `delete`하거나 다른 소유 포인터로 감싸면 안 된다.
+  상태는 Scene이 소멸할 때 함께 파괴되므로, Scene 삭제 또는 `SceneManager::shutdown()`으로
+  Scene이 정리된 뒤에는 사용할 수 없다. 씬 전환만으로 상태가 파괴되지는 않는다.
+- 유효한 상태가 이미 있으면 `setState`는 `std::logic_error`를 던진다. 기존 상태는 유지되고,
+  새로 전달한 객체는 정리된다. 상태를 교체하거나 꺼내 소유권을 돌려받는 API는 없다.
+- 상태가 없을 때 빈 `unique_ptr`을 넘기면 빈 상태로 남으며, 이후 다시 등록할 수 있다.
+
 ## 오디오
 
 짧은 효과음은 파일 전체를 메모리에 올리는 `SoundBuffer`와 이를 재생하는 `Sound`,
