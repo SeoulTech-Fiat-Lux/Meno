@@ -25,11 +25,11 @@ private:
     explicit Scene(SceneID id) : id_(id) {}
     ~Scene() = default;
 
-    using DrawingCacheBagType = std::unordered_map<
+    using ObjectsContainerType = std::unordered_map<
         GameObject::GameObjectID, std::unique_ptr<GameObject>
     >;
-    DrawingCacheBagType objects_;
-    DrawingCacheBagType pending_objects_;
+    ObjectsContainerType objects_;
+    ObjectsContainerType pending_objects_;
     bool updating_{false};
     bool pending_deletions_{false};
     void applyObjectChanges();
