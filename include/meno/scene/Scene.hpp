@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-
+#include <stdexcept>
 
 namespace meno {
 
