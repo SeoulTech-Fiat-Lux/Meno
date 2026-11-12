@@ -107,6 +107,34 @@ private:
     }
 };
 
+class ExitReentrantGame final : public meno::Game {
+public:
+    bool rejected = false;
+    bool clockOverloadRejected = false;
+
+private:
+    void onStart() override {
+        auto& scene = scenes().createScene();
+        scene.setUpdateHandler([this](double) { stop(); });
+        scene.setExitHandler([this] {
+            try {
+                run();
+            } catch (const std::logic_error&) {
+                rejected = true;
+            }
+            try {
+                meno::Clock clock;
+                run(clock);
+            } catch (const std::logic_error&) {
+                clockOverloadRejected = true;
+            }
+        });
+        if (!scenes().changeScene(scene.id())) {
+            throw std::runtime_error("failed to activate exit reentry scene");
+        }
+    }
+};
+
 } // namespace
 
 int main() {
@@ -151,11 +179,31 @@ int main() {
     MENO_CHECK(exceptionalDependenciesAlive);
     MENO_CHECK(meno::SceneManager::instance().activeScene() == nullptr);
 
-    ReentrantGame reentrant;
-    reentrant.run();
-    MENO_CHECK(reentrant.rejected);
-    MENO_CHECK(reentrant.sceneSurvived);
-    MENO_CHECK(reentrant.scenes().activeScene() == nullptr);
+    {
+        ReentrantGame reentrant;
+        reentrant.run();
+        MENO_CHECK(reentrant.rejected);
+        MENO_CHECK(reentrant.sceneSurvived);
+        MENO_CHECK(reentrant.scenes().activeScene() == nullptr);
+    }
+
+    {
+        ExitReentrantGame exitReentrant;
+        exitReentrant.run();
+        MENO_CHECK(exitReentrant.rejected);
+        MENO_CHECK(exitReentrant.clockOverloadRejected);
+    }
+
+    bool duplicateRejected = false;
+    {
+        meno::Game first({.windowSize = {160u, 90u}, .title = "meno first game"});
+        try {
+            meno::Game second({.windowSize = {160u, 90u}, .title = "meno second game"});
+        } catch (const std::logic_error&) {
+            duplicateRejected = true;
+        }
+    }
+    MENO_CHECK(duplicateRejected);
 
     bool discarded = false;
     bool discardDependenciesAlive = false;

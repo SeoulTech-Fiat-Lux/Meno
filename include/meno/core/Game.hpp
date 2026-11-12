@@ -25,6 +25,7 @@ struct GameConfig {
 ///
 /// 파생 클래스는 보통 onStart()에서 장면만 구성한다. 이벤트 처리, fixed update,
 /// 장면 렌더링과 정상 종료 정리는 Game이 담당하며 재정의할 수 없다.
+/// SceneManager가 전역 싱글턴이므로 동시에 존재할 수 있는 Game은 하나뿐이다.
 class Game : public Application {
 public:
     explicit Game(GameConfig config = {});
@@ -65,6 +66,7 @@ private:
     ResourceManager resources_;
     SceneManager& scenes_;
     Color clearColor_;
+    bool runInvocationActive_ = false;
 };
 
 } // namespace meno

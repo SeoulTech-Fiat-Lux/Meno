@@ -55,6 +55,10 @@ int main() {
 - `resources()`: 경로별 리소스 캐시
 - `scenes()`: `SceneManager::instance()`에 대한 참조
 
+`SceneManager`는 프로세스 전역 싱글턴이므로 동시에 살아 있는 `Game`은 하나만
+허용한다. 첫 번째 `Game`이 소멸하기 전에 다른 `Game`을 생성하면
+`std::logic_error`를 던져 서로의 Scene을 정리하는 문제를 방지한다.
+
 종료 시 Scene을 가장 먼저 비운 뒤 `ResourceManager`, `Renderer`, `Window` 순서로
 정리한다. 정상 종료의 Scene exit handler가 던진 예외는 `run()` 호출자에게 전달한다.
 `onStart`, update 또는 render가 예외를 던지면 `Game::run()`이 파생 클래스의 멤버가
@@ -64,6 +68,9 @@ int main() {
 마지막 방어선인 `Game` 소멸자가 실행될 때는 파생 클래스 멤버가 이미 파괴된
 상태다. 따라서 이 경로에서는 `onExit`을 호출하지 않고 남은 Scene만 폐기한다.
 정상 종료와 `run()` 내부 예외에서는 파생 객체가 살아 있을 때 `onExit`을 호출한다.
+`run()`의 재진입 검사는 루프가 실행 중인 구간뿐 아니라 `onStop`과 Scene의
+`onExit`이 끝날 때까지 유지된다. 따라서 종료 콜백에서도 중첩 `run()`은
+`std::logic_error`로 거부된다.
 
 ## 예제 변경량
 

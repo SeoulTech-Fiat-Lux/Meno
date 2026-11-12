@@ -1,26 +1,47 @@
 #include <meno/core/Game.hpp>
 
+#include <stdexcept>
+
 namespace meno {
+namespace {
+
+Game* liveGame = nullptr;
+
+struct RunInvocationGuard {
+    bool& active;
+
+    explicit RunInvocationGuard(bool& flag) : active(flag) { active = true; }
+    ~RunInvocationGuard() { active = false; }
+};
+
+} // namespace
 
 Game::Game(GameConfig config)
     : Application(config.application),
       window_(config.windowSize, config.title),
       renderer_(window_),
       scenes_(SceneManager::instance()),
-      clearColor_(config.clearColor) {}
+      clearColor_(config.clearColor) {
+    if (liveGame != nullptr) {
+        throw std::logic_error("Only one Game instance may exist at a time");
+    }
+    liveGame = this;
+}
 
 Game::~Game() noexcept {
     // 이 시점에는 파생 Game의 멤버가 이미 파괴됐다. onExit을 호출하면 콜백이
     // 소멸한 멤버를 참조할 수 있으므로, 콜백 없이 Scene 소유권만 정리한다.
     scenes_.discard();
+    liveGame = nullptr;
 }
 
 void Game::run() {
-    // 재진입 오류는 현재 실행 중인 바깥 루프의 장면을 정리하면 안 된다.
-    if (isRunning()) {
-        Application::run();
-        return;
+    // Application::isRunning()은 stop() 직후 false가 되므로 onStop/onExit까지
+    // 포함한 전체 호출의 재진입 여부는 별도로 추적한다.
+    if (runInvocationActive_) {
+        throw std::logic_error("Game::run is already active");
     }
+    RunInvocationGuard invocation{runInvocationActive_};
     try {
         Application::run();
     } catch (...) {
@@ -35,10 +56,10 @@ void Game::run() {
 }
 
 void Game::run(Clock& clock) {
-    if (isRunning()) {
-        Application::run(clock);
-        return;
+    if (runInvocationActive_) {
+        throw std::logic_error("Game::run is already active");
     }
+    RunInvocationGuard invocation{runInvocationActive_};
     try {
         Application::run(clock);
     } catch (...) {
