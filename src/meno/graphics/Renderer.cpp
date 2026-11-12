@@ -1,6 +1,3 @@
-#include "meno/graphics/DrawParams.hpp"
-#include "meno/math/Camera2D.hpp"
-#include "meno/math/Vec2.hpp"
 #include <meno/graphics/Renderer.hpp>
 
 #include <meno/core/Window.hpp>

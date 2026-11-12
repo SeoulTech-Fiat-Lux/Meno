@@ -110,9 +110,9 @@ int main() {
     check(Color::fromRgb(0x000000) == colors::Black, "fromRgb(0x000000)은 불투명 검정");
 
     // fromRgb는 런타임에도 색상 값을 받는다.
-    constexpr std::array<std::uint32_t, 2> kPallete{0xFF0000u, 0x1E2430u};
+    constexpr std::array<std::uint32_t, 2> kPalette{0xFF0000u, 0x1E2430u};
     std::size_t index = 1; // const가 아니므로 kPalette[index]는 상수식이 아니다.
-    check(Color::fromRgb(kPallete[index]) == Color{0x1E, 0x24, 0x30}, "fromRgb는 런타임 값을 받는다.");
+    check(Color::fromRgb(kPalette[index]) == Color{0x1E, 0x24, 0x30}, "fromRgb는 런타임 값을 받는다.");
 
     // 런타임에 매개변수로 Hex코드 6자리를 넘는 값이 들어오면 프로그램을 멈추지 않고, 마젠타를 반환값으로 내보낸다.
     std::uint32_t typo = 0x1E2430FF;
