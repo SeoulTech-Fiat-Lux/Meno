@@ -1,18 +1,14 @@
 // Scene -> GameObject -> Sprite 순서로 구성하는 정적인 예제.
 // 상자 텍스처를 코드로 만들어 외부 이미지 파일 없이 실행할 수 있다.
 
-#include <meno/core/Clock.hpp>
-#include <meno/core/Window.hpp>
-#include <meno/graphics/Renderer.hpp>
-#include <meno/graphics/Texture.hpp>
-#include <meno/math/Color.hpp>
-#include <meno/core/SceneManager.hpp>
+#include <meno/Meno.hpp>
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
 namespace {
@@ -38,47 +34,43 @@ std::optional<meno::Texture> makeCrateTexture() {
     return meno::Texture::fromPixels({size, size}, pixels.data());
 }
 
+class GameObjectDemo final : public meno::Game {
+public:
+    GameObjectDemo()
+        : Game({.application = {.framerateLimit = 60},
+                .windowSize = {800u, 600u},
+                .title = "meno - GameObject scene",
+                .clearColor = meno::Color::fromRgb(0x1E2430)}) {}
+
+private:
+    void onStart() override {
+        auto texture = makeCrateTexture();
+        if (!texture) {
+            throw std::runtime_error("Failed to create the crate texture");
+        }
+        texture->setSmooth(false);
+
+        auto& scene = scenes().createScene();
+        meno::GameObject& crate = scene.createGameObject();
+        crate.transform().pos = {400.f, 300.f};
+        crate.transform().magnitude = 10;
+        crate.sprite().origin = {8.f, 8.f};
+        crate.sprite().setTexture(std::move(*texture));
+
+        if (!scenes().changeScene(scene.id())) {
+            throw std::runtime_error("Failed to activate GameObject scene");
+        }
+    }
+};
+
 } // namespace
 
 int main() {
-    meno::Window window{{800u, 600u}, "meno - GameObject scene"};
-    meno::Renderer renderer{window};
-
-    auto texture = makeCrateTexture();
-    if (!texture) {
-        std::cerr << "Failed to create the crate texture.\n";
+    try {
+        GameObjectDemo game;
+        game.run();
+    } catch (const std::exception& error) {
+        std::cerr << "GameObject demo: " << error.what() << '\n';
         return 1;
     }
-    texture->setSmooth(false);
-
-    // Scene이 객체를 소유한다. crate 참조는 객체가 삭제되기 전까지만 유효하다.
-    auto& manager = meno::SceneManager::instance();
-    auto& scene = manager.createScene();
-    meno::GameObject& crate = scene.createGameObject();
-    crate.transform().pos = {400.f, 300.f};
-    crate.transform().magnitude = 10; // 16 x 16 텍스처를 160 x 160으로 표시
-
-    // Sprite는 이미 기본 컴포넌트이므로 addComponent 대신 sprite()로 설정한다.
-    crate.sprite().origin = {8.f, 8.f}; // 텍스처 중심을 객체 위치에 맞춘다.
-    crate.sprite().setTexture(std::move(*texture));
-
-    meno::Clock clock;
-    clock.setFramerateLimit(60);
-    (void)manager.changeScene(scene.id());
-
-    while (window.isOpen()) {
-        (void)clock.restart();
-        window.pollEvents();
-        if (!window.isOpen()) {
-            break;
-        }
-
-        renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
-
-        scene.drawScene(renderer);
-        renderer.endFrame();
-    }
-
-    (void)manager.shutdown();
-    return 0;
 }

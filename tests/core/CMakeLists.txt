@@ -6,6 +6,12 @@ meno_add_test(application
         ${CMAKE_SOURCE_DIR}/src/meno/core/Time.cpp
 )
 
+# Window/Renderer까지 소유하는 Game의 통합 루프와 종료 순서를 검사한다.
+# 창이 필요하므로 일반 CI에서는 종료 코드 77로 건너뛴다.
+meno_add_test(game)
+target_link_libraries(meno_test_game PRIVATE meno::meno)
+set_tests_properties(game PROPERTIES SKIP_RETURN_CODE 77)
+
 meno_add_test(scene_manager
         ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp

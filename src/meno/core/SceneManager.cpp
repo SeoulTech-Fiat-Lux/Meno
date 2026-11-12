@@ -62,6 +62,13 @@ void SceneManager::applyPending() {
     active_->onEnter();
 }
 
+void SceneManager::discard() noexcept {
+    active_ = nullptr;
+    pending_.reset();
+    scenes_.clear();
+    busy_ = false;
+}
+
 [[nodiscard]]
 bool SceneManager::deleteScene(Scene::SceneID id) {
     if (busy_ || (active_ && active_->id() == id)) return false;
