@@ -19,6 +19,7 @@ add_library(meno STATIC
         meno/audio/Sound.cpp
         meno/audio/SoundBuffer.cpp
         meno/core/Application.cpp
+        meno/core/Game.cpp
         meno/scene/Audio.cpp
         meno/core/SceneManager.cpp
         meno/core/Clock.cpp

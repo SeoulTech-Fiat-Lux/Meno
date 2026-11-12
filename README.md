@@ -8,18 +8,18 @@ SFML 기반 2D 게임 개발 라이브러리. 서울과학기술대학교 캡스
 ```cpp
 #include <meno/Meno.hpp>
 
-int main() {
-    meno::Window window{{960u, 540u}, "내 게임"};
-    meno::Renderer renderer{window};
-
-    // 일반 게임은 meno::Application을 상속해 update/render만 구현한다.
-    // Application이 고정 timestep 루프와 시간 누적을 담당한다.
-    while (window.isOpen()) { // 렌더 API만 보여 주는 최소 예제
-        window.pollEvents();
-        renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
-        renderer.drawCircle({480.f, 270.f}, 60.f, {.fill = meno::colors::Cyan});
-        renderer.endFrame();
+class MyGame final : public meno::Game {
+private:
+    void onStart() override {
+        auto& scene = scenes().createScene();
+        // scene에 GameObject와 handler를 구성한다.
+        (void)scenes().changeScene(scene.id());
     }
+};
+
+int main() {
+    MyGame game;
+    game.run();
 }
 ```
 
@@ -59,6 +59,10 @@ ctest --test-dir build --output-on-failure
 ```
 
 ## 고정 timestep 게임 루프
+
+일반적인 게임은 `Game`을 상속한다. `Game`이 창, 렌더러, 리소스 캐시와
+SceneManager를 소유·연결하고 이벤트 처리, fixed update, 장면 렌더링과 종료 정리를
+수행한다. 자세한 실행 순서와 수명 규칙은 [Game 통합 실행 경로](docs/game-api.md)에 있다.
 
 `Application`을 상속하면 사용자가 `while` 루프나 시간 누적을 직접 작성할
 필요가 없다. `update()`는 고정 간격으로 0회 이상 호출되고 `render()`는 프레임당
@@ -217,7 +221,7 @@ second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
 ```
 include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   Meno.hpp          통합 헤더
-  core/             Window, Application, Clock, Time
+  core/             Window, Application, Game, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
   resources/        ResourceManager
@@ -246,6 +250,7 @@ python tools/check_headers.py
 
 | 문서 | 내용 |
 |---|---|
+| [docs/game-api.md](docs/game-api.md) | Game 통합 루프, 접근자, 종료 순서와 예제 변경량 |
 | [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
 | [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
 | [docs/collision-api.md](docs/collision-api.md) | 콜라이더 등록, 객체 간 충돌 검사, 점 포함 검사와 사용 예제 |
