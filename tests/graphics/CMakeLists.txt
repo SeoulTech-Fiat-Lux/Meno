@@ -23,3 +23,10 @@ meno_add_test(render_resize)
 target_include_directories(meno_test_render_resize PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_render_resize PRIVATE meno::meno SFML::Graphics)
 set_tests_properties(render_resize PROPERTIES SKIP_RETURN_CODE 77)
+
+
+# 다각형과 부채꼴이 실제로 칠하는 픽셀로, 이를 읽기 위해 창 크기 단위 테스트와 마찬가지로 sf::RenderWindow를 활용한다.
+meno_add_test(render_shapes)
+target_include_directories(meno_test_render_shapes PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+target_link_libraries(meno_test_render_shapes PRIVATE meno::meno SFML::Graphics)
+set_tests_properties(render_shapes PROPERTIES SKIP_RETURN_CODE 77)
