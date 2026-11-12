@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <type_traits>
+#include <utility>
 
 #include "check.hpp"
 
@@ -43,12 +44,16 @@ using BufferLoadFunction = std::optional<meno::SoundBuffer> (*)(const std::files
 using MusicOpenFunction = std::optional<meno::Music> (*)(const std::filesystem::path&);
 using SoundCommand      = void (meno::Sound::*)();
 using MusicCommand      = void (meno::Music::*)();
+using MusicLoopSetter   = void (meno::Music::*)(bool);
+using MusicLoopGetter   = bool (meno::Music::*)() const;
 
 SoundLoadFunction volatile soundLoadFunction = &meno::Sound::loadFromFile;
 BufferLoadFunction volatile bufferLoadFunction = &meno::SoundBuffer::loadFromFile;
 MusicOpenFunction volatile musicOpenFunction = &meno::Music::openFromFile;
 SoundCommand volatile      soundPlayFunction  = &meno::Sound::play;
 MusicCommand volatile      musicPlayFunction  = &meno::Music::play;
+MusicLoopSetter volatile   musicLoopSetter    = &meno::Music::setLooping;
+MusicLoopGetter volatile   musicLoopGetter    = &meno::Music::isLooping;
 
 } // namespace
 
@@ -83,6 +88,17 @@ int main() {
     MENO_CHECK(meno::audio_detail::fromBackendVolume(0.0F) == 0.0F);
     MENO_CHECK(meno::audio_detail::fromBackendVolume(25.0F) == 0.25F);
     MENO_CHECK(meno::audio_detail::fromBackendVolume(100.0F) == 1.0F);
+
+    meno::Music music;
+    MENO_CHECK(!music.isLooping());
+    music.setLooping(true);
+    MENO_CHECK(music.isLooping());
+
+    meno::Music movedMusic{std::move(music)};
+    MENO_CHECK(movedMusic.isLooping());
+    MENO_CHECK(!music.isLooping());
+    movedMusic.setLooping(false);
+    MENO_CHECK(!movedMusic.isLooping());
 
     return meno::test::report();
 }

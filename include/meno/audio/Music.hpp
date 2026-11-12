@@ -28,6 +28,10 @@ public:
     void pause();
     void stop();
 
+    /// true이면 음악이 끝난 뒤 처음부터 다시 재생한다. 기본값은 false다.
+    void setLooping(bool looping);
+    [[nodiscard]] bool isLooping() const;
+
     /// 볼륨을 0(무음)~1(최대) 범위로 설정한다. 범위를 벗어난 값은 제한된다.
     void setVolume(float volume);
     [[nodiscard]] float volume() const;

@@ -167,9 +167,14 @@ if (click) {
 auto bgm = meno::Music::openFromFile("assets/bgm.ogg");
 if (bgm) {
     bgm->setVolume(0.4f);
+    bgm->setLooping(true); // 끝까지 재생하면 처음부터 반복
     bgm->play();
 }
 ```
+
+`Music::setLooping(true)`으로 배경음악을 반복 재생할 수 있으며 기본값은 `false`다.
+현재 설정은 `Music::isLooping()`으로 확인한다. 효과음용 `Sound`에는 반복 재생 API를
+제공하지 않는다.
 
 `Sound`와 `Music` 객체가 소멸하면 재생도 즉시 중단된다. 따라서 다음처럼 임시
 객체에서 바로 `play()`를 호출하지 말고, 재생이 끝날 때까지 지역 변수나 게임 객체의
