@@ -101,6 +101,52 @@ int main() {
 `run(Clock&)`은 사용자 정의 또는 테스트용 `Clock`을 주입할 때 사용하며, 이 경우에도
 설정된 프레임 제한이 적용된다.
 
+## 그리기
+
+`Renderer`는 부른 순서대로 그린다. 나중에 부른 것이 위에 올라간다.
+좌표는 픽셀이고 원점은 창 좌상단, y는 아래로 증가한다. 각도는 전부 도(degree) 단위이며 시계 방향이 +다.
+
+```cpp
+renderer.beginFrame(meno::Color::fromRgb(0x14181F)); // 배경색으로 지운다
+
+renderer.drawRect({{40.f, 40.f}, {120.f, 16.f}}, {.fill = meno::colors::White});
+renderer.drawCircle(ball.position, 8.f, {.fill = meno::Color::fromRgb(0xE5533D)});
+renderer.drawLine(from, to, meno::Color::fromRgb(0x4FC3F7), 2.f); // 두께 2px
+
+// 다각형. 점은 position 기준 로컬 좌표이고, rotation은 position을 축으로 돈다.
+renderer.drawPolygon(ship.position, {{14.f, 0.f}, {-10.f, -8.f}, {-10.f, 8.f}},
+                     {.fill = meno::colors::White, .rotation = ship.angle});
+
+// 외곽선만 그리려면 fill을 투명으로 둔다. std::vector나 std::array도 그대로 넘긴다.
+renderer.drawPolygon(rock.position, rock.points,
+                     {.fill = meno::colors::Transparent, .outline = meno::colors::White, .outlineThickness = 2.f});
+
+// 부채꼴. 0도가 오른쪽이다. 오른쪽을 보고 입을 60도 벌린 팩맨:
+renderer.drawSector(pac.position, 12.f, 30.f, 300.f, {.fill = meno::colors::Yellow});
+
+renderer.endFrame();
+```
+
+색은 이렇게 만든다.
+
+| 만드는 법 | 예 |
+|---|---|
+| 6자리 `#RRGGBB` | `meno::Color::fromRgb(0x4FC3F7)` |
+| 8자리 `#RRGGBBAA` | `meno::Color::fromRgba(0x4FC3F780)` |
+| 반투명 | `meno::colors::White.withAlpha(128)` (0 투명 ~ 255 불투명) |
+| 이름 있는 색 | `meno::colors::White`, `Black`, `Red`, `Yellow`, `Transparent` 등 |
+
+- **`fromRgb`에는 6자리만 넣는다.** 8자리를 넣으면 상수 식에서는 컴파일 에러, 그 밖에서는 마젠타(`#FF00FF`)가 나온다. 게임은 멈추지 않는다.
+- **반투명은 `withAlpha`로 만든다.** `fromRgb(0x00000080)`처럼 앞자리가 `00`인 8자리는 오류로 잡히지 않고 불투명한 남색이 된다.
+- **텍스처에 색을 곱하려면 `tint`를 쓴다.** 흰색이면 원본 그대로다.
+
+```cpp
+renderer.draw(playerTexture, {.position = player.position, .tint = meno::Color::fromRgb(0xFF6060)}); // 붉게
+renderer.draw(playerTexture, {.position = player.position, .tint = meno::colors::White.withAlpha(128)}); // 반투명
+```
+
+카메라, 텍스트 정렬, 다각형 채우기 조건 같은 자세한 규칙은 [docs/render-api.md](docs/render-api.md)에 있다.
+
 ## 오디오
 
 짧은 효과음은 파일 전체를 메모리에 올리는 `SoundBuffer`와 이를 재생하는 `Sound`,
@@ -246,7 +292,7 @@ python tools/check_headers.py
 
 | 문서 | 내용 |
 |---|---|
-| [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
+| [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 색·도형 규칙, 담당자 간 계약, SFML 3 변경점 |
 | [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
 | [docs/collision-api.md](docs/collision-api.md) | 콜라이더 등록, 객체 간 충돌 검사, 점 포함 검사와 사용 예제 |
 | [docs/cpp-guide.md](docs/cpp-guide.md) | 이 코드로 배우는 현업 C++ — pimpl·RAII·소유권 |

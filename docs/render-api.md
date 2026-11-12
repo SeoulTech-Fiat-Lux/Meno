@@ -55,7 +55,45 @@ renderer.endFrame();
 
 두 리터럴은 모두 `std::uint32_t`라서 오버로드로는 구분할 수 없다. 그래서 이름을 나눴다.
 `fromRgba`에 6자리를 넣으면 `0x001E2430`으로 읽혀 색이 한 칸씩 밀리고 거의 투명해진다.
-반대로 `fromRgb`에 8자리를 넣으면 컴파일 에러가 난다. `consteval`이라 빌드 설정과 상관없이 컴파일할 때 검사한다.
+두 함수 모두 런타임 값을 받는다. 반대로 `fromRgb`에 6자리를 넘는 값을 넣으면 빌드 설정과 상관없이 이렇게 된다.
+
+| 호출 | 결과 |
+|---|---|
+| 상수 식 (`constexpr` 변수, `static_assert`) | 컴파일 에러 |
+| 그 밖 (함수 인자로 바로 넘기기, 런타임 값) | 마젠타(`0xFF00FF`). 게임은 멈추지 않는다 |
+
+마젠타는 '잘못된 색'이라는 표시다. 색 하나 때문에 게임을 끄지 않고, 대신 화면에서 바로 눈에 띄게 한다.
+컴파일할 때 확실히 잡고 싶은 색은 `constexpr` 변수로 받아 두자.
+
+```cpp
+constexpr meno::Color kSky = meno::Color::fromRgb(0x1E2430);  // 8자리를 넣으면 여기서 컴파일 에러
+renderer.beginFrame(kSky);
+```
+
+> ⚠️ **반투명은 `withAlpha`로 만든다.** `fromRgb(0x00000080)`처럼 앞자리가 `00`인 8자리는 값이 6자리 범위라
+> 어떤 검사로도 잡히지 않고 불투명한 남색(`0x000080`)이 된다. `meno::colors::Black.withAlpha(128)` 또는
+> `fromRgba(0x00000080)`을 쓴다.
+
+### 다각형과 부채꼴
+
+```cpp
+// 꼭짓점은 position 기준 로컬 좌표다. 모양은 한 번 만들어 두고 위치와 회전만 바꾼다.
+constexpr std::array<meno::Vec2f, 3> kShip{{{14.f, 0.f}, {-10.f, -8.f}, {-10.f, 8.f}}};
+renderer.drawPolygon(ship.position, kShip, {.fill = meno::colors::White, .rotation = ship.angle});
+
+// 오른쪽을 보고 입을 60도 벌린 팩맨. 0도 = 오른쪽, 시계 방향.
+renderer.drawSector(pac.position, 16.f, 30.f, 300.f, {.fill = meno::colors::Yellow});
+```
+
+- **`drawPolygon`의 점은 `position` 기준 로컬 좌표다.** `params.origin`(기본 `{0, 0}`)이 `position`에 놓이고 회전 중심이 된다.
+  월드 좌표의 점을 그대로 그리려면 `position`을 `{0, 0}`으로 둔다. 이때 `rotation`은 월드 원점을 축으로 돈다.
+- **채우기는 볼록 다각형만 보장한다.** SFML이 바운딩 박스 중심에서 삼각형 부채를 펴서 채우기 때문이다.
+  그 중심에서 모든 변이 보이면 오목해도 맞게 채워진다. 중심 둘레로 꼭짓점을 돌리며 반지름만 흔든 운석은 대개 괜찮다.
+  (꼭짓점 10개, 반지름을 절반까지 줄인 무작위 운석 2만 개를 시뮬레이션했을 때 깨진 것이 없었다.)
+- **점이 3개 미만이면 그리지 않는다.** 중괄호 목록(`{{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}`)은 `initializer_list`
+  오버로드가 받는다. C++20의 `std::span`은 중괄호 목록을 받지 못한다.
+- **`drawSector`는 180도가 넘어도 정확하다.** 실제 중심에서 삼각형 부채를 펴서 채운다. `sweepDeg`가 음수면 반시계로 펴고,
+  절댓값이 360 이상이면 `drawCircle`과 같다. 호의 매끄러움은 `drawCircle`과 같다(한 바퀴 30변).
 
 ### 텍스트 크기 재기
 
@@ -259,3 +297,4 @@ MSVC는 `/utf-8` 옵션을 줘야 한글 리터럴과 주석이 안전하다. CM
   W6 성능 벤치에서 병목으로 나오면 그때 `sf::VertexArray` 배칭을 넣는 게 순서다.
 - 렌더 타깃(오프스크린), 셰이더, 블렌드 모드
 - 텍스트 정렬(`TextAlign`) — 지금은 `measureTextBounds`로 직접 계산한다
+- 오목 다각형 채우기(삼각분할) — 지금은 `drawPolygon`이 SFML처럼 볼록 다각형만 보장한다
