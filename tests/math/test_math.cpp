@@ -9,7 +9,10 @@
 
 #include "check.hpp"
 
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 using namespace meno;
@@ -105,6 +108,15 @@ int main() {
     check(rgb.r == 0x2E && rgb.g == 0x34 && rgb.b == 0x40 && rgb.a == 0xFF, "fromRgb 바이트 분해");
     check(Color::fromRgb(0x1E2430) == Color::fromRgba(0x1E2430FF), "fromRgb(RRGGBB) == fromRgba(RRGGBBAA)");
     check(Color::fromRgb(0x000000) == colors::Black, "fromRgb(0x000000)은 불투명 검정");
+
+    // fromRgb는 런타임에도 색상 값을 받는다.
+    constexpr std::array<std::uint32_t, 2> kPallete{0xFF0000u, 0x1E2430u};
+    std::size_t index = 1; // const가 아니므로 kPalette[index]는 상수식이 아니다.
+    check(Color::fromRgb(kPallete[index]) == Color{0x1E, 0x24, 0x30}, "fromRgb는 런타임 값을 받는다.");
+
+    // 런타임에 매개변수로 Hex코드 6자리를 넘는 값이 들어오면 프로그램을 멈추지 않고, 마젠타를 반환값으로 내보낸다.
+    std::uint32_t typo = 0x1E2430FF;
+    check(Color::fromRgb(typo) == colors::Magenta, "fromRgb에 런타임 8자리 값을 넣으면 마젠타 색상을 돌려준다.");
 
     // fromRgba는 8자리 리터럴만 받는다.
     // 6자리 리터럴을 넣으면 0x001E2430으로 읽혀 R=0x00, G=0x1E, B=0x24, A=0x30이 된다.
