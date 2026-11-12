@@ -17,6 +17,7 @@
 #include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
 
@@ -62,7 +63,8 @@ void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setRotation(backend::toSfAngle(params.rotation));
 }
 
-// 원 한 바퀴를 몇 개의 변으로 나눌지. sf::CircleShape의 기본값(30)과 같게 두어 drawCircle과 매끄러움을 맞춘다.
+// 원 한 바퀴를 몇 개의 변으로 나눌지. drawCircle과 drawSector가 함께 쓴다.
+// 둘이 같아야 쿨다운처럼 359도에서 360도(drawCircle)로 넘어갈 때 매끄러움이 달라지지 않는다.
 constexpr std::size_t kSegmentsPerTurn = 30;
 
 // 점 배열을 복사하지 않고 그대로 읽는 sf::Shape.
@@ -194,7 +196,7 @@ void Renderer::drawCircle(Vec2f center, float radius, const ShapeParams& params)
         return;
     }
 
-    sf::CircleShape shape{radius};
+    sf::CircleShape shape{radius, kSegmentsPerTurn};
     applyShapeParams(shape, params);
 
     // CircleShape의 기준점은 바운딩 박스의 좌상단이다. origin을 반지름만큼
@@ -271,28 +273,34 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
         local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;
     }
 
-    // 외곽선과 변환(origin, position, rotation)은 sf::Shape에 맡기고, 채우기만 직접 그린다.
-    // 바운딩 박스의 중심과 첫 변으로 점의 방향(시계/반시계)을 정하는 sf::Shape의 특성을 고려하여, 외곽선은 호부터 그린다.
-    // 만약, 중심에서 시작하면 각도의 조합이 (startDeg 0, sweepDeg 270)와 같은 특정 상황에서 외곽선이 안쪽으로 그리는 경우가 생길 수 있다.
-    PolygonShape shape{std::span<const Vec2f>{local}.subspan(1, segments + 3)};
-    applyShapeParams(shape, params);
-    shape.setFillColor(sf::Color::Transparent);
-    shape.setOrigin(backend::toSf(params.origin));
-    shape.setPosition(backend::toSf(center));
-
-    // 180도가 넘는 부채꼴은 오목한 도형이 되는데, 그래서 볼록한 도형만 보장하는 sf::Shape에 맡길 수 없다.
-    // 그러므로 실제 중심을 첫 점으로 삼각형 형태의 부채를 펼치듯이 그려낸다.
-    std::array<sf::Vertex, kSegmentsPerTurn + 2> fan{};
-    const sf::Color fill = backend::toSf(params.fill);
-    for (std::size_t i = 0; i < segments + 2; ++i) {
-        fan[i] = sf::Vertex{backend::toSf(local[i]), fill};
-    }
+    // 면을 채울 때와 외곽선을 그을 때 모두 같은 변환을 사용하며, 순서는 sf::Shape와 같다.
+    sf::Transformable placement;
+    placement.setOrigin(backend::toSf(params.origin));
+    placement.setRotation(backend::toSfAngle(params.rotation));
+    placement.setPosition(backend::toSf(center));
     sf::RenderStates states;
-    states.transform = shape.getTransform();
-    impl_->target->draw(fan.data(), segments +2, sf::PrimitiveType::TriangleFan, states);
+    states.transform = placement.getTransform();
 
+    // 180도가 넘는 부채꼴은 오목해서, 볼록한 도형만 보장하는 sf::Shape의 채우기를 쓸 수 없다.
+    // 그러므로 실제 중심을 첫 점으로 하여 삼각형 형태의 부채를 펼친다.
+    // 채우기 색이 투명하다면 GL 그리기 호출 수를 줄이기 위해 이 작업을 건너뛴다.
+    if (params.fill.a != 0) {
+        std::array<sf::Vertex, kSegmentsPerTurn + 2> fan{};
+        const sf::Color fill = backend::toSf((params.fill));
+        for (std::size_t i = 0; i < segments + 2; ++i) {
+            fan[i] = sf::Vertex{backend::toSf(local[i]), fill};
+        }
+        impl_->target->draw(fan.data(), segments + 2, sf::PrimitiveType::TriangleFan, states);
+    }
+
+    // 외곽선은 있을 때만 sf::Shape로 만든다.
+    // sf::Shape는 바운딩 박스의 중심과 첫 변으로 점의 방향을 정하므로 호부터 넘긴다.
     if (params.outlineThickness != 0.f) {
-        impl_->target->draw(shape);
+        PolygonShape outline{std::span<const Vec2f>{local}.subspan(1, segments + 3)};
+        outline.setFillColor(sf::Color::Transparent);
+        outline.setOutlineColor(backend::toSf(params.outline));
+        outline.setOutlineThickness(params.outlineThickness);
+        impl_->target->draw(outline, states);
     }
 }
 
