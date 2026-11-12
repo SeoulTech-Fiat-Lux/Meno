@@ -94,6 +94,7 @@ renderer.drawSector(pac.position, 16.f, 30.f, 300.f, {.fill = meno::colors::Yell
   오버로드가 받는다. C++20의 `std::span`은 중괄호 목록을 받지 못한다.
 - **`drawSector`는 180도가 넘어도 정확하다.** 실제 중심에서 삼각형 부채를 펴서 채운다. `sweepDeg`가 음수면 반시계로 펴고,
   절댓값이 360 이상이면 `drawCircle`과 같다. 호의 매끄러움은 `drawCircle`과 같다(한 바퀴 30변).
+  외곽선은 꼭짓점에서 평평하게 끝나기 때문에 두께 밖으로 튀어나오지 않는다.
 
 ### 텍스트 크기 재기
 

@@ -15,6 +15,8 @@
 
 #include "check.hpp"
 #include "display.hpp"
+#include "meno/math/Color.hpp"
+#include "meno/math/Vec2.hpp"
 #include "pixels.hpp"
 
 #include <SFML/Graphics/Image.hpp>
@@ -262,6 +264,33 @@ bool isSector(const sf::Image& image, Vec2f apex, float r, float start, float sw
     return ok;
 }
 
+// 칠해진 픽셀이 부채꼴로부터 가장 멀리 떨어진 거리를 잰다.
+// 부채꼴 안이면 0, 호 쪽이면 반지름을 넘은 만큼, 양옆이면 가까운 반지름 선분까지의 거리다.
+float farthestDotFromSector(const sf::Image& image, Vec2f apex, float r, float start, float sweep) {
+    const auto toRadius = [r](Vec2f p, float degrees) {
+        const Vec2f end = polar({0.f, 0.f}, degrees, r);
+        const float t = std::clamp((p.x * end.x + p.y * end.y) / (r * r), 0.f, 1.f);
+        return (p - end * t).length();
+    };
+    float farthest = 0.f;
+    const sf::Vector2u size = image.getSize();
+    for (unsigned int y = 0; y < size.y; ++y) {
+        for (unsigned int x = 0; x < size.x; ++x) {
+            if (isColor(image, x, y, kClear)) {
+                continue;
+            }
+            const Vec2f p =
+                Vec2f{static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f} - apex;
+            const float degrees = std::atan2(p.y, p.x) * 180.f / 3.14159265f;
+            const float distance = travel(start, sweep, degrees) < std::fabs(sweep)
+                                       ? std::max(0.f, p.length() - r)
+                                       : std::min(toRadius(p, start), toRadius(p, start + sweep));
+            farthest = std::max(farthest, distance);
+        }
+    }
+    return farthest;
+}
+
 void checkSector(Window& window, Renderer& renderer) {
     constexpr float r = 50.f;
 
@@ -357,6 +386,28 @@ void checkSector(Window& window, Renderer& renderer) {
     check(isColor(image, polar(kCenter, 180.f, r - 2.f), kInk) &&
               isColor(image, polar(kCenter, 180.f, r + 2.f), kClear),
           "drawSector: 음수 외곽선은 안쪽");
+
+    // 외곽선은 꼭짓점에서도 두께만큼만 나온다.
+    // SFML은 볼록한 모서리만 길이를 제한하고 오목한 모서리는 제한하지 않아서,
+    // 중심 꼭짓점이 그대로면 359도에서는 바늘 같은 선이 수백 픽셀 튀어나온다.
+    // 5도처럼 좁은 경우에는, 꼭짓점 뒤로 두께의 10배가 튀어나오게 제한되어 있다.
+    float worst = 0.f;
+    float worstSweep = 0.f;
+    for (const float sweep : {5.f, 30.f, 60.f, 330.f, 355.f, 359.f, -359.f}) {
+        image = drawAndCapture(window, renderer, [&] {
+            renderer.drawSector(
+                kCenter, r, -90.f, sweep,
+                {.fill = colors::Transparent, .outline = kInk, .outlineThickness = 4.f});
+        });
+        const float over = farthestDotFromSector(image, kCenter, r, -90.f, sweep);
+        if (over > worst) {
+            worst = over;
+            worstSweep = sweep;
+        }
+    }
+    char tight[128];
+    std::snprintf(tight, sizeof tight, "drawSector: 외곽선은 꼭짓점에서도 두께만큼만 나온다 (가장 먼 곳 %.1fpx, sweep %.0f)", worst, worstSweep);
+    check(worst <= 7.f, tight);
 
     // sweepDeg 0이나 NaN, 반지름 0 이하나 무한대·NaN이면 외곽선까지 아무것도 그리지 않는다.
     // 남은 시간으로 계산한 반지름이 마지막 프레임에 음수로 넘어가도 이상한 도형이 남지 않는다.

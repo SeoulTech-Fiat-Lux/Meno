@@ -249,11 +249,16 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
         return;
     }
 
-    const auto segments = std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(std::fabs(sweepDeg) / 360.f * static_cast<float>(kSegmentsPerTurn))));
+    // 가장 처음 조건에서 |sweepDeg| < 360을 보장하므로 항상 kSegmentsPerTurn을 넘지 않는다.
+    // 이는 아래 배열 크기의 근거가 되므로, clamp로 수치를 못박아 둔다.
+    const float turns = std::fabs(sweepDeg) / 360.f;
+    const auto segments = std::clamp<std::size_t>(
+        static_cast<std::size_t>(std::ceil(turns * static_cast<float>(kSegmentsPerTurn))), 1,
+        kSegmentsPerTurn);
 
     // 로컬 좌표(중심 = {0, 0})의 꼭짓점을 [중심, 호 위의 점 segments + 1개, 중심] 순서로 둔다.
     // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다. (시작점만 다른 동일한 도형)
-    std::array<Vec2f, kSegmentsPerTurn + 3> local {};
+    std::array<Vec2f, kSegmentsPerTurn + 4> local{};
     const float start = detail::toRadians(detail::wrapDegrees(startDeg));
     const float step = detail::toRadians(sweepDeg) / static_cast<float>(segments);
     for (std::size_t i = 0; i <= segments; ++ i) {
@@ -264,7 +269,7 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
     // 외곽선과 변환(origin, position, rotation)은 sf::Shape에 맡기고, 채우기만 직접 그린다.
     // 바운딩 박스의 중심과 첫 변으로 점의 방향(시계/반시계)을 정하는 sf::Shape의 특성을 고려하여, 외곽선은 호부터 그린다.
     // 만약, 중심에서 시작하면 각도의 조합이 (startDeg 0, sweepDeg 270)와 같은 특정 상황에서 외곽선이 안쪽으로 그리는 경우가 생길 수 있다.
-    PolygonShape shape{std::span<const Vec2f>{local}.subspan(1, segments + 2)};
+    PolygonShape shape{std::span<const Vec2f>{local}.subspan(1, segments + 3)};
     applyShapeParams(shape, params);
     shape.setFillColor(sf::Color::Transparent);
     shape.setOrigin(backend::toSf(params.origin));
