@@ -1,4 +1,5 @@
 #include "meno/graphics/DrawParams.hpp"
+#include "meno/math/Camera2D.hpp"
 #include "meno/math/Vec2.hpp"
 #include <meno/graphics/Renderer.hpp>
 
@@ -10,17 +11,19 @@
 #include "sfml_backend/Convert.hpp"
 
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Mouse.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
-#include <initializer_list>
 #include <optional>
 #include <stdexcept>
 
@@ -58,6 +61,9 @@ void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setOutlineThickness(params.outlineThickness);
     shape.setRotation(backend::toSfAngle(params.rotation));
 }
+
+// 원 한 바퀴를 몇 개의 변으로 나눌지. sf::CircleShape의 기본값(30)과 같게 두어 drawCircle과 매끄러움을 맞춘다.
+constexpr std::size_t kSegmentsPerTurn = 30;
 
 // 점 배열을 복사하지 않고 그대로 읽는 sf::Shape.
 // sf::ConvexShape는 setPoint를 부를 때마다 도형 전체를 다시 계산해서, 점 n개를 넣으면 n번 계산한다.
@@ -228,6 +234,56 @@ void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points, const 
 
 void Renderer::drawPolygon(Vec2f position, std::initializer_list<Vec2f> points, const ShapeParams & params) {
     drawPolygon(position, std::span<const Vec2f>{points.begin(), points.size()}, params);
+}
+
+void Renderer::drawSector(Vec2f center, float radius, float startDeg, float sweepDeg, const ShapeParams& params) {
+    // NaN과 비교할 때는 항상 거짓을 반환하므로, sweepDeg가 NaN이 되는 경우 역시 이 조건문에서 걸러진다.
+    if (!detail::isPositiveFinite(radius) || !(std::fabs(sweepDeg) > 0.f)) {
+        return;
+    }
+
+    // 한 바퀴 이상 회전하며 그리는 경우.
+    // 아래처럼 중심을 꼭짓점으로 넣으면 외곽선에 반지름 선이 하나 남게 된다.
+    if (std::fabs(sweepDeg) >=360.f) {
+        drawCircle(center, radius, params);
+        return;
+    }
+
+    const auto segments = std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(std::fabs(sweepDeg) / 360.f * static_cast<float>(kSegmentsPerTurn))));
+
+    // 로컬 좌표(중심 = {0, 0})의 꼭짓점을 [중심, 호 위의 점 segments + 1개, 중심] 순서로 둔다.
+    // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다. (시작점만 다른 동일한 도형)
+    std::array<Vec2f, kSegmentsPerTurn + 3> local {};
+    const float start = detail::toRadians(detail::wrapDegrees(startDeg));
+    const float step = detail::toRadians(sweepDeg) / static_cast<float>(segments);
+    for (std::size_t i = 0; i <= segments; ++ i) {
+        const float angle = start + step * static_cast<float>(i);
+        local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;
+    }
+
+    // 외곽선과 변환(origin, position, rotation)은 sf::Shape에 맡기고, 채우기만 직접 그린다.
+    // 바운딩 박스의 중심과 첫 변으로 점의 방향(시계/반시계)을 정하는 sf::Shape의 특성을 고려하여, 외곽선은 호부터 그린다.
+    // 만약, 중심에서 시작하면 각도의 조합이 (startDeg 0, sweepDeg 270)와 같은 특정 상황에서 외곽선이 안쪽으로 그리는 경우가 생길 수 있다.
+    PolygonShape shape{std::span<const Vec2f>{local}.subspan(1, segments + 2)};
+    applyShapeParams(shape, params);
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOrigin(backend::toSf(params.origin));
+    shape.setPosition(backend::toSf(center));
+
+    // 180도가 넘는 부채꼴은 오목한 도형이 되는데, 그래서 볼록한 도형만 보장하는 sf::Shape에 맡길 수 없다.
+    // 그러므로 실제 중심을 첫 점으로 삼각형 형태의 부채를 펼치듯이 그려낸다.
+    std::array<sf::Vertex, kSegmentsPerTurn + 2> fan{};
+    const sf::Color fill = backend::toSf(params.fill);
+    for (std::size_t i = 0; i < segments + 2; ++i) {
+        fan[i] = sf::Vertex{backend::toSf(local[i]), fill};
+    }
+    sf::RenderStates states;
+    states.transform = shape.getTransform();
+    impl_->target->draw(fan.data(), segments +2, sf::PrimitiveType::TriangleFan, states);
+
+    if (params.outlineThickness != 0.f) {
+        impl_->target->draw(shape);
+    }
 }
 
 // --- 텍스트 ---------------------------------------------------------------

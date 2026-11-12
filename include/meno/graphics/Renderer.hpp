@@ -87,6 +87,11 @@ public:
     // ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill = colors::Red});
     void drawPolygon(Vec2f position, std::initializer_list<Vec2f> points, const ShapeParams& params = {});
 
+    // 부채꼴 그리기 함수. 각도는 도 단위이며 sweepDeg가 양수면 시계방향, 음수면 반시계 방향으로 펼친다.
+    // |sweepDeg| >= 360이면 drawCircle과 같다. sweepDeg가 0이거나 radius가 0 이하(NaN 포함)면 그리지 않는다.
+    // params.origin과 rotation은 drawCircle처럼 중심을 기준으로 삼는다.
+    void drawSector(Vec2f center, float radius, float startDeg, float sweepDeg, const ShapeParams& params = {});
+
     // --- 텍스트 -----------------------------------------------------------
 
     // text는 UTF-8로 해석한다. 한글 문자열 리터럴이 그대로 들어간다.
