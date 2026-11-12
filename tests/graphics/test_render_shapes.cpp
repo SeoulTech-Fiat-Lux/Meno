@@ -133,6 +133,18 @@ void checkCircle(Window& window, Renderer& renderer) {
     check(isColor(image, kCenter - Vec2f{0.f, 30.f}, kInk) &&
               isColor(image, kCenter - Vec2f{30.f, 0.f}, kClear),
           "drawCircle: rotation은 center를 축으로 돈다");
+
+    // 반지름이 0 이하·무한대·NaN이면 외곽선까지 아무것도 그리지 않는다
+    // 시간에 따라 줄어드는 반지름이 마지막 프레임에 음수가 되어도 원이 다시 나타나지 않는다.
+    image = drawAndCapture(window, renderer, [&] {
+        const ShapeParams loud{.fill = kInk, .outline = kInk, .outlineThickness = 4.f};
+        renderer.drawCircle(kCenter, -r, loud);
+        renderer.drawCircle(kCenter, 0.f, loud);
+        renderer.drawCircle(kCenter, std::nanf(""), loud);
+        renderer.drawCircle(kCenter, INFINITY, loud);
+    });
+    check(isColor(image, kCenter, kClear) && isColor(image, kCenter + Vec2f{r * 0.5f, 0.f}, kClear),
+          "drawCircle: 반지름 0 이하·무한대·NaN은 그리지 않는다");
 }
 
 // --- 선 ---------------------------------------------------------------------

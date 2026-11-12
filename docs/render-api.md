@@ -95,6 +95,8 @@ renderer.drawSector(pac.position, 16.f, 30.f, 300.f, {.fill = meno::colors::Yell
 - **`drawSector`는 180도가 넘어도 정확하다.** 실제 중심에서 삼각형 부채를 펴서 채운다. `sweepDeg`가 음수면 반시계로 펴고,
   절댓값이 360 이상이면 `drawCircle`과 같다. 호의 매끄러움은 `drawCircle`과 같다(한 바퀴 30변).
   외곽선은 꼭짓점에서 평평하게 끝나기 때문에 두께 밖으로 튀어나오지 않는다.
+- **반지름이 0 이하(NaN, 무한대 포함)면 `drawCircle`과 `drawSector` 모두 그리지 않는다.**
+  시간에 따라 줄어드는 반지름이 마지막 프레임에 음수가 되어도 원이 다시 나타나지 않는다.
 
 ### 텍스트 크기 재기
 

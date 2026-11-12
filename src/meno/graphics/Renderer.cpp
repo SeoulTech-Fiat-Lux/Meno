@@ -189,6 +189,11 @@ void Renderer::drawRect(const Rectf& rect, const ShapeParams& params) {
 }
 
 void Renderer::drawCircle(Vec2f center, float radius, const ShapeParams& params) {
+    // 넘겨받은 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
+    if (!detail::isPositiveFinite(radius)) {
+        return;
+    }
+
     sf::CircleShape shape{radius};
     applyShapeParams(shape, params);
 

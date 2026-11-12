@@ -75,6 +75,8 @@ public:
     // --- 기본 도형 --------------------------------------------------------
 
     void drawRect(const Rectf& rect, const ShapeParams& params = {});
+
+    // radius가 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
     void drawCircle(Vec2f center, float radius, const ShapeParams& params = {});
     void drawLine(Vec2f from, Vec2f to, Color color = colors::White, float thickness = 1.f);
 
