@@ -418,7 +418,10 @@ void checkSector(Window& window, Renderer& renderer) {
         }
     }
     char tight[128];
-    std::snprintf(tight, sizeof tight, "drawSector: 외곽선은 꼭짓점에서도 두께만큼만 나온다 (가장 먼 곳 %.1fpx, sweep %.0f)", worst, worstSweep);
+    std::snprintf(
+        tight, sizeof tight,
+        "drawSector: 외곽선은 꼭짓점에서도 두께만큼만 나온다 (가장 먼 곳 %.1fpx, sweep %.0f)",
+        worst, worstSweep);
     check(worst <= 7.f, tight);
 
     // sweepDeg 0이나 NaN, 반지름 0 이하나 무한대·NaN이면 외곽선까지 아무것도 그리지 않는다.

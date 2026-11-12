@@ -50,7 +50,6 @@ namespace {
     return drawable;
 }
 
-
 // 기본 도형이 공유하는 변환 설정.
 template <typename Shape>
 void applyShapeParams(Shape& shape, const ShapeParams& params) {
@@ -66,7 +65,8 @@ constexpr std::size_t kSegmentsPerTurn = 30;
 
 // 점 배열을 복사하지 않고 그대로 읽는 sf::Shape.
 // sf::ConvexShape는 setPoint를 부를 때마다 도형 전체를 다시 계산해서, 점 n개를 넣으면 n번 계산한다.
-// 이 클래스는 생성자에서 update()를 한 번만 부른다. 이 도형을 그릴 때까지는 points가 살아 있어야 한다.
+// 이 클래스는 생성자에서 update()를 한 번만 부른다. 이 도형을 그릴 때까지는 points가 살아 있어야
+// 한다.
 class PolygonShape final : public sf::Shape {
 public:
     explicit PolygonShape(std::span<const Vec2f> points) : points_(points) { update(); }
@@ -223,7 +223,8 @@ void Renderer::drawLine(Vec2f from, Vec2f to, Color color, float thickness) {
     impl_->target->draw(shape);
 }
 
-void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points, const ShapeParams& params) {
+void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points,
+                           const ShapeParams& params) {
     if (points.size() < 3) {
         return;
     }
@@ -236,19 +237,22 @@ void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points, const 
     impl_->target->draw(shape);
 }
 
-void Renderer::drawPolygon(Vec2f position, std::initializer_list<Vec2f> points, const ShapeParams & params) {
+void Renderer::drawPolygon(Vec2f position, std::initializer_list<Vec2f> points,
+                           const ShapeParams& params) {
     drawPolygon(position, std::span<const Vec2f>{points.begin(), points.size()}, params);
 }
 
-void Renderer::drawSector(Vec2f center, float radius, float startDeg, float sweepDeg, const ShapeParams& params) {
-    // NaN과 비교할 때는 항상 거짓을 반환하므로, sweepDeg가 NaN이 되는 경우 역시 이 조건문에서 걸러진다.
+void Renderer::drawSector(Vec2f center, float radius, float startDeg, float sweepDeg,
+                          const ShapeParams& params) {
+    // NaN과 비교할 때는 항상 거짓을 반환하므로, sweepDeg가 NaN이 되는 경우 역시 이 조건문에서
+    // 걸러진다.
     if (!detail::isPositiveFinite(radius) || !(std::fabs(sweepDeg) > 0.f)) {
         return;
     }
 
     // 한 바퀴 이상 회전하며 그리는 경우.
     // 아래처럼 중심을 꼭짓점으로 넣으면 외곽선에 반지름 선이 하나 남게 된다.
-    if (std::fabs(sweepDeg) >=360.f) {
+    if (std::fabs(sweepDeg) >= 360.f) {
         drawCircle(center, radius, params);
         return;
     }
@@ -261,11 +265,12 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
         kSegmentsPerTurn);
 
     // 로컬 좌표(중심 = {0, 0})의 꼭짓점을 [중심, 호 위의 점 segments + 1개, 중심] 순서로 둔다.
-    // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다. (시작점만 다른 동일한 도형)
+    // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다.
+    // (시작점만 다른 동일한 도형)
     std::array<Vec2f, kSegmentsPerTurn + 4> local{};
     const float start = detail::toRadians(detail::wrapDegrees(startDeg));
     const float step = detail::toRadians(sweepDeg) / static_cast<float>(segments);
-    for (std::size_t i = 0; i <= segments; ++ i) {
+    for (std::size_t i = 0; i <= segments; ++i) {
         const float angle = start + step * static_cast<float>(i);
         local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;
     }

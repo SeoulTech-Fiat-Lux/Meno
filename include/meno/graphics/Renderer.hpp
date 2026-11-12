@@ -80,20 +80,24 @@ public:
     void drawCircle(Vec2f center, float radius, const ShapeParams& params = {});
     void drawLine(Vec2f from, Vec2f to, Color color = colors::White, float thickness = 1.f);
 
-    // 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막 점을 첫 점에 연결한다.
-    // params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0, 0}이면 position을 축으로 돈다.
-    // 점이 3개 미만이면 그리지 않는다. points는 이 호출 안에서만 읽으므로 호출이 끝나면 버려도 된다.
-    // SFML이 바운딩 박스 중심에서 부채를 펴는 식으로 면을 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
+    // 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막 점을
+    // 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0,
+    // 0}이면 position을 축으로 돈다. 점이 3개 미만이면 그리지 않는다. points는 이 호출 안에서만
+    // 읽으므로 호출이 끝나면 버려도 된다. SFML이 바운딩 박스 중심에서 부채를 펴는 식으로 면을
+    // 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
     void drawPolygon(Vec2f position, std::span<const Vec2f> points, const ShapeParams& params = {});
 
     // 위 함수의 오버로딩. C++20의 std::span은 {a, b, c}를 받지 못하므로 따로 둔다.
-    // ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill = colors::Red});
-    void drawPolygon(Vec2f position, std::initializer_list<Vec2f> points, const ShapeParams& params = {});
+    // ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill =
+    // colors::Red});
+    void drawPolygon(Vec2f position, std::initializer_list<Vec2f> points,
+                     const ShapeParams& params = {});
 
-    // 부채꼴 그리기 함수. 각도는 도 단위이며 sweepDeg가 양수면 시계방향, 음수면 반시계 방향으로 펼친다.
-    // |sweepDeg| >= 360이면 drawCircle과 같다. sweepDeg가 0이거나 radius가 0 이하(NaN 포함)면 그리지 않는다.
-    // params.origin과 rotation은 drawCircle처럼 중심을 기준으로 삼는다.
-    void drawSector(Vec2f center, float radius, float startDeg, float sweepDeg, const ShapeParams& params = {});
+    // 부채꼴 그리기 함수. 각도는 도 단위이며 sweepDeg가 양수면 시계방향, 음수면 반시계 방향으로
+    // 펼친다. |sweepDeg| >= 360이면 drawCircle과 같다. sweepDeg가 0이거나 radius가 0 이하(NaN
+    // 포함)면 그리지 않는다. params.origin과 rotation은 drawCircle처럼 중심을 기준으로 삼는다.
+    void drawSector(Vec2f center, float radius, float startDeg, float sweepDeg,
+                    const ShapeParams& params = {});
 
     // --- 텍스트 -----------------------------------------------------------
 
