@@ -266,6 +266,9 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
 
     // 로컬 좌표(중심 = {0, 0})의 꼭짓점을 [중심, 호 위의 점 segments + 1개, 중심] 순서로 둔다.
     // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다.
+    // 외곽선에는 호의 점들 뒤로 중심점을 두 번 넣는다.
+    // 마지막 중심점 중복은 360도에 가까운 부채꼴에서 SFML의 외곽선 조인이
+    // 바늘처럼 길게 돌출되는 현상을 억제한다.
     // (시작점만 다른 동일한 도형)
     std::array<Vec2f, kSegmentsPerTurn + 4> local{};
     const float start = detail::toRadians(detail::wrapDegrees(startDeg));
