@@ -8,18 +8,18 @@ SFML 기반 2D 게임 개발 라이브러리. 서울과학기술대학교 캡스
 ```cpp
 #include <meno/Meno.hpp>
 
-int main() {
-    meno::Window window{{960u, 540u}, "내 게임"};
-    meno::Renderer renderer{window};
-
-    // 일반 게임은 meno::Application을 상속해 update/render만 구현한다.
-    // Application이 고정 timestep 루프와 시간 누적을 담당한다.
-    while (window.isOpen()) { // 렌더 API만 보여 주는 최소 예제
-        window.pollEvents();
-        renderer.beginFrame(meno::Color::fromRgb(0x1E2430));
-        renderer.drawCircle({480.f, 270.f}, 60.f, {.fill = meno::colors::Cyan});
-        renderer.endFrame();
+class MyGame final : public meno::Game {
+private:
+    void onStart() override {
+        auto& scene = scenes().createScene();
+        // scene에 GameObject와 handler를 구성한다.
+        (void)scenes().changeScene(scene.id());
     }
+};
+
+int main() {
+    MyGame game;
+    game.run();
 }
 ```
 
@@ -59,6 +59,10 @@ ctest --test-dir build --output-on-failure
 ```
 
 ## 고정 timestep 게임 루프
+
+일반적인 게임은 `Game`을 상속한다. `Game`이 창, 렌더러, 리소스 캐시와
+SceneManager를 소유·연결하고 이벤트 처리, fixed update, 장면 렌더링과 종료 정리를
+수행한다. 자세한 실행 순서와 수명 규칙은 [Game 통합 실행 경로](docs/game-api.md)에 있다.
 
 `Application`을 상속하면 사용자가 `while` 루프나 시간 누적을 직접 작성할
 필요가 없다. `update()`는 고정 간격으로 0회 이상 호출되고 `render()`는 프레임당
@@ -135,6 +139,52 @@ const GameState* state = view.getState<GameState>();
 - 유효한 상태가 이미 있으면 `setState`는 `std::logic_error`를 던진다. 기존 상태는 유지되고,
   새로 전달한 객체는 정리된다. 상태를 교체하거나 꺼내 소유권을 돌려받는 API는 없다.
 - 상태가 없을 때 빈 `unique_ptr`을 넘기면 빈 상태로 남으며, 이후 다시 등록할 수 있다.
+
+## 그리기
+
+`Renderer`는 부른 순서대로 그린다. 나중에 부른 것이 위에 올라간다.
+좌표는 픽셀이고 원점은 창 좌상단, y는 아래로 증가한다. 각도는 전부 도(degree) 단위이며 시계 방향이 +다.
+
+```cpp
+renderer.beginFrame(meno::Color::fromRgb(0x14181F)); // 배경색으로 지운다
+
+renderer.drawRect({{40.f, 40.f}, {120.f, 16.f}}, {.fill = meno::colors::White});
+renderer.drawCircle(ball.position, 8.f, {.fill = meno::Color::fromRgb(0xE5533D)});
+renderer.drawLine(from, to, meno::Color::fromRgb(0x4FC3F7), 2.f); // 두께 2px
+
+// 다각형. 점은 position 기준 로컬 좌표이고, rotation은 position을 축으로 돈다.
+renderer.drawPolygon(ship.position, {{14.f, 0.f}, {-10.f, -8.f}, {-10.f, 8.f}},
+                     {.fill = meno::colors::White, .rotation = ship.angle});
+
+// 외곽선만 그리려면 fill을 투명으로 둔다. std::vector나 std::array도 그대로 넘긴다.
+renderer.drawPolygon(rock.position, rock.points,
+                     {.fill = meno::colors::Transparent, .outline = meno::colors::White, .outlineThickness = 2.f});
+
+// 부채꼴. 0도가 오른쪽이다. 오른쪽을 보고 입을 60도 벌린 팩맨:
+renderer.drawSector(pac.position, 12.f, 30.f, 300.f, {.fill = meno::colors::Yellow});
+
+renderer.endFrame();
+```
+
+색은 이렇게 만든다.
+
+| 만드는 법 | 예 |
+|---|---|
+| 6자리 `#RRGGBB` | `meno::Color::fromRgb(0x4FC3F7)` |
+| 8자리 `#RRGGBBAA` | `meno::Color::fromRgba(0x4FC3F780)` |
+| 반투명 | `meno::colors::White.withAlpha(128)` (0 투명 ~ 255 불투명) |
+| 이름 있는 색 | `meno::colors::White`, `Black`, `Red`, `Yellow`, `Transparent` 등 |
+
+- **`fromRgb`에는 6자리만 넣는다.** 8자리를 넣으면 상수 식에서는 컴파일 에러, 그 밖에서는 마젠타(`#FF00FF`)가 나온다. 게임은 멈추지 않는다.
+- **반투명은 `withAlpha`로 만든다.** `fromRgb(0x00000080)`처럼 앞자리가 `00`인 8자리는 오류로 잡히지 않고 불투명한 남색이 된다.
+- **텍스처에 색을 곱하려면 `tint`를 쓴다.** 흰색이면 원본 그대로다.
+
+```cpp
+renderer.draw(playerTexture, {.position = player.position, .tint = meno::Color::fromRgb(0xFF6060)}); // 붉게
+renderer.draw(playerTexture, {.position = player.position, .tint = meno::colors::White.withAlpha(128)}); // 반투명
+```
+
+카메라, 텍스트 정렬, 다각형 채우기 조건 같은 자세한 규칙은 [docs/render-api.md](docs/render-api.md)에 있다.
 
 ## 오디오
 
@@ -252,7 +302,7 @@ second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
 ```
 include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   Meno.hpp          통합 헤더
-  core/             Window, Application, Clock, Time
+  core/             Window, Application, Game, Clock, Time
   math/             Vec2, Rect, Color, Camera2D
   graphics/         Renderer, Texture, Font, DrawParams
   resources/        ResourceManager
@@ -281,6 +331,8 @@ python tools/check_headers.py
 
 | 문서 | 내용 |
 |---|---|
+| [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 색·도형 규칙, 담당자 간 계약, SFML 3 변경점 |
+| [docs/game-api.md](docs/game-api.md) | Game 통합 루프, 접근자, 종료 순서와 예제 변경량 |
 | [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
 | [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
 | [docs/collision-api.md](docs/collision-api.md) | 콜라이더 등록, 객체 간 충돌 검사, 점 포함 검사와 사용 예제 |

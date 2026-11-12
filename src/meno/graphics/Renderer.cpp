@@ -8,12 +8,20 @@
 #include "sfml_backend/Convert.hpp"
 
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Transformable.hpp>
+#include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/View.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <optional>
 #include <stdexcept>
 
@@ -42,8 +50,7 @@ namespace {
     return drawable;
 }
 
-
-// 도형 3종이 공유하는 변환 설정.
+// 기본 도형이 공유하는 변환 설정.
 template <typename Shape>
 void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setFillColor(backend::toSf(params.fill));
@@ -51,6 +58,27 @@ void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setOutlineThickness(params.outlineThickness);
     shape.setRotation(backend::toSfAngle(params.rotation));
 }
+
+// 원 한 바퀴를 몇 개의 변으로 나눌지. drawCircle과 drawSector가 함께 쓴다.
+// 둘이 같아야 쿨다운처럼 359도에서 360도(drawCircle)로 넘어갈 때 매끄러움이 달라지지 않는다.
+constexpr std::size_t kSegmentsPerTurn = 30;
+
+// 점 배열을 복사하지 않고 그대로 읽는 sf::Shape.
+// sf::ConvexShape는 setPoint를 부를 때마다 도형 전체를 다시 계산해서, 점 n개를 넣으면 n번 계산한다.
+// 이 클래스는 생성자에서 update()를 한 번만 부른다. 이 도형을 그릴 때까지는 points가 살아 있어야
+// 한다.
+class PolygonShape final : public sf::Shape {
+public:
+    explicit PolygonShape(std::span<const Vec2f> points) : points_(points) { update(); }
+
+    [[nodiscard]] std::size_t getPointCount() const override { return points_.size(); }
+    [[nodiscard]] sf::Vector2f getPoint(std::size_t index) const override {
+        return backend::toSf(points_[index]);
+    }
+
+private:
+    std::span<const Vec2f> points_;
+};
 
 } // namespace
 
@@ -160,7 +188,12 @@ void Renderer::drawRect(const Rectf& rect, const ShapeParams& params) {
 }
 
 void Renderer::drawCircle(Vec2f center, float radius, const ShapeParams& params) {
-    sf::CircleShape shape{radius};
+    // 넘겨받은 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
+    if (!detail::isPositiveFinite(radius)) {
+        return;
+    }
+
+    sf::CircleShape shape{radius, kSegmentsPerTurn};
     applyShapeParams(shape, params);
 
     // CircleShape의 기준점은 바운딩 박스의 좌상단이다. origin을 반지름만큼
@@ -188,6 +221,92 @@ void Renderer::drawLine(Vec2f from, Vec2f to, Color color, float thickness) {
     shape.setRotation(sf::radians(std::atan2(delta.y, delta.x)));
 
     impl_->target->draw(shape);
+}
+
+void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points,
+                           const ShapeParams& params) {
+    if (points.size() < 3) {
+        return;
+    }
+
+    PolygonShape shape{points};
+    applyShapeParams(shape, params);
+    shape.setOrigin(backend::toSf(params.origin));
+    shape.setPosition(backend::toSf(position));
+
+    impl_->target->draw(shape);
+}
+
+void Renderer::drawPolygon(Vec2f position, std::initializer_list<Vec2f> points,
+                           const ShapeParams& params) {
+    drawPolygon(position, std::span<const Vec2f>{points.begin(), points.size()}, params);
+}
+
+void Renderer::drawSector(Vec2f center, float radius, float startDeg, float sweepDeg,
+                          const ShapeParams& params) {
+    // NaN과 비교할 때는 항상 거짓을 반환하므로, sweepDeg가 NaN이 되는 경우 역시 이 조건문에서
+    // 걸러진다.
+    if (!detail::isPositiveFinite(radius) || !(std::fabs(sweepDeg) > 0.f)) {
+        return;
+    }
+
+    // 한 바퀴 이상 회전하며 그리는 경우.
+    // 아래처럼 중심을 꼭짓점으로 넣으면 외곽선에 반지름 선이 하나 남게 된다.
+    if (std::fabs(sweepDeg) >= 360.f) {
+        drawCircle(center, radius, params);
+        return;
+    }
+
+    // 가장 처음 조건에서 |sweepDeg| < 360을 보장하므로 항상 kSegmentsPerTurn을 넘지 않는다.
+    // 이는 아래 배열 크기의 근거가 되므로, clamp로 수치를 못박아 둔다.
+    const float turns = std::fabs(sweepDeg) / 360.f;
+    const auto segments = std::clamp<std::size_t>(
+        static_cast<std::size_t>(std::ceil(turns * static_cast<float>(kSegmentsPerTurn))), 1,
+        kSegmentsPerTurn);
+
+    // 로컬 좌표(중심 = {0, 0})의 꼭짓점을 [중심, 호 위의 점 segments + 1개, 중심] 순서로 둔다.
+    // 면을 채우는 데는 앞쪽 segments + 2개를, 외곽선을 그릴 때는 뒤쪽 segments + 2개를 사용한다.
+    // 외곽선에는 호의 점들 뒤로 중심점을 두 번 넣는다.
+    // 마지막 중심점 중복은 360도에 가까운 부채꼴에서 SFML의 외곽선 조인이
+    // 바늘처럼 길게 돌출되는 현상을 억제한다.
+    // (시작점만 다른 동일한 도형)
+    std::array<Vec2f, kSegmentsPerTurn + 4> local{};
+    const float start = detail::toRadians(detail::wrapDegrees(startDeg));
+    const float step = detail::toRadians(sweepDeg) / static_cast<float>(segments);
+    for (std::size_t i = 0; i <= segments; ++i) {
+        const float angle = start + step * static_cast<float>(i);
+        local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;
+    }
+
+    // 면을 채울 때와 외곽선을 그을 때 모두 같은 변환을 사용하며, 순서는 sf::Shape와 같다.
+    sf::Transformable placement;
+    placement.setOrigin(backend::toSf(params.origin));
+    placement.setRotation(backend::toSfAngle(params.rotation));
+    placement.setPosition(backend::toSf(center));
+    sf::RenderStates states;
+    states.transform = placement.getTransform();
+
+    // 180도가 넘는 부채꼴은 오목해서, 볼록한 도형만 보장하는 sf::Shape의 채우기를 쓸 수 없다.
+    // 그러므로 실제 중심을 첫 점으로 하여 삼각형 형태의 부채를 펼친다.
+    // 채우기 색이 투명하다면 GL 그리기 호출 수를 줄이기 위해 이 작업을 건너뛴다.
+    if (params.fill.a != 0) {
+        std::array<sf::Vertex, kSegmentsPerTurn + 2> fan{};
+        const sf::Color fill = backend::toSf((params.fill));
+        for (std::size_t i = 0; i < segments + 2; ++i) {
+            fan[i] = sf::Vertex{backend::toSf(local[i]), fill};
+        }
+        impl_->target->draw(fan.data(), segments + 2, sf::PrimitiveType::TriangleFan, states);
+    }
+
+    // 외곽선은 있을 때만 sf::Shape로 만든다.
+    // sf::Shape는 바운딩 박스의 중심과 첫 변으로 점의 방향을 정하므로 호부터 넘긴다.
+    if (params.outlineThickness != 0.f) {
+        PolygonShape outline{std::span<const Vec2f>{local}.subspan(1, segments + 3)};
+        outline.setFillColor(sf::Color::Transparent);
+        outline.setOutlineColor(backend::toSf(params.outline));
+        outline.setOutlineThickness(params.outlineThickness);
+        impl_->target->draw(outline, states);
+    }
 }
 
 // --- 텍스트 ---------------------------------------------------------------

@@ -403,15 +403,6 @@ private:
     const Input& input_;
 };
 
-// 처음 생성할 때는 0ms, 그 뒤로는 15ms를 반환한다.
-// fixedTimeStep이 10ms면 첫 프레임에 update가 한 번 작동한다.
-meno::Clock oneUpdateClock() {
-    using namespace std::chrono_literals;
-    return meno::Clock(
-        [calls = 0]() mutable { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 15ms); },
-        [](meno::Clock::Duration) {});
-}
-
 void testRunRestart() {
     //run 밖에서 들어온 KeyPressed는 다음 run의 첫 update가 확인한다.
     Input input;

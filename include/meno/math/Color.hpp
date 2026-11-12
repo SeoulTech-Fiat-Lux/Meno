@@ -2,6 +2,7 @@
 #define MENO_COLOR_HPP
 
 #include <cstdint>
+#include <type_traits>
 
 namespace meno {
 
@@ -34,10 +35,20 @@ struct Color {
     }
 
     // 0xRRGGBB 형태(6자리)의 리터럴에서 불투명한 Color 객체를 생성하는 정적 멤버 함수.
-    // consteval이라 컴파일할 때만 계산된다. 8자리 리터럴을 넣으면 빌드 설정과 상관없이 컴파일 에러가 발생한다.
-    [[nodiscard]] static consteval Color fromRgb(std::uint32_t rgb) {
+    // 6자리를 넘는 값(8자리 0xRRGGBBAA를 잘못 넣은 경우 등)은 빌드 설정과 상관없이 아래처럼
+    // 처리한다: 상수 식(constexpr 변수, static_assert)에서는 컴파일 에러가 나며, 그 밖의 경우에는
+    // 마젠타(0xFF00FF)를 돌려준다. 텍스처가 없을 때처럼 화면에서 바로 눈에 띄는 '잘못된 색'을
+    // 표시할 용도이다. 앞자리가 00인 8자리(0x00000080 등)는 값이 6자리 범위라 어떤 검사로도 잡을 수
+    // 없다. 반투명은 withAlpha나 fromRgba로 만든다.
+    [[nodiscard]] static constexpr Color fromRgb(std::uint32_t rgb) {
         if (rgb > 0xFFFFFFu) {
-            throw "fromRgb() takes 0xRRGGBB; use fromRgba() for 0xRRGGBBAA"; // 컴파일 에러 메시지 출력.
+            if (std::is_constant_evaluated()) {
+                throw "fromRgb() takes 0xRRGGBB; use fromRgba() for 0xRRGGBBAA"; // 컴파일 에러
+                                                                                 // 메시지 출력.
+            }
+            return Color{255, 0, 255}; // colors::Magenta. colors가 Color 정의 뒤에 선언되어
+                                       // 여기서는 쓸 수 없으므로, 런타임 환경에서 정의되지 않은
+                                       // 색상에 대해 오류가 아닌 마젠타를 출력하게끔 설정한다.
         }
         return Color{static_cast<std::uint8_t>((rgb >> 16 & 0xFF)), // 상위 8비트(R) 추출
                      static_cast<std::uint8_t>((rgb >> 8 & 0xFF)),  // 중간 8비트(G) 추출

@@ -16,7 +16,7 @@ target_include_directories(meno_test_input_convert PRIVATE ${CMAKE_SOURCE_DIR}/s
 target_link_libraries(meno_test_input_convert PRIVATE meno::meno SFML::Window)
 
 # Window가 Input을 갖고 이벤트를 넘기는 연결부. 창을 열어야 하므로 render 테스트처럼
-# MENO_DISPLAY_TESTS=1일 때만 돌고, 아니면 종료 코드 77로 "건너뜀"을 알린다.
+# MENO_DISPLAY_TESTS=1일 때만 돈다.
 meno_add_test(window_input)
 target_link_libraries(meno_test_window_input PRIVATE meno::meno)
-set_tests_properties(window_input PROPERTIES SKIP_RETURN_CODE 77)
+meno_display_test(window_input)

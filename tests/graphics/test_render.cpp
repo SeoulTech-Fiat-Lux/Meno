@@ -6,7 +6,7 @@
 // sf::Texture는 기본 생성만 해도(sf::GlResource) 공유 GL 컨텍스트를 만들며,
 // 글자 크기를 재려면 글리프를 GPU 텍스처(폰트 아틀라스)에 올려야 한다.
 // 디스플레이가 없으면 SFML은 프로세스를 abort하므로, MENO_DISPLAY_TESTS=1일 때만
-// 실제로 돌고 아니면 종료 코드 77(ctest의 "건너뜀")로 끝난다.
+// 실제로 돌고 아니면 "건너뜀"으로 끝난다(tests/display.hpp).
 // 아래 static_assert는 컴파일 타임 검사라서 건너뛰더라도 빌드할 때 항상 검사된다.
 
 //     MENO_DISPLAY_TESTS=1 ctest --test-dir build -R render --output-on-failure
@@ -20,11 +20,11 @@
 #include <meno/graphics/Texture.hpp>
 
 #include "check.hpp"
+#include "display.hpp"
 
 #include <array>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <filesystem>
 #include <optional>
 #include <stdexcept>
@@ -55,10 +55,8 @@ static_assert(std::is_nothrow_move_assignable_v<Font>);
 // --- 런타임 검사 ------------------------------------------------------------
 
 namespace {
-using meno:: test::check;
-
-// tests/CMakeLists.txt의 SKIP_RETURN_CODE와 같아야 한다.
-constexpr int kSkipReturnCode = 77;
+using meno::test::check;
+using meno::test::env;
 
 bool near(float a, float b, float tolerance = 1e-3f) { return std::fabs(a - b) < tolerance; }
 bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
@@ -70,15 +68,6 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
 bool containsInclusive(const Rectf& rect, Vec2f point, float tolerance = 0.5f) {
     return point.x >= rect.left() - tolerance && point.x <= rect.right() + tolerance &&
            point.y >= rect.top() - tolerance && point.y <= rect.bottom() + tolerance;
-}
-
-// 환경 변수. 없으면 빈 문자열.
-std::string_view env(const char* name) {
-#ifdef _MSC_VER
-#pragma warning(suppress : 4996) // getenv는 안전하지 않다고 경고한다. 이건 테스트용이므로 무시.
-#endif
-    const char* value = std::getenv(name);
-    return value != nullptr ? value : "";
 }
 
 std::optional<Font> loadTestFont() {
@@ -215,9 +204,8 @@ void checkCamera(Renderer& renderer) {
 }   // namespace
 
 int main() {
-    if (env("MENO_DISPLAY_TESTS").empty() || env("MENO_DISPLAY_TESTS") == "0") {
-        std::printf("SKIP 창과 GL 컨텍스트가 필요한 테스트. MENO_DISPLAY_TESTS = 1일 때만 돈다.\n");
-        return kSkipReturnCode;
+    if (meno::test::skipWithoutDisplay()) {
+        return meno::test::kSkipReturnCode;
     }
 
     Window window{{320u, 180u}, "meno render test"};
