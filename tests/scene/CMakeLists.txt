@@ -20,3 +20,8 @@ meno_add_test(scene_draw_order
         ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
         ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
 )
+
+meno_add_test(scene_state
+        ${CMAKE_SOURCE_DIR}/src/meno/scene/Scene.cpp
+        ${CMAKE_SOURCE_DIR}/src/meno/core/SceneManager.cpp
+)

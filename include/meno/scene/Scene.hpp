@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <stdexcept>
+#include <typeinfo>
 
 namespace meno {
 
@@ -50,6 +51,7 @@ private:
     std::unique_ptr<void, StateDeleter> state_{
         nullptr, +[](void*) {}
     };
+    const std::type_info* state_type_{nullptr};
 
 public:
     Scene(const Scene&) = delete;
@@ -150,6 +152,7 @@ public:
             throw std::logic_error("Scene state already exists");
         }
 
+        state_type_ = &typeid(T);
         state_ = decltype(state_){
             state.release(),
             +[](void* ptr) {
@@ -163,12 +166,16 @@ public:
     /// 반환 포인터는 Scene 소멸 전까지 유효하다. 호출자가 delete하면 안 된다.
     template <typename T>
     T* getState() noexcept {
+        if (!state_ || *state_type_ != typeid(T))
+            return nullptr;
         return static_cast<T*>(state_.get());
     }
 
     /// const Scene에서는 const T*를 반환하며, 타입과 수명 계약은 위와 같다.
     template <typename T>
     const T* getState() const noexcept {
+        if (!state_ || *state_type_ != typeid(T))
+            return nullptr;
         return static_cast<const T*>(state_.get());
     }
 };
