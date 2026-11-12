@@ -43,7 +43,7 @@ struct SpriteParams {
     bool flipY{false};
 };
 
-/// 도형(사각형/원) 그리기 옵션.
+/// 기본 도형 그리기 옵션.
 struct ShapeParams {
     Color fill{colors::White};
     Color outline{colors::Transparent};
