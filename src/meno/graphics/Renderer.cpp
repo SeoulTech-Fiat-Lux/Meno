@@ -1,3 +1,5 @@
+#include "meno/graphics/DrawParams.hpp"
+#include "meno/math/Vec2.hpp"
 #include <meno/graphics/Renderer.hpp>
 
 #include <meno/core/Window.hpp>
@@ -9,11 +11,16 @@
 
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 #include <cmath>
+#include <cstddef>
+#include <initializer_list>
 #include <optional>
 #include <stdexcept>
 
@@ -43,7 +50,7 @@ namespace {
 }
 
 
-// 도형 3종이 공유하는 변환 설정.
+// 기본 도형이 공유하는 변환 설정.
 template <typename Shape>
 void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setFillColor(backend::toSf(params.fill));
@@ -51,6 +58,22 @@ void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setOutlineThickness(params.outlineThickness);
     shape.setRotation(backend::toSfAngle(params.rotation));
 }
+
+// 점 배열을 복사하지 않고 그대로 읽는 sf::Shape.
+// sf::ConvexShape는 setPoint를 부를 때마다 도형 전체를 다시 계산해서, 점 n개를 넣으면 n번 계산한다.
+// 이 클래스는 생성자에서 update()를 한 번만 부른다. 이 도형을 그릴 때까지는 points가 살아 있어야 한다.
+class PolygonShape final : public sf::Shape {
+public:
+    explicit PolygonShape(std::span<const Vec2f> points) : points_(points) { update(); }
+
+    [[nodiscard]] std::size_t getPointCount() const override { return points_.size(); }
+    [[nodiscard]] sf::Vector2f getPoint(std::size_t index) const override {
+        return backend::toSf(points_[index]);
+    }
+
+private:
+    std::span<const Vec2f> points_;
+};
 
 } // namespace
 
@@ -188,6 +211,23 @@ void Renderer::drawLine(Vec2f from, Vec2f to, Color color, float thickness) {
     shape.setRotation(sf::radians(std::atan2(delta.y, delta.x)));
 
     impl_->target->draw(shape);
+}
+
+void Renderer::drawPolygon(Vec2f position, std::span<const Vec2f> points, const ShapeParams& params) {
+    if (points.size() < 3) {
+        return;
+    }
+
+    PolygonShape shape{points};
+    applyShapeParams(shape, params);
+    shape.setOrigin(backend::toSf(params.origin));
+    shape.setPosition(backend::toSf(position));
+
+    impl_->target->draw(shape);
+}
+
+void Renderer::drawPolygon(Vec2f position, std::initializer_list<Vec2f> points, const ShapeParams & params) {
+    drawPolygon(position, std::span<const Vec2f>{points.begin(), points.size()}, params);
 }
 
 // --- 텍스트 ---------------------------------------------------------------
