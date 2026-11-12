@@ -5,39 +5,33 @@
 // 놓이는지만 본다.
 
 // 이 테스트를 위해서는 창과 GL 컨텍스트가 필요하기 때문에, test_render와 같이
-// MENO_DISPLAY_TESTS=1일 때만 돈다. 픽셀을 읽기 위해 내부 헤더(sfml_backend/Access.hpp)로
-// sf::RenderWindow를 꺼낸다. 렌더링 자체는 공개 API(Renderer)로만 한다.
+// MENO_DISPLAY_TESTS=1일 때만 돈다. 픽셀은 pixels.hpp로 읽는다(내부 헤더로 sf::RenderWindow를
+// 꺼낸다). 렌더링 자체는 공개 API(Renderer)로만 한다.
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_shapes --output-on-failure
 
 #include <meno/core/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 
-#include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
-
 #include "check.hpp"
+#include "display.hpp"
+#include "pixels.hpp"
 
 #include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Texture.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
-#include <cstdlib>
-#include <string_view>
 
 using namespace meno;
 
 namespace {
 
+using meno::test::capture;
 using meno::test::check;
-
-// tests/CMakeLists.txt의 SKIP_RETURN_CODE와 같아야 한다.
-constexpr int kSkipReturnCode = 77;
+using meno::test::isColor;
 
 constexpr Color kClear = colors::Black;
 constexpr Color kInk = colors::Red;
@@ -46,22 +40,6 @@ constexpr Color kInk = colors::Red;
 constexpr Vec2u kWindowSize{320u, 180u};
 constexpr Vec2f kCenter = static_cast<Vec2f>(kWindowSize) / 2.f;
 
-std::string_view env(const char* name) {
-#ifdef _MSC_VER
-#pragma warning(suppress : 4996) // getenv는 안전하지 않다고 경고한다. 이건 테스트용이므로 무시.
-#endif
-    const char* value = std::getenv(name);
-    return value != nullptr ? value : "";
-}
-
-// 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 불러야 한다.
-sf::Image capture(Window& window) {
-    sf::RenderWindow& native = *backend::WindowAccess::native(window);
-    sf::Texture texture{native.getSize()};
-    texture.update(native);
-    return texture.copyToImage();
-}
-
 // 한 프레임을 그리고 그 결과를 읽는다.
 template <typename Draw> sf::Image drawAndCapture(Window& window, Renderer& renderer, Draw draw) {
     renderer.beginFrame(kClear);
@@ -69,19 +47,6 @@ template <typename Draw> sf::Image drawAndCapture(Window& window, Renderer& rend
     const sf::Image image = capture(window);
     renderer.endFrame();
     return image;
-}
-
-// 점 point가 들어 있는 픽셀의 색이 color인지를 확인. 창 밖의 점은 늘 false다.
-// getPixel은 범위를 넘으면 Debug에서는 assert로 죽고, Release에서는 엉뚱한 메모리를 읽는다.
-bool isColor(const sf::Image& image, Vec2f point, Color color) {
-    const sf::Vector2u size = image.getSize();
-    if (!(point.x >= 0.f && point.y >= 0.f && point.x < static_cast<float>(size.x) &&
-          point.y < static_cast<float>(size.y))) {
-        return false;
-    }
-    const sf::Vector2u pixel{static_cast<unsigned int>(point.x),
-                             static_cast<unsigned int>(point.y)};
-    return image.getPixel(pixel) == backend::toSf(color);
 }
 
 // center에서 degrees 방향(0도 = 오른쪽, 시계 방향)으로 distance만큼 떨어진 점.
@@ -103,9 +68,8 @@ void checkRect(Window& window, Renderer& renderer) {
               isColor(image, {120.f, 47.f}, kClear) && isColor(image, {120.f, 73.f}, kClear),
           "drawRect: 사각형 바깥은 그대로다");
 
-    // origin은 rect.position에 놓일 로컬 점이자 회전의 중심점이다.
-    // 가운데를 주면 rect.position이 중심이된다.
-    // ex. 40x20을 가운데 기준으로 90도 회전하면 20x40이 된다.
+    // origin은 rect.position에 놓일 로컬 점이자 회전 중심이다. 가운데를 주면 rect.position이 중심이
+    // 된다. 40x20을 가운데 기준으로 90도 돌리면 20x40이 된다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawRect({kCenter, {40.f, 20.f}},
                           {.fill = kInk, .origin = {20.f, 10.f}, .rotation = 90.f});
@@ -115,7 +79,8 @@ void checkRect(Window& window, Renderer& renderer) {
               isColor(image, kCenter + Vec2f{17.f, 0.f}, kClear),
           "drawRect: origin을 축으로 돈다");
 
-    // 외곽선 두께의 수치가 양수면 바깥쪽, 음수면 안쪽으로 그려진다.
+    // 외곽선은 양수면 바깥쪽, 음수면 안쪽으로 그려진다(ShapeParams). 왼쪽 변의 바로 바깥과 안쪽
+    // 2픽셀을 본다.
     const Rectf box{{140.f, 70.f}, {40.f, 40.f}};
     const Vec2f leftEdge{box.left(), box.center().y};
     image = drawAndCapture(window, renderer, [&] {
@@ -139,8 +104,8 @@ void checkRect(Window& window, Renderer& renderer) {
 void checkCircle(Window& window, Renderer& renderer) {
     constexpr float r = 30.f;
 
-    // center는 원의 중심이다.
-    // 바운딩 박스의 왼쪽 위가 기준인 sf::CircleShape와 맞추기 위해 drawCircle이 반지름만큼 옮긴다.
+    // center는 원의 중심이다. sf::CircleShape는 바운딩 박스의 왼쪽 위가 기준이라 drawCircle이
+    // 반지름만큼 옮긴다.
     sf::Image image =
         drawAndCapture(window, renderer, [&] { renderer.drawCircle(kCenter, r, {.fill = kInk}); });
     bool round = true;
@@ -150,8 +115,9 @@ void checkCircle(Window& window, Renderer& renderer) {
     }
     check(round, "drawCircle: center를 중심으로 반지름만큼 칠한다");
 
-    // params.origin은 원의 중심 기준 로컬 점이며 center에 놓인다.
-    // rotation은 center를 축으로 돈다.
+    // params.origin은 원의 중심 기준 로컬 점이며 center에 놓인다. 그래서 원의 중심은 center -
+    // origin으로 간다. rotation은 center를 축으로 돈다. origin {30, 0}이면 중심이 왼쪽 30에,
+    // 90도(시계 방향) 돌리면 위쪽 30에 놓인다.
     constexpr float small = 15.f;
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawCircle(kCenter, small, {.fill = kInk, .origin = {30.f, 0.f}});
@@ -170,8 +136,7 @@ void checkCircle(Window& window, Renderer& renderer) {
 // --- 선 ---------------------------------------------------------------------
 
 void checkLine(Window& window, Renderer& renderer) {
-    // 두께는 선을 가운데에 두고 양쪽으로 반씩 퍼진다.
-    // ex. y 90에서 두께가 6인 가로선은, y 87~93을 칠한다.
+    // 두께는 선을 가운데에 두고 양쪽으로 반씩 퍼진다. y 90의 가로선, 두께 6이면 y 87~93을 칠한다.
     sf::Image image = drawAndCapture(
         window, renderer, [&] { renderer.drawLine({100.f, 90.f}, {220.f, 90.f}, kInk, 6.f); });
     check(isColor(image, {160.f, 88.f}, kInk) && isColor(image, {160.f, 92.f}, kInk) &&
@@ -205,8 +170,8 @@ void checkPolygon(Window& window, Renderer& renderer) {
               isColor(image, {5.f, 5.f}, kClear),
           "drawPolygon: 삼각형 바깥은 그대로다");
 
-    // rotation은 position을 축으로 돈다.
-    // 오른쪽으로 뻗은 막대를 시계방향으로 90도 돌리면 아래로 뻗는다.
+    // rotation은 position을 축으로 돈다. 오른쪽으로 뻗은 막대를 90도(시계 방향) 돌리면 아래로
+    // 뻗는다. 점을 월드 좌표로만 받는 API였다면 월드 원점을 축으로 돌아 막대가 창 밖으로 나간다.
     const std::array<Vec2f, 4> bar{{{0.f, -3.f}, {40.f, -3.f}, {40.f, 3.f}, {0.f, 3.f}}};
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawPolygon(kCenter, bar, {.fill = kInk, .rotation = 90.f});
@@ -224,9 +189,9 @@ void checkPolygon(Window& window, Renderer& renderer) {
               isColor(image, kCenter + Vec2f{0.f, 25.f}, kClear),
           "drawPolygon: origin을 축으로 돈다");
 
-    // 외곽선만 그린 울퉁불퉁한 10각형.
-    // 꼭짓점이 36도 간격이고 반지름이 1.0과 0.8을 오가서, 0.8인 꼭짓점은 살짝 안으로 들어간 오목한 꼭짓점이다.
-    // 모든 꼭짓점에서 외곽선이 바깥쪽으로 그려져야 한다.
+    // 외곽선만 그린 울퉁불퉁한 10각형(#29 소행성의 운석). 꼭짓점이 36도 간격이고 반지름이 1.0과
+    // 0.8을 오가서, 0.8인 꼭짓점은 살짝 안으로 들어간 오목한 꼭짓점이다. 모든 꼭짓점에서 외곽선이
+    // 바깥쪽에 있어야 한다.
     constexpr float rock = 50.f;
     std::array<Vec2f, 10> rockPoints{};
     for (std::size_t i = 0; i < rockPoints.size(); ++i) {
@@ -247,7 +212,7 @@ void checkPolygon(Window& window, Renderer& renderer) {
     }
     check(outward, "drawPolygon: 오목한 꼭짓점이 있어도 외곽선은 바깥쪽");
 
-    // 점이 3개 미만이면 외곽선을 포함하여 그 무엇도 그리지 않는다.
+    // 점이 3개 미만이면 외곽선까지 아무것도 그리지 않는다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawPolygon(kCenter, {{0.f, 0.f}, {40.f, 40.f}},
                              {.fill = kInk, .outline = kInk, .outlineThickness = 5.f});
@@ -258,15 +223,16 @@ void checkPolygon(Window& window, Renderer& renderer) {
 
 // --- 부채꼴 -----------------------------------------------------------------
 
-// start에서 sweep 방향으로 몇 도를 가야 degrees에 닿는지를 확인하는 함수 [0, 360)
+// start에서 sweep 방향으로 몇 도를 가야 degrees에 닿는가. [0, 360)
 float travel(float start, float sweep, float degrees) {
     const float d = std::fmod(sweep >= 0.f ? degrees - start : start - degrees, 360.f);
     return d < 0.f ? d + 360.f : d;
 }
 
-// apex를 꼭짓점으로 한 부채꼴(start, sweep)이 그려졌는지를 본다.
-// kMargin 이내에 해당하는 경계 부근은 픽셀 값의 반올림 결과에 따라 갈리므로 건너뛴다.
-// 반지름 바깥(r + 3)은 어느 방향이든 비어 있어야 한다.
+// apex를 꼭짓점으로 한 부채꼴(start, sweep)이 그려졌는가.
+// 기대값은 Renderer와 따로 각도만으로 계산한다. 10도 간격의 방향마다 부채꼴 안이면 반지름 0.5배와
+// 0.9배 지점이 칠해지고, 밖이면 비어 있어야 한다. 경계 가까이(kMargin 이내)의 방향은 픽셀이
+// 반올림에 따라 갈리므로 건너뛴다. 반지름 바깥(r + 3)은 어느 방향이든 비어 있어야 한다.
 bool isSector(const sf::Image& image, Vec2f apex, float r, float start, float sweep) {
     constexpr float kMargin = 6.f;
     const float span = std::fabs(sweep);
@@ -288,8 +254,8 @@ bool isSector(const sf::Image& image, Vec2f apex, float r, float start, float sw
              isColor(image, polar(apex, deg, r * 0.9f), expected);
     }
 
-    // 좁은 부채꼴은 위의 표본이 모두 경계 근처라 하나도 남지 않을 수 있다.
-    // 가운데 방향 하나는 늘 본다.
+    // 좁은 부채꼴은 위의 표본이 모두 경계 근처라 하나도 남지 않을 수 있다. 가운데 방향 하나는 늘
+    // 본다.
     if (!full) {
         ok = ok && isColor(image, polar(apex, start + sweep / 2.f, r * 0.8f), kInk);
     }
@@ -299,8 +265,8 @@ bool isSector(const sf::Image& image, Vec2f apex, float r, float start, float sw
 void checkSector(Window& window, Renderer& renderer) {
     constexpr float r = 50.f;
 
-    // 게임에서 부채꼴이 쓰이는 모양을 각도 구간별로 하나씩 둔다.
-    // 0도 = 오른쪽, 양수 sweepDeg = 시계 방향.
+    // 게임에서 부채꼴이 쓰이는 모양을 각도 구간별로 하나씩 둔다. 0도 = 오른쪽, 양수 sweepDeg = 시계
+    // 방향.
     struct Case {
         float start;
         float sweep;
@@ -335,14 +301,16 @@ void checkSector(Window& window, Renderer& renderer) {
     }
     check(full, "drawSector: |sweepDeg| >= 360은 원");
 
-    // 채우기는 직접 그리므로 sf::Shape와 같은 변환을 받는지 따로 본다.
+    // 채우기는 직접 그리므로 sf::Shape와 같은 변환을 받는지 따로 본다. 60도 시야를 90도 돌리면
+    // 아래를 본다.
     sf::Image image = drawAndCapture(window, renderer, [&] {
         renderer.drawSector(kCenter, r, -30.f, 60.f, {.fill = kInk, .rotation = 90.f});
     });
     check(isSector(image, kCenter, r, 60.f, 60.f), "drawSector: rotation을 받으면 함께 돈다");
 
-    // origin과 rotation은 drawCircle과 같은 자리로 옮긴다.
-    // origin {30, 0}과 rotation 90이면 꼭짓점은 위쪽 30에 놓이고, 시작 방향도 90도 돈다.
+    // origin과 rotation은 drawCircle과 같은 자리로 옮긴다. 쿨다운이 359도에서 360도(원)로 넘어가도
+    // 튀지 않는다. origin {30, 0}과 rotation 90이면 꼭짓점은 위쪽 30에 놓이고, 시작 방향도 90도
+    // 돈다.
     constexpr float small = 40.f;
     const ShapeParams moved{.fill = kInk, .origin = {30.f, 0.f}, .rotation = 90.f};
     const Vec2f apex = kCenter - Vec2f{0.f, 30.f};
@@ -353,8 +321,8 @@ void checkSector(Window& window, Renderer& renderer) {
     check(sectorMoved && isSector(image, apex, small, 0.f, 360.f),
           "drawSector: origin과 rotation은 drawCircle과 같은 자리로 옮긴다");
 
-    // 외곽선은 양수면 바깥쪽에 그려진다.
-    // 앞의 셋(0/270, 35/320, 45/330)은 점을 중심부터 넘기면 sf::Shape가 방향을 거꾸로 읽어 안쪽으로 외곽선이 그려진다.
+    // 외곽선은 양수면 바깥쪽에 그려진다. 앞의 셋(0/270, 35/320, 45/330)은 점을 중심부터 넘기면
+    // sf::Shape가 방향을 거꾸로 읽어 외곽선이 안쪽으로 그려지는 각도다(SFML 3.1.0에서 실측).
     // 나머지는 대조군이다.
     constexpr std::array<Case, 6> outlines{{
         {0.f, 270.f, ""},
@@ -379,8 +347,8 @@ void checkSector(Window& window, Renderer& renderer) {
               what);
     }
 
-    // 음수 두께는 안쪽 외곽선을 뜻한다.
-    // 점 순서를 직접 정하므로 sf::RectangleShape처럼 저절로 맞는다고 가정하지 않는다.
+    // 음수 두께는 안쪽이다. 점 순서를 직접 정하므로 sf::RectangleShape처럼 저절로 맞는다고 가정하지
+    // 않는다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawSector(
             kCenter, r, 30.f, 300.f,
@@ -410,9 +378,8 @@ void checkSector(Window& window, Renderer& renderer) {
 } // namespace
 
 int main() {
-    if (env("MENO_DISPLAY_TESTS").empty() || env("MENO_DISPLAY_TESTS") == "0") {
-        std::printf("SKIP 창과 GL 컨텍스트가 필요한 테스트. MENO_DISPLAY_TESTS = 1일 때만 돈다.\n");
-        return kSkipReturnCode;
+    if (meno::test::skipWithoutDisplay()) {
+        return meno::test::kSkipReturnCode;
     }
 
     Window window{kWindowSize, "meno render shapes test"};

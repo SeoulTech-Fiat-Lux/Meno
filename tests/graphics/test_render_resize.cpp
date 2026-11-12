@@ -18,40 +18,29 @@
 #include "sfml_backend/Convert.hpp"
 
 #include "check.hpp"
+#include "display.hpp"
+#include "pixels.hpp"
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Texture.hpp>
 
 #include <chrono>
 #include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <string_view>
 #include <thread>
 
 using namespace meno;
 
 namespace {
 
+using meno::test::capture;
 using meno::test::check;
-
-// tests/CMakeLists.txt의 SKIP_RETURN_CODE와 같아야 한다.
-constexpr int kSkipReturnCode = 77;
+using meno::test::isColor;
 
 constexpr Color kClear = colors::Black;
 constexpr Color kInk = colors::Red;
 
 // 어떤 카메라로 봐도 보이는 영역을 전부 덮는 사각형.
 const Rectf kEverywhere{-100000.f, -100000.f, 200000.f, 200000.f};
-
-std::string_view env(const char* name) {
-#ifdef _MSC_VER
-#pragma warning(suppress : 4996) // getenv는 안전하지 않다고 경고한다. 이건 테스트용이므로 무시.
-#endif
-    const char* value = std::getenv(name);
-    return value != nullptr ? value : "";
-}
 
 bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return std::fabs(a.x - b.x) < tolerance && std::fabs(a.y - b.y) < tolerance;
@@ -72,18 +61,6 @@ bool resize(Window& window, Renderer& renderer, Vec2u size) {
     renderer.beginFrame(kClear);
     renderer.endFrame();
     return window.size() == size;
-}
-
-// 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 불러야 한다.
-sf::Image capture(Window& window) {
-    sf::RenderWindow& native = *backend::WindowAccess::native(window);
-    sf::Texture texture{native.getSize()};
-    texture.update(native);
-    return texture.copyToImage();
-}
-
-bool isColor(const sf::Image& image, unsigned int x, unsigned int y, Color color) {
-    return image.getPixel({x, y}) == backend::toSf(color);
 }
 
 // --- 화면 좌표(resetCamera)는 창 크기를 따라간다 ----------------------------
@@ -210,9 +187,8 @@ void checkEmptyViewport(Window& window, Renderer& renderer) {
 } // namespace
 
 int main() {
-    if (env("MENO_DISPLAY_TESTS").empty() || env("MENO_DISPLAY_TESTS") == "0") {
-        std::printf("SKIP 창과 GL 컨텍스트가 필요한 테스트. MENO_DISPLAY_TESTS = 1일 때만 돈다.\n");
-        return kSkipReturnCode;
+    if (meno::test::skipWithoutDisplay()) {
+        return meno::test::kSkipReturnCode;
     }
 
     Window window{{320u, 180u}, "meno render resize test"};

@@ -2,21 +2,12 @@
 #include <meno/input/Input.hpp>
 
 #include "check.hpp"
+#include "display.hpp"
 
-#include <cstdio>
-#include <cstdlib>
 #include <stdexcept>
-#include <string_view>
 #include <utility>
 
 namespace {
-
-constexpr int kSkipReturnCode = 77;
-
-bool displayTestsEnabled() {
-    const char* value = std::getenv("MENO_DISPLAY_TESTS");
-    return value != nullptr && *value != '\0' && std::string_view{value} != "0";
-}
 
 template <typename F> bool throwsLogicError(F&& call) {
     try {
@@ -30,9 +21,8 @@ template <typename F> bool throwsLogicError(F&& call) {
 } // namespace
 
 int main() {
-    if (!displayTestsEnabled()) {
-        std::printf("SKIP 창이 필요한 테스트. MENO_DISPLAY_TESTS = 1일 때만 돈다.\n");
-        return kSkipReturnCode;
+    if (meno::test::skipWithoutDisplay()) {
+        return meno::test::kSkipReturnCode;
     }
 
     meno::Window window{{160u, 90u}, "meno input test"};
