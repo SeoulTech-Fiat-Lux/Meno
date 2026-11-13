@@ -68,15 +68,17 @@ public:
     void drawLine(Vec2f from, Vec2f to, const LineParams& params = {});
 
     /// 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막
-    /// 점을 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0,
-    /// 0}이면 position을 축으로 돈다. 점이 3개 미만이면 그리지 않는다. points는 이 호출 안에서만
-    /// 읽으므로 호출이 끝나면 버려도 된다. SFML이 바운딩 박스 중심에서 부채를 펴는 식으로 면을
-    /// 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
+    /// 점을 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다.
+    /// 기본값 {0, 0}이면 position을 축으로 돈다. 점이 3개 미만이면 그리지 않는다. points는 이
+    /// 호출 안에서만 읽으므로 호출이 끝나면 버려도 된다. SFML이 바운딩 박스 중심에서 부채를 펴는
+    /// 식으로 면을 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
     void drawPolygon(Vec2f position, std::span<const Vec2f> points, const ShapeParams& params = {});
 
     /// 위 함수의 오버로딩. C++20의 std::span은 {a, b, c}를 받지 못하므로 따로 둔다.
-    /// ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill =
-    /// colors::Red});
+    ///
+    /// \code{.cpp}
+    /// renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill = colors::Red});
+    /// \endcode
     void drawPolygon(Vec2f position, std::initializer_list<Vec2f> points,
                      const ShapeParams& params = {});
 
