@@ -42,6 +42,9 @@ public:
     [[nodiscard]] double restart();
     /// 만든 뒤 흐른 시간(초)입니다. restart()와 상관없습니다.
     [[nodiscard]] double elapsed() const;
+    /// 다음 restart()가 잴 기준을 지금으로 옮깁니다. restart()와 달리 기다리지 않고 값도
+    /// 돌려주지 않습니다. elapsed()에는 영향이 없습니다.
+    void resetLap();
     // 프레임 제한은 Window가 아니라 시간 계층이 맡는다.
     /// 초당 최대 프레임 수를 정합니다. 0이면 제한하지 않습니다.
     ///

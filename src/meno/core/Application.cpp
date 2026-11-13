@@ -52,6 +52,9 @@ void Application::run(Clock& clock) {
     Time::beginRun(config_.fixedTimeStep);
     double accumulator = 0.0;
     onStart();
+    // onStart()의 로딩 시간이 첫 프레임에 섞여 update()가 몰리지 않도록 기준점을 옮긴다.
+    // restart()는 프레임 제한 때문에 기다릴 수 있으므로 쓰지 않는다.
+    clock.resetLap();
 
     const double maxFrameTime =
         config_.fixedTimeStep * static_cast<double>(config_.maxUpdatesPerFrame);

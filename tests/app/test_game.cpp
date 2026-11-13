@@ -141,7 +141,9 @@ int main() {
     {
         NormalGame game(normalDestroyed, normalDependenciesAlive, exited);
         int calls = 0;
-        meno::Clock clock([&] { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 20ms); },
+        // 시각을 읽을 때마다 20ms씩 흐른다. onStart() 시간은 첫 프레임에서 빠지므로
+        // 이후 프레임마다 시간이 흘러야 update()가 돈다.
+        meno::Clock clock([&] { return meno::Clock::TimePoint{} + 20ms * calls++; },
                           [](meno::Clock::Duration) {});
         // Application 참조로 실행해도 가상 dispatch를 통해 Game의 정리 경로를 탄다.
         meno::Application& application = game;

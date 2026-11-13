@@ -80,10 +80,10 @@ public:
     [[nodiscard]] bool isRunning() const noexcept;
 
 protected:
-    /// 루프에 들어가기 전에 한 번 불립니다.
+    /// 루프에 들어가기 전에 한 번 불립니다. 에셋 로딩 같은 준비를 여기서 합니다.
     ///
-    /// 여기서 걸린 시간은 첫 프레임의 시간 간격에 들어갑니다. 로딩이 길면 첫 프레임에 update()가
-    /// 최대 maxUpdatesPerFrame번 몰려서 불립니다.
+    /// 여기서 걸린 시간은 게임 시간과 Time::realElapsedTime()에 들어가지 않으므로, 로딩이 길어도
+    /// 첫 프레임에 update()가 몰리지 않습니다.
     virtual void onStart();
     /// 프레임마다 update()보다 먼저 한 번 불립니다. 창 이벤트와 입력을 여기서 처리합니다.
     virtual void processEvents();

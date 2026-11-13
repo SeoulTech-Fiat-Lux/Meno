@@ -38,8 +38,7 @@ public:
     /// 이번 프레임에 흐른 시간입니다. fixedTimeStep × maxUpdatesPerFrame을 넘으면 그 값으로
     /// 자릅니다.
     [[nodiscard]] static double frameDeltaTime() noexcept;
-    /// run()이 시작된 뒤 실제로 흐른 시간의 합입니다. 자르지 않은 값이며 onStart()에서 걸린
-    /// 시간도 들어갑니다.
+    /// onStart()가 끝난 뒤 실제로 흐른 시간의 합입니다. 자르지 않은 값입니다.
     [[nodiscard]] static double realElapsedTime() noexcept;
 
 private:

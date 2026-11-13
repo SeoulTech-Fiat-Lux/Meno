@@ -85,6 +85,7 @@ class CallbackApplication final : public meno::Application {
 public:
     using Application::Application;
     std::function<void()> startHandler;
+    std::function<void()> eventsHandler;
     std::function<void()> updateHandler;
     std::function<void()> stopHandler;
 
@@ -92,6 +93,10 @@ private:
     void onStart() override {
         if (startHandler)
             startHandler();
+    }
+    void processEvents() override {
+        if (eventsHandler)
+            eventsHandler();
     }
     void update(double) override {
         if (updateHandler)
@@ -134,10 +139,9 @@ void testExclusiveRun() {
             MENO_CHECK(meno::Time::fixedDeltaTime() == fixedDelta);
         }
     };
-    outer.startHandler = [&] {
-        rejectNestedRun();
-        now += 10ms;
-    };
+    outer.startHandler = [&] { rejectNestedRun(); };
+    // onStart() 시간은 첫 프레임에 들어가지 않으므로 프레임마다 시간을 흘린다.
+    outer.eventsHandler = [&] { now += 10ms; };
     outer.updateHandler = [&] {
         rejectNestedRun();
         MENO_CHECK(near(meno::Time::elapsedTime(), 0.01));
@@ -158,8 +162,8 @@ void testExclusiveRun() {
         failing.startHandler = [&] {
             if (phase == 0)
                 throw std::runtime_error("start failed");
-            now += 10ms;
         };
+        failing.eventsHandler = [&] { now += 10ms; };
         failing.updateHandler = [&] {
             if (phase == 1)
                 throw std::runtime_error("update failed");
@@ -177,6 +181,31 @@ void testExclusiveRun() {
     }
 }
 
+// onStart()가 오래 걸려도 첫 프레임에 update()가 몰리지 않아야 한다.
+void testSlowStartIsExcluded() {
+    using namespace std::chrono_literals;
+    meno::Clock::TimePoint now{};
+    meno::Clock clock([&] { return now; }, [](meno::Clock::Duration) {});
+    CallbackApplication app({.fixedTimeStep = 0.01, .maxUpdatesPerFrame = 8});
+    int updates = 0;
+    int frames = 0;
+    app.startHandler = [&] { now += 1s; }; // 느린 로딩
+    app.eventsHandler = [&] {
+        ++frames;
+        if (frames == 1)
+            MENO_CHECK(updates == 0);
+        if (frames == 2) {
+            MENO_CHECK(updates == 0); // 첫 프레임은 시간이 흐르지 않았다
+            app.stop();
+        }
+        now += 10ms;
+    };
+    app.updateHandler = [&] { ++updates; };
+    app.run(clock);
+    MENO_CHECK(frames == 2);
+    MENO_CHECK(meno::Time::realElapsedTime() < 0.02); // 로딩 1초가 빠졌다
+}
+
 } // namespace
 
 int main() {
@@ -184,8 +213,8 @@ int main() {
     using TimePoint = meno::Clock::TimePoint;
 
     // 생성 시 0초, 이후 프레임은 5ms, 12ms, 100ms가 흐른다.
-    const std::vector<TimePoint> times{TimePoint{}, TimePoint{} + 5ms, TimePoint{} + 17ms,
-                                       TimePoint{} + 117ms};
+    const std::vector<TimePoint> times{TimePoint{}, TimePoint{}, TimePoint{} + 5ms,
+                                       TimePoint{} + 17ms, TimePoint{} + 117ms};
     std::size_t nextTime = 0;
     meno::Clock clock([&] { return times.at(nextTime++); }, [](meno::Clock::Duration) {});
 
@@ -211,7 +240,8 @@ int main() {
     MENO_CHECK(near(meno::Time::realElapsedTime(), 0.117));
     MENO_CHECK(!app.isRunning());
 
-    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{} + 20ms, TimePoint{} + 40ms};
+    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{}, TimePoint{} + 20ms,
+                                            TimePoint{} + 20ms, TimePoint{} + 40ms};
     std::size_t nextRetryTime = 0;
     meno::Clock retryClock([&] { return retryTimes.at(nextRetryTime++); },
                            [](meno::Clock::Duration) {});
@@ -239,6 +269,7 @@ int main() {
     MENO_CHECK(!reentrantApp.isRunning());
 
     testExclusiveRun();
+    testSlowStartIsExcluded();
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;
@@ -257,6 +288,14 @@ int main() {
     MENO_CHECK(waitCount == 1);
     MENO_CHECK(std::abs(limitedClock.elapsed() - expectedFrameTime) <= clockTolerance);
 
+    limitedNow += 20ms;
+    MENO_CHECK(near(limitedClock.restart(), 0.02));
+    MENO_CHECK(waitCount == 1);
+
+    // resetLap()은 프레임 제한이 있어도 기다리지 않고, 다음 restart()의 기준만 옮긴다.
+    limitedNow += 3ms;
+    limitedClock.resetLap();
+    MENO_CHECK(waitCount == 1);
     limitedNow += 20ms;
     MENO_CHECK(near(limitedClock.restart(), 0.02));
     MENO_CHECK(waitCount == 1);
