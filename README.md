@@ -121,8 +121,8 @@ Visual Studio 생성기(Windows의 기본값)를 쓰면 실행 파일은 `build/
 
 ## 문서
 
-- [사용자 설명서](https://seoultech-fiat-lux.github.io/Meno/guide.html): 설치부터 그리기, 입력,
-  GameObject, 충돌 판정, 씬 전환, 오디오까지 게임을 만드는 순서에 따라 설명합니다. 원문은
+- [사용자 설명서](https://seoultech-fiat-lux.github.io/Meno/guide.html): 설치와 첫 게임부터
+  GameObject, 충돌 판정, 씬 전환, 오디오, 카메라까지 게임을 만드는 순서에 따라 설명합니다. 원문은
   [docs/guide](docs/guide)에 있습니다.
 - [API 레퍼런스](https://seoultech-fiat-lux.github.io/Meno/): 클래스·함수마다 동작, 주의할 점, 예제를
   적었습니다. 게임, 씬, 그래픽, 입력 같은 모듈별로 찾아볼 수 있습니다.

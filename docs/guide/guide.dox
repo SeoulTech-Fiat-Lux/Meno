@@ -32,4 +32,13 @@ meno로 게임을 만드는 방법을 주제별로 설명합니다. 클래스와
 - \subpage md_docs_2guide_206-collision
 - \subpage md_docs_2guide_207-scenes
 - \subpage md_docs_2guide_208-audio
+
+<h2>3부. 더 나아가기</h2>
+
+필요할 때 골라 읽습니다. 장마다 독립적이므로 순서는 상관없습니다.
+
+- \subpage md_docs_2guide_209-resources
+- \subpage md_docs_2guide_210-camera
+- \subpage md_docs_2guide_211-animation
+- \subpage md_docs_2guide_212-application
 */

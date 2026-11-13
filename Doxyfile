@@ -23,6 +23,10 @@ INPUT                  = docs/mainpage.md \
                          docs/guide/06-collision.md \
                          docs/guide/07-scenes.md \
                          docs/guide/08-audio.md \
+                         docs/guide/09-resources.md \
+                         docs/guide/10-camera.md \
+                         docs/guide/11-animation.md \
+                         docs/guide/12-application.md \
                          docs/groups.dox \
                          include/meno
 USE_MDFILE_AS_MAINPAGE = docs/mainpage.md

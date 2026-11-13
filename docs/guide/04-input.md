@@ -31,16 +31,15 @@ play.setUpdateHandler([&](double fixedDeltaTime) {
 | `wasReleased(key)` | 뗀 순간 한 번 |
 
 세 함수 모두 `meno::Key`와 `meno::MouseButton`을 인자로 받을 수 있습니다. 키를 누르고 있을 때
-운영체제가 보내는 반복 입력은 무시하므로, `wasPressed()`는 한 번 누를 때마다 한 번만 true가
-됩니다.
+운영체제가 보내는 반복 입력은 무시하므로, `wasPressed()`는 한 번 누를 때마다 한 번만 true가 됩니다.
 
 ## "이번 틱" 규칙
 
-`wasPressed()`, `wasReleased()`, `mouseWheelDelta()`, `text()`는 **이번 틱**에 일어난 일만
-알려 줍니다. 동작 이름으로 묻는 `wasActionPressed()`와 `wasActionReleased()`도 마찬가지입니다.
-update 핸들러 안에서는 update 한 번이 한 틱입니다. 한 프레임에서 update가 여러 번 실행되더라도, 한
-번 누른 키는 그 뒤 처음 실행되는 update에서만 `wasPressed()`가 true입니다. 따라서 점프가 두 번
-일어나거나 입력을 놓치는 일이 없습니다.
+`wasPressed()`, `wasReleased()`, `mouseWheelDelta()`, `text()`는 **이번 틱**에 일어난 일만 알려
+줍니다. 동작 이름으로 묻는 `wasActionPressed()`와 `wasActionReleased()`도 마찬가지입니다. update
+핸들러 안에서는 update 한 번이 한 틱입니다. 한 프레임에서 update가 여러 번 실행되더라도, 한 번 누른
+키는 그 뒤 처음 실행되는 update에서만 `wasPressed()`가 true입니다. 따라서 점프가 두 번 일어나거나
+입력을 놓치는 일이 없습니다.
 
 draw 핸들러처럼 update 밖에서 읽을 때는 한 프레임이 한 틱입니다. 그러므로 게임 규칙은 update
 핸들러에서 처리합니다.
@@ -55,14 +54,14 @@ if (input.wasPressed(meno::MouseButton::Left)) {
 const float wheel = input.mouseWheelDelta(); // 이번 틱에 굴린 양. 위로 굴리면 양수
 ```
 
-`mousePosition()`은 정수 벡터(`Vec2i`)를 돌려주므로, `Vec2f`와 함께 계산하려면 위처럼 변환합니다.
-이 좌표는 창을 기준으로 하므로 카메라를 쓰면 월드 좌표와 달라지며, 이때는
-`game.renderer().screenToWorld()`로 변환합니다.
+`mousePosition()`은 정수 벡터(`Vec2i`)를 돌려주므로, `Vec2f`와 함께 계산하려면 위처럼 변환합니다. 이
+좌표는 창을 기준으로 하므로 카메라를 쓰면 월드 좌표와 달라지며, 이때는
+`game.renderer().screenToWorld()`로 변환합니다([10장](10-camera.md)).
 
 ## 동작 이름으로 묶기
 
-한 동작에 키를 여러 개 쓰려면 "jump" 같은 동작 이름에 키를 묶습니다. 묶인 키 중 하나라도 눌려
-있으면 그 동작이 눌린 것으로 봅니다.
+한 동작에 키를 여러 개 쓰려면 "jump" 같은 동작 이름에 키를 묶습니다. 묶인 키 중 하나라도 눌려 있으면
+그 동작이 눌린 것으로 봅니다.
 
 ```cpp
 meno::Input& input = game.window().input();
@@ -77,9 +76,9 @@ play.setUpdateHandler([&](double) {
 });
 ```
 
-`isActionDown()`, `wasActionPressed()`, `wasActionReleased()`는 각각 `isDown()`,
-`wasPressed()`, `wasReleased()`에 해당합니다. `unbind("jump")`는 그 동작에 묶인 키를 모두 풉니다.
-키 하나만 따로 풀 수는 없으므로, 묶인 키를 바꾸려면 `unbind()`로 푼 뒤 다시 `bind()`합니다.
+`isActionDown()`, `wasActionPressed()`, `wasActionReleased()`는 각각 `isDown()`, `wasPressed()`,
+`wasReleased()`에 해당합니다. `unbind("jump")`는 그 동작에 묶인 키를 모두 풉니다. 키 하나만 따로 풀
+수는 없으므로, 묶인 키를 바꾸려면 `unbind()`로 푼 뒤 다시 `bind()`합니다.
 
 ## 글자 입력
 
@@ -227,8 +226,8 @@ int main() {
 - 예제:
   [input_demo](https://github.com/SeoulTech-Fiat-Lux/Meno/blob/v0.2.0/examples/input_demo/main.cpp)
   (키보드, 마우스, 동작 묶기를 한 화면에서 보여 줍니다)
-- API: [Input](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_input.html),
-  [입력 모듈](https://seoultech-fiat-lux.github.io/Meno/group__input.html)(`Key`, `MouseButton`),
+- API: [Input](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_input.html), [입력
+  모듈](https://seoultech-fiat-lux.github.io/Meno/group__input.html)(`Key`, `MouseButton`),
   [Rect](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_rect.html),
   [Vec2](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_vec2.html)
 

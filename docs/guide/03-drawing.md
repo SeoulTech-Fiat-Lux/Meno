@@ -60,7 +60,7 @@ int main() {
   UI를 나중에 그립니다.
 
 카메라를 쓰면 그리기 좌표를 "월드 좌표"로 해석해, 화면에 보이는 영역을 옮기거나 확대할 수 있습니다.
-카메라를 정하지 않으면 위의 화면 좌표를 그대로 씁니다.
+카메라를 정하지 않으면 위의 화면 좌표를 그대로 씁니다. 카메라는 [10장](10-camera.md)에서 다룹니다.
 
 ## 도형
 
@@ -82,17 +82,17 @@ int main() {
 | `origin` | `{0, 0}` | `position`에 놓일 점이자 회전 중심 |
 | `rotation` | 0 | 회전 각도(도) |
 
-`origin`의 기준은 도형마다 다릅니다. 사각형과 다각형은 로컬 원점(사각형은 왼쪽 위 꼭짓점)에서,
-원과 부채꼴은 중심에서 잽니다. 사각형을 중심 기준으로 배치하고 회전하려면 `origin`을 크기의
-절반으로 지정합니다.
+`origin`의 기준은 도형마다 다릅니다. 사각형과 다각형은 로컬 원점(사각형은 왼쪽 위 꼭짓점)에서, 원과
+부채꼴은 중심에서 잽니다. 사각형을 중심 기준으로 배치하고 회전하려면 `origin`을 크기의 절반으로
+지정합니다.
 
 ```cpp
 const meno::Vec2f size{40.f, 20.f};
 renderer.drawRect({{320.f, 240.f}, size}, {.origin = size * 0.5f, .rotation = 30.f});
 ```
 
-외곽선만 그리려면 `fill`을 `meno::colors::Transparent`로 두고 `outline`과 `outlineThickness`를
-함께 지정합니다.
+외곽선만 그리려면 `fill`을 `meno::colors::Transparent`로 두고 `outline`과 `outlineThickness`를 함께
+지정합니다.
 
 ## 색
 
@@ -149,8 +149,8 @@ play.setDrawHandler([&](meno::Renderer& renderer) {
 });
 ```
 
-`SpriteParams`는 `position`, `origin`, `scale`, `rotation`, `tint`, `source`, `flipX`,
-`flipY` 순서로 지정합니다.
+`SpriteParams`는 `position`, `origin`, `scale`, `rotation`, `tint`, `source`, `flipX`, `flipY`
+순서로 지정합니다.
 
 - `origin`은 텍스처 픽셀 단위의 기준점입니다. 기본값 `{0, 0}`이면 텍스처의 왼쪽 위 꼭짓점이
   `position`에 놓입니다.
@@ -167,8 +167,8 @@ play.setDrawHandler([&](meno::Renderer& renderer) {
 
 ## 주의할 점
 
-- `fromRgb()`에는 6자리만 넣습니다. 8자리를 넣으면 상수식에서는 컴파일 오류가 나고, 그 밖에서는
-  눈에 띄도록 자홍색이 됩니다. 반투명한 색은 `withAlpha()`나 `fromRgba()`로 만듭니다.
+- `fromRgb()`에는 6자리만 넣습니다. 8자리를 넣으면 상수식에서는 컴파일 오류가 나고, 그 밖에서는 눈에
+  띄도록 자홍색이 됩니다. 반투명한 색은 `withAlpha()`나 `fromRgba()`로 만듭니다.
 - 외곽선 색 `outline`의 기본값은 투명입니다. 따라서 `outlineThickness`만 바꾸면 외곽선이 보이지
   않습니다.
 - `drawPolygon()`은 볼록한 다각형만 올바르게 채웁니다. 오목한 모양은 외곽선만 그리거나, 여러 개의
