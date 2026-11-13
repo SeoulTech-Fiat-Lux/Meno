@@ -11,11 +11,15 @@ namespace meno::audio_detail {
     return volume == volume;
 }
 
-[[nodiscard]] constexpr float toBackendVolume(float volume) noexcept {
+[[nodiscard]] constexpr float clampVolume(float volume) noexcept {
     if (!isValidVolume(volume)) {
         return 0.0F;
     }
-    return std::clamp(volume, 0.0F, 1.0F) * 100.0F;
+    return std::clamp(volume, 0.0F, 1.0F);
+}
+
+[[nodiscard]] constexpr float toBackendVolume(float volume) noexcept {
+    return clampVolume(volume) * 100.0F;
 }
 
 [[nodiscard]] constexpr float fromBackendVolume(float volume) noexcept {

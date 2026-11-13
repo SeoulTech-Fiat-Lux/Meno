@@ -1,4 +1,4 @@
-#include <meno/scene/Audio.hpp>
+#include <meno/scene/AudioSource.hpp>
 #include <meno/scene/SceneManager.hpp>
 
 #include "check.hpp"
@@ -54,17 +54,17 @@ float Sound::volume() const { return impl_ ? impl_->volume : 0.0F; }
 bool Sound::isPlaying() const { return impl_ && impl_->playing; }
 } // namespace meno
 
-static_assert(std::is_base_of_v<meno::Component, meno::Audio>);
-static_assert(!std::is_copy_constructible_v<meno::Audio>);
-static_assert(!std::is_move_constructible_v<meno::Audio>);
+static_assert(std::is_base_of_v<meno::Component, meno::AudioSource>);
+static_assert(!std::is_copy_constructible_v<meno::AudioSource>);
+static_assert(!std::is_move_constructible_v<meno::AudioSource>);
 
 int main() {
     meno::SceneManager manager;
     auto& scene = manager.createScene();
     auto& object = scene.createGameObject();
     const auto id = object.id();
-    auto& audio = object.addComponent<meno::Audio>();
-    MENO_CHECK(object.getComponent<meno::Audio>() == &audio);
+    auto& audio = object.addComponent<meno::AudioSource>();
+    MENO_CHECK(object.getComponent<meno::AudioSource>() == &audio);
     MENO_CHECK(audio.parent == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(!audio.hasSound());
@@ -85,6 +85,16 @@ int main() {
 
     MENO_CHECK(audio.loadFromFile("first.wav"));
     MENO_CHECK(audio.hasSound());
+    MENO_CHECK(appliedVolume == 0.25F);
+    audio.setVolume(std::numeric_limits<float>::infinity());
+    MENO_CHECK(audio.volume() == 1.0F);
+    MENO_CHECK(appliedVolume == 1.0F);
+    audio.setVolume(-std::numeric_limits<float>::infinity());
+    MENO_CHECK(audio.volume() == 0.0F);
+    MENO_CHECK(appliedVolume == 0.0F);
+    audio.setVolume(0.25F);
+    audio.setVolume(std::numeric_limits<float>::quiet_NaN());
+    MENO_CHECK(audio.volume() == 0.25F);
     MENO_CHECK(appliedVolume == 0.25F);
     MENO_CHECK(!audio.isPlaying());
     audio.play();
@@ -120,7 +130,7 @@ int main() {
     MENO_CHECK(!audio.isPlaying());
     MENO_CHECK(appliedVolume == 0.5F);
     audio.play();
-    auto& replacement = object.addComponent<meno::Audio>();
+    auto& replacement = object.addComponent<meno::AudioSource>();
     MENO_CHECK(replacement.parent == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(playingSounds == 0);
@@ -131,7 +141,7 @@ int main() {
     MENO_CHECK(playingSounds == 0);
 
     {
-        meno::Audio owned{meno::Sound{}};
+        meno::AudioSource owned{meno::Sound{}};
         owned.play();
         MENO_CHECK(playingSounds == 1);
     }

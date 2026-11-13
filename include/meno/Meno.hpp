@@ -50,7 +50,7 @@
 // --- 씬 -----------------------------------------------------------------
 #include <meno/scene/Collider.hpp>  // IWYU pragma: export
 #include <meno/scene/Component.hpp>  // IWYU pragma: export
-#include <meno/scene/Audio.hpp>  // IWYU pragma: export
+#include <meno/scene/AudioSource.hpp>  // IWYU pragma: export
 #include <meno/scene/GameObject.hpp>  // IWYU pragma: export
 #include <meno/scene/Scene.hpp>  // IWYU pragma: export
 #include <meno/scene/SceneManager.hpp>  // IWYU pragma: export

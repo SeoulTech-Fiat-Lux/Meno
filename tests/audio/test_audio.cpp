@@ -1,7 +1,7 @@
 #include <meno/audio/Music.hpp>
 #include <meno/audio/Sound.hpp>
 #include <meno/audio/SoundBuffer.hpp>
-#include <meno/scene/Audio.hpp>
+#include <meno/scene/AudioSource.hpp>
 
 #include "audio/Volume.hpp"
 
@@ -65,7 +65,7 @@ int main() {
     MENO_CHECK(empty.volume() == 0.5F);
 
     // 빈 컴포넌트는 실제 Sound 구현과 링크하되 장치를 생성하지 않는다.
-    meno::Audio audio;
+    meno::AudioSource audio;
     audio.play();
     audio.pause();
     audio.stop();
