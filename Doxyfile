@@ -1,0 +1,60 @@
+# meno API 레퍼런스 설정
+# 기준 버전: Doxygen 1.15.0 (docs.yml이 같은 버전을 쓴다). 여기 없는 항목은 Doxygen 기본값을 쓴다.
+#
+#   mkdir -p build-docs && doxygen Doxyfile 2> build-docs/warnings.txt
+#
+# warnings.txt 맨 위의 "Korean ... has not been updated" 두 줄은 번역 안내라 경고가 아니다.
+
+PROJECT_NAME           = meno
+PROJECT_NUMBER         = v0.2.0
+PROJECT_BRIEF          = "SFML 기반 C++20 2D 게임 개발 라이브러리"
+OUTPUT_DIRECTORY       = build-docs
+OUTPUT_LANGUAGE        = Korean
+
+# 사이드바와 상단 탭에 나오는 순서대로 적는다. 첫 쪽은 docs/mainpage.md, 모듈 목록은
+# docs/groups.dox에 있다.
+INPUT                  = docs/mainpage.md \
+                         docs/groups.dox \
+                         include/meno
+USE_MDFILE_AS_MAINPAGE = docs/mainpage.md
+FILE_PATTERNS          = *.hpp
+RECURSIVE              = YES
+# 문서에 <meno/graphics/Renderer.hpp>처럼 사용자가 실제로 쓰는 include 경로로 보이게 한다.
+STRIP_FROM_PATH        = include
+STRIP_FROM_INC_PATH    = include
+
+# 공개 API만 싣는다. private 멤버, meno::detail, meno::backend(SFML 접근 통로)는 구현 세부라
+# 뺀다. friend 선언도 사용자가 쓸 수 있는 API가 아니므로 숨긴다.
+EXTRACT_PRIVATE        = NO
+EXCLUDE_SYMBOLS        = meno::detail meno::backend
+HIDE_FRIEND_COMPOUNDS  = YES
+
+# 주석 규칙: 첫 문장이 요약이 되고, /// \{ ... /// \} 묶음의 설명은 묶인 멤버 모두에 붙는다.
+JAVADOC_AUTOBRIEF      = YES
+DISTRIBUTE_GROUP_DOC   = YES
+
+# 경고: 문서 없는 공개 멤버와 틀린 태그(\param 이름 오타 등)를 잡는다.
+# \param은 필요한 것만 쓰므로, 일부만 적었다고 경고하지 않는다.
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_IF_INCOMPLETE_DOC = NO
+WARN_NO_PARAMDOC       = NO
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+
+# 테마: doxygen-awesome-css v2.5.0(MIT)을 docs/theme/doxygen-awesome-css에 고치지 않고 두고,
+# 팀 로고와 색은 docs/theme/meno.css에서 덮어쓴다. HTML_COLORSTYLE = LIGHT는 테마가 요구하는
+# 값이며, 다크 모드는 테마가 시스템 설정을 따라 바꾼다.
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = docs/theme/doxygen-awesome-css/doxygen-awesome.css \
+                         docs/theme/meno.css
+HTML_EXTRA_FILES       = docs/theme/logo/meno-logo-on-dark.svg
+PROJECT_ICON           = docs/theme/logo/meno-favicon.svg
+# Doxygen 1.15의 기본 배치에서 한국어로 번역되지 않은 "Topics" 탭의 이름과 안내 문장만 바꿨다.
+# Doxygen 버전을 올리면 `doxygen -l`로 새 기본 배치를 받아 같은 곳만 다시 고친다.
+LAYOUT_FILE            = docs/DoxygenLayout.xml

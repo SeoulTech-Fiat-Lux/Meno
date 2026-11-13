@@ -1,0 +1,107 @@
+/* meno 문서 사이트 스타일. doxygen-awesome.css 위에 얹어 팀 로고의 색과 머리말을 입힌다.
+ * 테마 파일은 고치지 않고 여기서만 덮어쓰므로, 테마를 올릴 때는 이 파일만 다시 확인하면 된다. */
+
+/* 색: 로고의 그라디언트와 커서 막대(_)에서 가져왔다.
+ * 하늘색·청록(#21b3e9, #00b1ed)은 흰 배경에서 대비가 2.5라 글자색으로 쓰지 않고 장식에만 쓴다.
+ * 흰 배경의 글자·링크는 대비 4.9 이상인 #0a74c6, #0059b7을 쓴다. */
+html {
+    --meno-cursor: #00b1ed;
+    --primary-color: #0a74c6;
+    --primary-dark-color: #0059b7;
+    --primary-light-color: #21b3e9;
+    --header-background: #0d1117;
+    --header-foreground: #f8f8ff;
+}
+
+@media (prefers-color-scheme: dark) {
+    /* 다크 모드는 로고의 먹색(#0d1117)을 바탕으로 쓰고,
+       그 위에서 대비가 7.7인 하늘색을 링크로 쓴다. */
+    html:not(.light-mode) {
+        --primary-color: #21b3e9;
+        --primary-dark-color: #8fd6f5;
+        --primary-light-color: #0a74c6;
+        --page-background-color: #0d1117;
+        --side-nav-background: #11161d;
+        --header-background: #0d1117;
+        --code-background: #161b22;
+        --fragment-background: #161b22;
+    }
+}
+
+/* 머리말: 라이트 모드에서도 로고의 먹색 띠로 칠하고 흰 글자 로고를 올린다. */
+#top,
+#titlearea,
+#main-nav,
+#main-menu,
+.sm-dox {
+    background: #0d1117;
+}
+#titlearea {
+    border-bottom: none;
+}
+#main-menu > li > a,
+#main-menu > li > a:visited {
+    color: #f8f8ff;
+}
+#main-menu > li > a:hover,
+#main-menu > li > a.highlighted {
+    color: #21b3e9;
+    background: transparent;
+}
+
+/* 이름 글자("meno")는 화면에서 숨기고 로고를 배경으로 그린다. 글자는 남아 있어 화면 낭독기가
+ * 읽는다.
+ * 버전 번호는 로고 아래쪽 기준선에 맞춘다. */
+#projectname {
+    display: flex;
+    align-items: flex-end;
+    font-size: 0;
+    min-height: 34px;
+    padding-left: 146px;
+    background: url("meno-logo-on-dark.svg") left center / auto 34px no-repeat;
+}
+#projectnumber {
+    font-size: 13px;
+    line-height: 1;
+    padding-bottom: 3px;
+    color: #9fb3c8;
+}
+#projectbrief {
+    color: #c9d6e3;
+}
+
+/* 머리말 아래에 커서 색 선을 얇게 그어 띠를 마무리한다. */
+#main-nav {
+    border-bottom: 2px solid var(--meno-cursor);
+}
+
+/* 커서 모티프: 페이지 제목 끝에 로고처럼 하늘색 "_"를 붙인다. 화면에만 그리는 글자라 실제 제목은
+ * 그대로이고, 브라우저 탭, 목차, 검색, 복사한 글에는 나오지 않는다.
+ * content의 "/ """는 화면 낭독기가 "_"를 읽지 않게 한다. */
+div.headertitle .title {
+    display: flow-root;
+    /* 줄 길이를 고르게 나눠, 줄이 꽉 찬 폭에서 "_" 혼자 다음 줄로 내려가지 않게 한다. */
+    text-wrap: balance;
+}
+div.headertitle .title::after {
+    /* Doxygen은 페이지·모듈 제목 끝에만 공백을 붙인다. 앞에 공백을 하나 넣으면 그 공백과 합쳐져
+       어느 페이지든 공백이 정확히 하나 남고, 왼쪽 음수 여백으로 그 공백을 지워 "_"를 글자에 붙인다.
+       오른쪽 음수 여백은 "_"가 줄에서 자리를 차지하지 않게 해, "_" 때문에 줄이 바뀌지 않게 한다. */
+    content: " _";
+    content: " _" / "";
+    margin-left: -0.25em;
+    margin-right: -0.6em;
+    white-space: nowrap;
+    color: var(--meno-cursor);
+    /* "_"는 제목 글자의 가로획보다 얇아서, 같은 색 그림자를 위로 겹쳐 가로획 굵기에 맞춘다.
+       화면 배율에 따라 겹친 사이가 비어 보이지 않게 반씩 두 번 겹친다.
+       그림자는 칠하기만 하므로 자리와 줄바꿈은 그대로다. */
+    text-shadow: 0 -0.025em 0 currentColor, 0 -0.05em 0 currentColor;
+}
+/* 클래스 페이지는 모듈 표시(.ingroups)가 제목 글자와 "_" 사이에 있다. 띄워서 다음 줄로 보내면
+ * "_"는 제목 글자 바로 뒤에 남는다. */
+div.headertitle .title .ingroups {
+    float: left;
+    clear: left;
+    width: 100%;
+}

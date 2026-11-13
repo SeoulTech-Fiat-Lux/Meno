@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -85,6 +86,7 @@ class CallbackApplication final : public meno::Application {
 public:
     using Application::Application;
     std::function<void()> startHandler;
+    std::function<void()> eventsHandler;
     std::function<void()> updateHandler;
     std::function<void()> stopHandler;
 
@@ -92,6 +94,10 @@ private:
     void onStart() override {
         if (startHandler)
             startHandler();
+    }
+    void processEvents() override {
+        if (eventsHandler)
+            eventsHandler();
     }
     void update(double) override {
         if (updateHandler)
@@ -134,10 +140,9 @@ void testExclusiveRun() {
             MENO_CHECK(meno::Time::fixedDeltaTime() == fixedDelta);
         }
     };
-    outer.startHandler = [&] {
-        rejectNestedRun();
-        now += 10ms;
-    };
+    outer.startHandler = [&] { rejectNestedRun(); };
+    // onStart() 시간은 첫 프레임에 들어가지 않으므로 프레임마다 시간을 흘린다.
+    outer.eventsHandler = [&] { now += 10ms; };
     outer.updateHandler = [&] {
         rejectNestedRun();
         MENO_CHECK(near(meno::Time::elapsedTime(), 0.01));
@@ -158,8 +163,8 @@ void testExclusiveRun() {
         failing.startHandler = [&] {
             if (phase == 0)
                 throw std::runtime_error("start failed");
-            now += 10ms;
         };
+        failing.eventsHandler = [&] { now += 10ms; };
         failing.updateHandler = [&] {
             if (phase == 1)
                 throw std::runtime_error("update failed");
@@ -177,6 +182,85 @@ void testExclusiveRun() {
     }
 }
 
+// onStart()가 오래 걸려도 첫 프레임에 update()가 몰리지 않아야 한다.
+void testSlowStartIsExcluded() {
+    using namespace std::chrono_literals;
+    meno::Clock::TimePoint now{};
+    meno::Clock clock([&] { return now; }, [](meno::Clock::Duration) {});
+    CallbackApplication app({.fixedTimeStep = 0.01, .maxUpdatesPerFrame = 8});
+    int updates = 0;
+    int frames = 0;
+    app.startHandler = [&] { now += 1s; }; // 느린 로딩
+    app.eventsHandler = [&] {
+        ++frames;
+        if (frames == 1)
+            MENO_CHECK(updates == 0);
+        if (frames == 2) {
+            MENO_CHECK(updates == 0); // 첫 프레임은 시간이 흐르지 않았다
+            app.stop();
+        }
+        now += 10ms;
+    };
+    app.updateHandler = [&] { ++updates; };
+    app.run(clock);
+    MENO_CHECK(frames == 2);
+    MENO_CHECK(meno::Time::realElapsedTime() < 0.02); // 로딩 1초가 빠졌다
+}
+
+// 0 이하뿐 아니라 NaN과 무한대도 거부해야 한다. 통과시키면 update()가 영영 불리지 않는다.
+void testRejectsInvalidTiming() {
+    const auto rejects = [](meno::ApplicationConfig config) {
+        try {
+            CallbackApplication app(config);
+            return false;
+        } catch (const std::invalid_argument&) {
+            return true;
+        }
+    };
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double inf = std::numeric_limits<double>::infinity();
+    MENO_CHECK(rejects({.fixedTimeStep = 0.0}));
+    MENO_CHECK(rejects({.fixedTimeStep = -0.01}));
+    MENO_CHECK(rejects({.fixedTimeStep = nan}));
+    MENO_CHECK(rejects({.fixedTimeStep = inf}));
+    MENO_CHECK(rejects({.maxUpdatesPerFrame = 0}));
+    MENO_CHECK(!rejects({.fixedTimeStep = 0.01}));
+}
+
+// 상한에 걸린 프레임에서는 반올림 오차로 남은 시간이 fixedTimeStep 이상일 수 있다.
+// 16ms 프레임 25번 뒤 1초 프레임이 오면 보정 전에는 alpha가 1.0000000000000013이 된다.
+class AlphaApplication final : public meno::Application {
+public:
+    explicit AlphaApplication(meno::Clock::TimePoint& now)
+        : Application({.fixedTimeStep = 0.1, .maxUpdatesPerFrame = 8}), now_(now) {}
+    std::vector<double> alphas;
+
+private:
+    void render(double interpolationAlpha) override {
+        using namespace std::chrono_literals;
+        alphas.push_back(interpolationAlpha);
+        if (alphas.size() <= 25)
+            now_ += 16ms;
+        else if (alphas.size() == 26)
+            now_ += 1s;
+        else
+            stop();
+    }
+    meno::Clock::TimePoint& now_;
+};
+
+void testInterpolationAlphaStaysBelowOne() {
+    meno::Clock::TimePoint now{};
+    meno::Clock clock([&] { return now; }, [](meno::Clock::Duration) {});
+    AlphaApplication app(now);
+    app.run(clock);
+    MENO_CHECK(app.alphas.size() == 27);
+    bool inRange = true;
+    for (const double alpha : app.alphas)
+        inRange = inRange && alpha >= 0.0 && alpha < 1.0;
+    MENO_CHECK(inRange);
+}
+
 } // namespace
 
 int main() {
@@ -184,8 +268,8 @@ int main() {
     using TimePoint = meno::Clock::TimePoint;
 
     // 생성 시 0초, 이후 프레임은 5ms, 12ms, 100ms가 흐른다.
-    const std::vector<TimePoint> times{TimePoint{}, TimePoint{} + 5ms, TimePoint{} + 17ms,
-                                       TimePoint{} + 117ms};
+    const std::vector<TimePoint> times{TimePoint{}, TimePoint{}, TimePoint{} + 5ms,
+                                       TimePoint{} + 17ms, TimePoint{} + 117ms};
     std::size_t nextTime = 0;
     meno::Clock clock([&] { return times.at(nextTime++); }, [](meno::Clock::Duration) {});
 
@@ -211,7 +295,8 @@ int main() {
     MENO_CHECK(near(meno::Time::realElapsedTime(), 0.117));
     MENO_CHECK(!app.isRunning());
 
-    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{} + 20ms, TimePoint{} + 40ms};
+    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{}, TimePoint{} + 20ms,
+                                            TimePoint{} + 20ms, TimePoint{} + 40ms};
     std::size_t nextRetryTime = 0;
     meno::Clock retryClock([&] { return retryTimes.at(nextRetryTime++); },
                            [](meno::Clock::Duration) {});
@@ -239,6 +324,9 @@ int main() {
     MENO_CHECK(!reentrantApp.isRunning());
 
     testExclusiveRun();
+    testSlowStartIsExcluded();
+    testRejectsInvalidTiming();
+    testInterpolationAlphaStaysBelowOne();
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;
@@ -257,6 +345,14 @@ int main() {
     MENO_CHECK(waitCount == 1);
     MENO_CHECK(std::abs(limitedClock.elapsed() - expectedFrameTime) <= clockTolerance);
 
+    limitedNow += 20ms;
+    MENO_CHECK(near(limitedClock.restart(), 0.02));
+    MENO_CHECK(waitCount == 1);
+
+    // resetLap()은 프레임 제한이 있어도 기다리지 않고, 다음 restart()의 기준만 옮긴다.
+    limitedNow += 3ms;
+    limitedClock.resetLap();
+    MENO_CHECK(waitCount == 1);
     limitedNow += 20ms;
     MENO_CHECK(near(limitedClock.restart(), 0.02));
     MENO_CHECK(waitCount == 1);

@@ -5,12 +5,14 @@
 
 namespace meno {
 namespace {
+// 콜백 안에서 draw()가 불려도 바깥 콜백의 busy 상태를 지우지 않도록 이전 값으로 되돌린다.
 struct CallbackGuard {
     bool& busy;
-    explicit CallbackGuard(bool& flag) : busy(flag) { busy = true; }
+    bool previous;
+    explicit CallbackGuard(bool& flag) : busy(flag), previous(flag) { busy = true; }
     CallbackGuard(const CallbackGuard&) = delete;
     CallbackGuard& operator=(const CallbackGuard&) = delete;
-    ~CallbackGuard() { busy = false; }
+    ~CallbackGuard() { busy = previous; }
 };
 } // namespace
 
@@ -82,6 +84,14 @@ void SceneManager::update(double dt) {
             active_->onUpdate(dt);
     }
     applyPending();
+}
+
+void SceneManager::draw(Renderer& renderer) {
+    if (!active_)
+        return;
+    // draw 핸들러가 전환이나 삭제를 요청해도 그리는 중인 Scene이 바뀌거나 파괴되지 않게 한다.
+    CallbackGuard guard{busy_};
+    active_->drawScene(renderer);
 }
 
 bool SceneManager::shutdown() {

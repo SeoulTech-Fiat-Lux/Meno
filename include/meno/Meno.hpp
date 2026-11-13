@@ -1,17 +1,20 @@
 #ifndef MENO_HPP
 #define MENO_HPP
 
-/// meno 통합 헤더.
+// include/meno/ 아래 어떤 헤더도 <SFML/...>을 include하지 않는다.
+// tools/check_headers.py가 이 규칙을 검사한다.
+/// \file
+/// meno 통합 헤더입니다.
 ///
-/// 사용자는 이 한 줄로 공개 API 전체에 접근한다:
+/// 이 한 줄로 공개 API 전체를 씁니다:
 ///
-///     #include <meno/Meno.hpp>
+/// \code{.cpp}
+/// #include <meno/Meno.hpp>
+/// \endcode
 ///
-/// 개별 헤더를 직접 include해도 된다. 컴파일 시간을 아끼려면 그쪽이 낫다.
-///
-/// 이 파일을 포함해 include/meno/ 아래 어떤 헤더도 <SFML/...>을 include하지
-/// 않는다. 사용자 프로젝트는 SFML 헤더 경로 없이 meno만 링크하면 빌드된다.
-/// tools/check_headers.py가 이 규칙을 검사한다.
+/// 개별 헤더를 직접 include해도 되며, 컴파일 시간을 아끼려면 그쪽이 낫습니다. 공개 헤더는 SFML
+/// 헤더를 include하지 않으므로, 사용자 프로젝트는 SFML 헤더 경로 없이 meno만 링크하면
+/// 빌드됩니다.
 
 #include <meno/math/Angle.hpp>    // IWYU pragma: export
 #include <meno/math/Camera2D.hpp> // IWYU pragma: export
@@ -51,5 +54,8 @@
 #include <meno/scene/Transform.hpp>    // IWYU pragma: export
 
 #include <meno/app/Game.hpp> // IWYU pragma: export
+
+/// \namespace meno
+/// meno의 모든 공개 API가 들어 있는 네임스페이스입니다. 보통은 이 헤더 하나만 include합니다.
 
 #endif // MENO_HPP

@@ -9,73 +9,106 @@
 
 namespace meno {
 
-/// 스프라이트 그리기 옵션.
+/// \addtogroup graphics
+/// \{
+
+// 이 파일의 Params 구조체는 모두 지정 초기화로 쓰므로, 필드 순서를 바꾸면 사용자 코드가 깨진다.
+// 순서 변경은 API 변경으로 취급할 것.
+/// Renderer::draw()로 텍스처를 그릴 때의 옵션입니다.
 ///
-/// 전부 기본값이 있어서 필요한 것만 지정하면 된다. C++20 지정 초기화와
-/// 함께 쓰는 것을 전제로 설계했다:
+/// 모든 필드에 기본값이 있으므로 지정 초기화로 필요한 것만 정합니다. 이때 필드는 선언
+/// 순서(position, origin, scale, rotation, tint, source, flipX, flipY)대로 써야 합니다.
 ///
-///     renderer.draw(tex, {.position = {100, 50}, .rotation = 45.f});
+/// \code{.cpp}
+/// renderer.draw(texture, {.position = {100.f, 50.f}, .rotation = 45.f});
+/// \endcode
 ///
-/// 지정 초기화는 선언 순서를 지켜야 하므로, 필드 순서를 바꾸면 사용자
-/// 코드가 깨진다. 순서 변경은 API 변경으로 취급할 것.
+/// \see Renderer::draw
 struct SpriteParams {
-    /// 월드 좌표. origin이 놓일 위치다.
+    /// origin이 놓일 월드 좌표입니다.
     Vec2f position{0.f, 0.f};
 
-    /// 회전/스케일의 기준점. 텍스처 픽셀 단위이며 스케일 적용 전 기준.
-    /// {0,0}이면 좌상단, 텍스처 크기의 절반이면 중심 회전이 된다.
+    /// 회전과 배율의 기준점입니다. 배율을 적용하기 전의 텍스처 픽셀 단위입니다.
+    ///
+    /// {0, 0}이면 좌상단(source를 쓰면 그 영역의 좌상단)이고, 그리는 영역 크기의 절반이면
+    /// 중심을 기준으로 돕니다.
     Vec2f origin{0.f, 0.f};
 
+    /// 가로·세로 배율입니다. 뒤집을 때는 음수 배율 대신 flipX·flipY를 쓰면 origin이 그대로입니다.
     Vec2f scale{1.f, 1.f};
 
-    /// 도(degree), 시계 방향.
+    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
     float rotation{0.f};
 
-    /// 텍스처 색에 곱해지는 색. 흰색이면 원본 그대로다.
-    /// alpha를 낮추면 반투명해진다.
+    /// 텍스처 색에 곱해지는 색입니다. 흰색이면 원본 그대로이고, alpha를 낮추면 반투명해집니다.
     Color tint{colors::White};
 
-    /// 텍스처의 일부만 그릴 때 지정한다(스프라이트 시트, 애니메이션 프레임).
-    /// 비어 있으면 텍스처 전체.
+    /// 텍스처의 일부만 그릴 때 그 영역(텍스처 픽셀 좌표)입니다. 스프라이트 시트나 애니메이션
+    /// 프레임에 씁니다. 비어 있으면 텍스처 전체를 그립니다.
     std::optional<Recti> source{}; // NOLINT(readability-redundant-member-init)
 
+    /// 좌우(flipX)나 상하(flipY)로 뒤집어 그립니다. 그리는 위치는 그대로입니다.
+    /// \{
     bool flipX{false};
     bool flipY{false};
+    /// \}
 };
 
-/// 기본 도형 그리기 옵션.
+/// drawRect(), drawCircle(), drawPolygon(), drawSector()의 옵션입니다.
+///
+/// 필드는 선언 순서(fill, outline, outlineThickness, origin, rotation)대로 지정해야 합니다.
 struct ShapeParams {
+    /// 채우기 색입니다.
     Color fill{colors::White};
+    /// 외곽선 색입니다. 기본값이 투명이므로, outlineThickness만 바꾸면 외곽선이 보이지 않습니다.
     Color outline{colors::Transparent};
 
-    /// 양수면 바깥쪽, 음수면 안쪽으로 그려진다.
+    /// 외곽선 두께입니다. 양수면 바깥쪽, 음수면 안쪽으로 그리며 0이면 외곽선이 없습니다.
     float outlineThickness{0.f};
 
+    /// position에 놓일 점이자 회전 중심입니다. 기준은 도형마다 다릅니다.
+    ///
+    /// drawRect()와 drawPolygon()은 도형의 로컬 원점(사각형은 좌상단)에서 재고, drawCircle()과
+    /// drawSector()는 중심에서 잽니다.
     Vec2f origin{0.f, 0.f};
+    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
     float rotation{0.f};
 };
 
-/// 선 그리기 옵션.
+/// drawLine()의 옵션입니다.
 struct LineParams {
+    /// 선 색입니다.
     Color color{colors::White};
 
-    /// 픽셀 단위 두께. 선을 가운데에 두고 양쪽으로 반씩 퍼진다. 양의 유한수가 아니면 그리지 않는다.
+    /// 선 두께입니다. 선을 가운데에 두고 양쪽으로 반씩 퍼지며, 양의 유한수가 아니면 그리지
+    /// 않습니다.
     float thickness{1.f};
 };
 
-/// 텍스트 그리기 옵션.
+/// drawText(), measureText(), measureTextBounds()의 옵션입니다.
+///
+/// 필드는 선언 순서(characterSize, color, origin, rotation, outlineThickness, outlineColor)대로
+/// 지정해야 합니다.
 struct TextParams {
-    /// 픽셀 단위 글자 크기.
+    /// 글자 크기입니다. 화면 좌표에서는 픽셀 단위입니다.
     unsigned int characterSize{24};
 
+    /// 글자 색입니다.
     Color color{colors::White};
 
+    /// position에 놓일 점이자 회전 중심입니다. 텍스트 상자의 좌상단에서 잽니다.
+    /// 가운데 정렬은 Renderer::measureTextBounds()의 중심을 넣습니다.
     Vec2f origin{0.f, 0.f};
+    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
     float rotation{0.f};
 
+    /// 외곽선 두께입니다. 0이면 외곽선이 없습니다.
     float outlineThickness{0.f};
+    /// 외곽선 색입니다.
     Color outlineColor{colors::Black};
 };
+
+/// \}
 
 } // namespace meno
 

@@ -1,6 +1,8 @@
 #include <meno/app/Game.hpp>
 #include <meno/core/Clock.hpp>
 
+#include <exception>
+#include <optional>
 #include <stdexcept>
 
 namespace meno {
@@ -65,7 +67,23 @@ void Game::update(double fixedDeltaTime) { scenes_.update(fixedDeltaTime); }
 
 void Game::render(double) {
     renderer_.beginFrame(clearColor_);
-    scenes_.draw(renderer_);
+    // draw 핸들러가 UI를 그리려고 바꾼 카메라가 다음 프레임의 월드 그리기에 남지 않게 되돌린다.
+    // update가 돌지 않는 프레임도 있으므로 매 프레임 카메라를 다시 정하는 방식에 기댈 수 없다.
+    const std::optional<Camera2D> camera = renderer_.camera();
+    std::exception_ptr error;
+    try {
+        scenes_.draw(renderer_);
+    } catch (...) {
+        error = std::current_exception();
+    }
+    if (camera) {
+        renderer_.setCamera(*camera);
+    } else {
+        renderer_.resetCamera();
+    }
+    if (error) {
+        std::rethrow_exception(error);
+    }
     renderer_.endFrame();
 }
 

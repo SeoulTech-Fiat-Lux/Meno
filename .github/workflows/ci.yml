@@ -17,8 +17,8 @@ jobs:
     name: 공개 헤더 경계 검사
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: python tools/check_headers.py
@@ -31,7 +31,7 @@ jobs:
     name: 하위 프로젝트 빌드 (Ubuntu / GCC)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # 하위 프로젝트일 때 meno의 테스트는 꺼지므로,
       # tests/ 아래에 CMAKE_SOURCE_DIR가 다시 들어와도 아래 빌드로는 드러나지 않는다.
@@ -52,7 +52,7 @@ jobs:
             libharfbuzz-dev
 
       - name: SFML 빌드 캐시
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: build-consumer/_deps
           key: consumer-deps-${{ runner.os }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
@@ -94,7 +94,7 @@ jobs:
             cmake-args: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # SFML 3는 Linux에서 X11·udev·freetype 등의 개발 패키지를 요구한다.
       # xvfb와 fonts-dejavu-core는 창이 필요한 렌더 테스트(render) 용이다.
@@ -111,7 +111,7 @@ jobs:
 
       # SFML과 그 의존성 빌드가 10분쯤 걸린다. 캐시하지 않으면 매 푸시마다 낸다.
       - name: SFML 빌드 캐시
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: build/_deps
           key: deps-${{ matrix.cache-id }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
@@ -146,7 +146,7 @@ jobs:
     name: Ubuntu / Clang + ASan·UBSan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 시스템 의존성 설치
         run: |
@@ -160,7 +160,7 @@ jobs:
 
       # SFML도 같은 플래그로 빌드되므로 일반 빌드와 캐시를 섞지 않는다.
       - name: SFML 빌드 캐시
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: build/_deps
           key: deps-ubuntu-asan-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
@@ -199,7 +199,7 @@ jobs:
     name: clang-tidy (경고만)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 시스템 의존성 설치
         run: |

@@ -126,6 +126,36 @@ private:
     }
 };
 
+// draw 핸들러에서 UI를 그리려고 카메라를 풀어도, 다음 프레임의 월드 그리기에는 원래 카메라가
+// 다시 적용되어야 한다.
+class DrawHandlerGame final : public meno::Game {
+public:
+    DrawHandlerGame()
+        : Game({.application = {.fixedTimeStep = 0.01},
+                .windowSize = {160u, 90u},
+                .title = "meno game draw handler test"}) {}
+
+    int draws = 0;
+    bool cameraKept = true;
+
+private:
+    void onStart() override {
+        renderer().setCamera(meno::Camera2D{.center = {40.f, 30.f}});
+        auto& scene = scenes().createScene();
+        scene.setDrawHandler([this](meno::Renderer& target) {
+            const auto camera = target.camera();
+            cameraKept = cameraKept && camera && camera->center == meno::Vec2f{40.f, 30.f};
+            target.resetCamera(); // 화면 고정 UI를 그리는 경로
+            if (++draws == 3) {
+                stop();
+            }
+        });
+        if (!scenes().changeScene(scene.id())) {
+            throw std::runtime_error("failed to activate draw handler scene");
+        }
+    }
+};
+
 } // namespace
 
 int main() {
@@ -141,7 +171,9 @@ int main() {
     {
         NormalGame game(normalDestroyed, normalDependenciesAlive, exited);
         int calls = 0;
-        meno::Clock clock([&] { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 20ms); },
+        // 시각을 읽을 때마다 20ms씩 흐른다. onStart() 시간은 첫 프레임에서 빠지므로
+        // 이후 프레임마다 시간이 흘러야 update()가 돈다.
+        meno::Clock clock([&] { return meno::Clock::TimePoint{} + 20ms * calls++; },
                           [](meno::Clock::Duration) {});
         // Application 참조로 실행해도 가상 dispatch를 통해 Game의 정리 경로를 탄다.
         meno::Application& application = game;
@@ -222,6 +254,18 @@ int main() {
     MENO_CHECK(discarded);
     MENO_CHECK(discardDependenciesAlive);
     MENO_CHECK(!exitCalledFromDestructor);
+
+    {
+        DrawHandlerGame game;
+        int calls = 0;
+        meno::Clock clock([&] { return meno::Clock::TimePoint{} + 20ms * calls++; },
+                          [](meno::Clock::Duration) {});
+        game.run(clock);
+        MENO_CHECK(game.draws == 3);
+        MENO_CHECK(game.cameraKept);
+        const auto camera = game.renderer().camera();
+        MENO_CHECK(camera && camera->center == meno::Vec2f{40.f, 30.f});
+    }
 
     return meno::test::report();
 }

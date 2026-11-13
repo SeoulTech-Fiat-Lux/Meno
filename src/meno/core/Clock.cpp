@@ -26,6 +26,8 @@ double Clock::restart() {
     return delta.count();
 }
 
+void Clock::resetLap() { lastTime_ = now_(); }
+
 void Clock::setFramerateLimit(unsigned int framesPerSecond) noexcept {
     if (framesPerSecond == 0) {
         minimumFrameDuration_ = Duration::zero();

@@ -30,8 +30,11 @@ void frame(Input& input, std::initializer_list<meno::Event> events) {
 }
 
 // 가상시계: 생성 시각은 0이고 이후 restart()마다 frameIntervals를 차례로 더해서 돌려준다.
+// Application::run()은 onStart() 직후 resetLap()으로 시각을 한 번 더 읽으므로, 그 읽기는
+// 시간이 흐르지 않게 0ms를 앞에 끼운다.
 // 준비한 간격보다 프레임이 더 돌 경우, at()이 예외를 던진다.
 meno::Clock simulatedClock(std::vector<std::chrono::milliseconds> frameIntervals) {
+    frameIntervals.insert(frameIntervals.begin(), std::chrono::milliseconds{0});
     return meno::Clock(
         [intervals = std::move(frameIntervals), next = std::size_t{0},
          now = meno::Clock::TimePoint{}]() mutable {
