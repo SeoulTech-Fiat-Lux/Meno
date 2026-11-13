@@ -28,13 +28,13 @@ jobs:
   # ---------------------------------------------------------------------------
   consumer:
     name: 하위 프로젝트 빌드 (Ubuntu / GCC)
-    runs-on: unbuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       # 하위 프로젝트일 때 meno의 테스트는 꺼지므로,
       # tests/ 아래에 CMAKE_SOURCE_DIR가 다시 들어와도 아래 빌드로는 드러나지 않는다.
-      - name: 사용자 프로젝트 지정 여부 확인
+      - name: CMAKE_SOURCE_DIR 사용 금지
         run: |
           if git grep -nE '^[^#]*CMAKE_(SOURCE|BINARY)_DIR' -- '*CMakeLists.txt' '*.cmake'; then
             echo "::error::하위 프로젝트일 때 CMAKE_SOURCE_DIR·CMAKE_BINARY_DIR는 사용자 프로젝트를 가리킨다. PROJECT_SOURCE_DIR·PROJECT_BINARY_DIR를 쓸 것."
@@ -57,7 +57,7 @@ jobs:
           key: consumer-deps-${{ runner.os }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
           restore-keys: consumer-deps-${{ runner.os }}-sfml3.1.0-
 
-      # meno를 추가한 뒤에도 빈 빌드 타입이 비어 있는지를 검사하기 위해, CMAKE_BUILD_TYPE을 고의로 제한다.
+      # meno를 추가한 뒤에도 빈 빌드 타입이 비어 있는지를 검사하기 위해, CMAKE_BUILD_TYPE을 고의로 주지 않는다.
       - name: Configure
         run: cmake -S tests/consumer -B build-consumer
 
