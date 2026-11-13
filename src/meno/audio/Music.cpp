@@ -69,8 +69,7 @@ bool Music::isLooping() const {
 void Music::setVolume(float volume) {
     // 잘못된 계산에서 전달된 NaN으로 현재 음량 상태가 오염되지 않게 한다.
     if (impl_ != nullptr && audio_detail::isValidVolume(volume)) {
-        impl_->volume =
-            audio_detail::fromBackendVolume(audio_detail::toBackendVolume(volume));
+        impl_->volume = audio_detail::clampVolume(volume);
         if (impl_->music != nullptr) {
             impl_->music->setVolume(audio_detail::toBackendVolume(impl_->volume));
         }

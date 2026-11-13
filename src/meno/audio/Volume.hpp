@@ -11,6 +11,8 @@ namespace meno::audio_detail {
     return volume == volume;
 }
 
+/// 볼륨을 0~1로 제한한다. NaN이면 0을 돌려준다.
+/// setVolume들은 이 함수 전에 isValidVolume으로 NaN을 걸러 기존 값을 유지한다(Sound, Music, AudioSource 공통).
 [[nodiscard]] constexpr float clampVolume(float volume) noexcept {
     if (!isValidVolume(volume)) {
         return 0.0F;
@@ -20,10 +22,6 @@ namespace meno::audio_detail {
 
 [[nodiscard]] constexpr float toBackendVolume(float volume) noexcept {
     return clampVolume(volume) * 100.0F;
-}
-
-[[nodiscard]] constexpr float fromBackendVolume(float volume) noexcept {
-    return volume / 100.0F;
 }
 
 } // namespace meno::audio_detail

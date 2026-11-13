@@ -85,9 +85,26 @@ int main() {
     MENO_CHECK(meno::audio_detail::toBackendVolume(1.0F) == 100.0F);
     MENO_CHECK(meno::audio_detail::toBackendVolume(1.5F) == 100.0F);
 
-    MENO_CHECK(meno::audio_detail::fromBackendVolume(0.0F) == 0.0F);
-    MENO_CHECK(meno::audio_detail::fromBackendVolume(25.0F) == 0.25F);
-    MENO_CHECK(meno::audio_detail::fromBackendVolume(100.0F) == 1.0F);
+    // Sound·Music·AudioSource는 같은 볼륨 규칙을 따른다. 0~1로 제한하고, NaN은 무시해 기존 값을 유지한다.
+    meno::Music volumeMusic;
+    const auto setAll = [&](float volume) {
+        empty.setVolume(volume);
+        volumeMusic.setVolume(volume);
+        audio.setVolume(volume);
+    };
+    const auto allAre = [&](float volume) {
+        return empty.volume() == volume && volumeMusic.volume() == volume && audio.volume() == volume;
+    };
+
+    // 0.456은 0~100 왕복 변환을 거치면 0.45599997이 되는 값이라, 넣은 값이 그대로 돌아오는지 가려낸다.
+    setAll(0.456F);
+    MENO_CHECK(allAre(0.456F));
+    setAll(nan);
+    MENO_CHECK(allAre(0.456F));
+    setAll(1.5F);
+    MENO_CHECK(allAre(1.0F));
+    setAll(-0.5F);
+    MENO_CHECK(allAre(0.0F));
 
     meno::Music music;
     MENO_CHECK(!music.isLooping());
