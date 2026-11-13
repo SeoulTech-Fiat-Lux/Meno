@@ -1,7 +1,5 @@
 #include <meno/scene/SceneManager.hpp>
 #include <exception>
-#include <limits>
-#include <stdexcept>
 
 namespace meno {
 namespace {
@@ -12,16 +10,7 @@ struct CallbackGuard {
 };
 }
 
-[[nodiscard]]
-SceneManager& SceneManager::instance() {
-    static SceneManager manager;
-    return manager;
-}
-
-[[nodiscard]]
 Scene& SceneManager::createScene() {
-    if (nextId_ == std::numeric_limits<Scene::SceneID>::max())
-        throw std::overflow_error("Scene ID exhausted");
     const auto id = nextId_++;
     std::unique_ptr<Scene, SceneDeleter> scene{new Scene(id)};
     auto& result = *scene;
@@ -29,19 +18,11 @@ Scene& SceneManager::createScene() {
     return result;
 }
 
-[[nodiscard]]
-Scene* SceneManager::getScene(Scene::SceneID id) noexcept {
+Scene* SceneManager::getScene(Scene::SceneID id) const noexcept {
     const auto it = scenes_.find(id);
     return it == scenes_.end() ? nullptr : it->second.get();
 }
 
-[[nodiscard]]
-const Scene* SceneManager::getScene(Scene::SceneID id) const noexcept {
-    const auto it = scenes_.find(id);
-    return it == scenes_.end() ? nullptr : it->second.get();
-}
-
-[[nodiscard]]
 bool SceneManager::changeScene(Scene::SceneID id) {
     if (!getScene(id)) return false;
     pending_ = id;
@@ -69,7 +50,6 @@ void SceneManager::discard() noexcept {
     busy_ = false;
 }
 
-[[nodiscard]]
 bool SceneManager::deleteScene(Scene::SceneID id) {
     if (busy_ || (active_ && active_->id() == id)) return false;
     if (pending_ == id) pending_.reset();
@@ -86,7 +66,6 @@ void SceneManager::update(double dt) {
     applyPending();
 }
 
-[[nodiscard]]
 bool SceneManager::shutdown() {
     if (busy_) return false;
     CallbackGuard guard{busy_};

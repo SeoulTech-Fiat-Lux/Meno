@@ -53,11 +53,11 @@ int main() {
 - `window()`: 입력을 포함한 게임 창
 - `renderer()`: 창에 연결된 2D 렌더러
 - `resources()`: 경로별 리소스 캐시
-- `scenes()`: `SceneManager::instance()`에 대한 참조
+- `scenes()`: 해당 `Game`이 직접 소유한 `SceneManager`에 대한 참조
 
-`SceneManager`는 프로세스 전역 싱글턴이므로 동시에 살아 있는 `Game`은 하나만
-허용한다. 첫 번째 `Game`이 소멸하기 전에 다른 `Game`을 생성하면
-`std::logic_error`를 던져 서로의 Scene을 정리하는 문제를 방지한다.
+`SceneManager`는 독립적으로 생성할 수 있으며 각 인스턴스가 자신의 Scene을 소유한다.
+`Game`은 기존과 같이 동시에 하나만 허용한다. 첫 번째 `Game`이 소멸하기 전에
+다른 `Game`을 생성하면 `std::logic_error`를 던진다.
 
 종료 시 Scene을 가장 먼저 비운 뒤 `ResourceManager`, `Renderer`, `Window` 순서로
 정리한다. 정상 종료의 Scene exit handler가 던진 예외는 `run()` 호출자에게 전달한다.

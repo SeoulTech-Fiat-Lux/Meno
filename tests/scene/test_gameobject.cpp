@@ -40,7 +40,7 @@ int main() {
     static_assert(!CanAddComponent<meno::Transform>);
     static_assert(!CanAddComponent<meno::Sprite>);
 
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     meno::GameObject& object = scene.createGameObject();
     MENO_CHECK(object.transform().parent == &object);

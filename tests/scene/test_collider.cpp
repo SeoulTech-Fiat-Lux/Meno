@@ -5,7 +5,7 @@
 #include <limits>
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     auto& a = scene.createGameObject();
     auto& b = scene.createGameObject();

@@ -7,8 +7,8 @@
 static_assert(!std::is_default_constructible_v<meno::Scene>);
 static_assert(!std::is_destructible_v<meno::Scene>);
 static_assert(!std::is_move_constructible_v<meno::Scene>);
-static_assert(!std::is_default_constructible_v<meno::SceneManager>);
-static_assert(!std::is_destructible_v<meno::SceneManager>);
+static_assert(std::is_default_constructible_v<meno::SceneManager>);
+static_assert(std::is_destructible_v<meno::SceneManager>);
 static_assert(!std::is_copy_constructible_v<meno::SceneManager>);
 static_assert(!std::is_move_constructible_v<meno::SceneManager>);
 
@@ -21,8 +21,7 @@ struct Lifetime final : meno::Component {
 }
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
-    MENO_CHECK(&manager == &meno::SceneManager::instance());
+    meno::SceneManager manager;
     MENO_CHECK(manager.activeScene() == nullptr);
     manager.update(0.1f);
     int live = 0;
@@ -126,5 +125,19 @@ int main() {
     MENO_CHECK(manager.changeScene(restartedScene.id()));
     MENO_CHECK(manager.activeScene() == &restartedScene);
     MENO_CHECK(manager.shutdown());
+
+    bool exitCalledFromDestructor = false;
+    {
+        meno::SceneManager ownedManager;
+        auto& ownedScene = ownedManager.createScene();
+        ownedScene.createGameObject().addComponent<Lifetime>(live);
+        ownedScene.setExitHandler([&] { exitCalledFromDestructor = true; });
+        MENO_CHECK(ownedManager.changeScene(ownedScene.id()));
+        MENO_CHECK(manager.activeScene() == nullptr);
+        MENO_CHECK(manager.getScene(ownedScene.id()) == nullptr);
+        MENO_CHECK(live == 1);
+    }
+    MENO_CHECK(live == 0);
+    MENO_CHECK(!exitCalledFromDestructor);
     return meno::test::report();
 }

@@ -59,7 +59,7 @@ static_assert(!std::is_copy_constructible_v<meno::Audio>);
 static_assert(!std::is_move_constructible_v<meno::Audio>);
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     auto& object = scene.createGameObject();
     const auto id = object.id();

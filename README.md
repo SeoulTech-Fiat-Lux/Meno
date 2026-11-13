@@ -117,7 +117,7 @@ struct GameState {
     int score = 0;
 };
 
-auto& scenes = meno::SceneManager::instance();
+meno::SceneManager scenes;
 auto& scene = scenes.createScene();
 scene.setState(std::make_unique<GameState>());
 

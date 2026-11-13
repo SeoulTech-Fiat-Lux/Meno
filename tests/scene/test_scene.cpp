@@ -13,7 +13,7 @@ int main() {
     static_assert(!std::is_move_constructible_v<meno::Scene>);
     static_assert(!std::is_move_assignable_v<meno::Scene>);
 
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
 
     meno::GameObject& first = scene.createGameObject();

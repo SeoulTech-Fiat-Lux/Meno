@@ -164,11 +164,11 @@ int main() {
         } catch (const std::runtime_error&) {
             caught = true;
         }
+        MENO_CHECK(game.scenes().activeScene() == nullptr);
     }
     MENO_CHECK(caught);
     MENO_CHECK(exceptionalDestroyed);
     MENO_CHECK(exceptionalDependenciesAlive);
-    MENO_CHECK(meno::SceneManager::instance().activeScene() == nullptr);
 
     {
         ReentrantGame reentrant;
@@ -212,7 +212,6 @@ int main() {
     MENO_CHECK(discarded);
     MENO_CHECK(discardDependenciesAlive);
     MENO_CHECK(!exitCalledFromDestructor);
-    MENO_CHECK(meno::SceneManager::instance().activeScene() == nullptr);
 
     return meno::test::report();
 }

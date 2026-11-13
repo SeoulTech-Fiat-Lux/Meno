@@ -20,7 +20,6 @@ Game::Game(GameConfig config)
     : Application(config.application),
       window_(config.windowSize, config.title),
       renderer_(window_),
-      scenes_(SceneManager::instance()),
       clearColor_(config.clearColor) {
     if (liveGame != nullptr) {
         throw std::logic_error("Only one Game instance may exist at a time");

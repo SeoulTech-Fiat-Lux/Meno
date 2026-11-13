@@ -10,7 +10,8 @@ namespace meno {
 
 class Game;
 
-/// 단일 스레드 게임 루프에서 사용한다. 최초 접근 시 생성, 정상 종료 시 소멸한다.
+/// 단일 스레드 게임 루프에서 사용하며, 소유자가 생성과 소멸 시점을 관리한다.
+/// 소멸 시 onExit은 호출하지 않는다. 종료 콜백이 필요하면 shutdown()을 호출한다.
 class SceneManager final {
 private:
     friend class Game;
@@ -26,16 +27,14 @@ private:
     bool busy_{false};
 
 // private 맴버 함수 필드
-    SceneManager() = default;
-    ~SceneManager() = default;
-
     void applyPending();
     // Game의 마지막 소멸 방어선. 파생 Game이 이미 소멸한 시점이므로
     // 사용자 onExit 콜백은 호출하지 않고 소유한 Scene만 폐기한다.
     void discard() noexcept;
     
 public:
-    [[nodiscard]] static SceneManager& instance();
+    SceneManager() = default;
+    ~SceneManager() = default;
 
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;
@@ -44,8 +43,7 @@ public:
 
     /// 비활성 Scene을 생성한다. 참조는 해당 Scene 삭제/shutdown까지 유효하다.
     [[nodiscard]] Scene& createScene();
-    [[nodiscard]] Scene* getScene(Scene::SceneID id) noexcept;
-    [[nodiscard]] const Scene* getScene(Scene::SceneID id) const noexcept;
+    [[nodiscard]] Scene* getScene(Scene::SceneID id) const noexcept;
     [[nodiscard]] Scene* activeScene() noexcept { return active_; }
     [[nodiscard]] const Scene* activeScene() const noexcept { return active_; }
 

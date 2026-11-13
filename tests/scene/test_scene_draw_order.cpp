@@ -27,7 +27,7 @@ void Sprite::draw(Renderer&) const { drawn.push_back(parent->id()); }
 }
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     meno::Window window({1, 1}, "draw order test");
     meno::Renderer renderer(window);

@@ -112,7 +112,7 @@ void testLifetime(meno::SceneManager& manager) {
 } // namespace
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     testRegistration(manager);
     testEmptyRegistration(manager);
     testLifetime(manager);
