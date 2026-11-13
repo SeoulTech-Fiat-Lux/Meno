@@ -42,9 +42,7 @@ void Sound::play() {
         ++playingSounds;
     }
 }
-void Sound::pause() {
-    stop();
-}
+void Sound::pause() { stop(); }
 void Sound::stop() {
     if (impl_ && impl_->playing) {
         impl_->playing = false;
@@ -55,12 +53,8 @@ void Sound::setVolume(float volume) {
     if (impl_)
         appliedVolume = impl_->volume = volume;
 }
-float Sound::volume() const {
-    return impl_ ? impl_->volume : 0.0F;
-}
-bool Sound::isPlaying() const {
-    return impl_ && impl_->playing;
-}
+float Sound::volume() const { return impl_ ? impl_->volume : 0.0F; }
+bool Sound::isPlaying() const { return impl_ && impl_->playing; }
 } // namespace meno
 
 static_assert(std::is_base_of_v<meno::Component, meno::AudioSource>);

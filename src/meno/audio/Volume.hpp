@@ -18,9 +18,7 @@ namespace meno::audio_detail {
 }
 
 /// meno의 0~1 볼륨을 SFML의 0~100으로 바꾼다. normalizeVolume을 거친 값을 넘긴다.
-[[nodiscard]] constexpr float toBackendVolume(float volume) noexcept {
-    return volume * 100.0F;
-}
+[[nodiscard]] constexpr float toBackendVolume(float volume) noexcept { return volume * 100.0F; }
 
 } // namespace meno::audio_detail
 

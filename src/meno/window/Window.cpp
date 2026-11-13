@@ -25,13 +25,9 @@ Window::Window(Vec2u size, std::string_view title) : impl_(std::make_unique<Impl
 
 Window::~Window() = default;
 
-bool Window::isOpen() const {
-    return impl_->window.isOpen();
-}
+bool Window::isOpen() const { return impl_->window.isOpen(); }
 
-void Window::close() {
-    impl_->window.close();
-}
+void Window::close() { impl_->window.close(); }
 
 void Window::pollEvents() {
     impl_->input.beginFrame();
@@ -44,17 +40,11 @@ void Window::pollEvents() {
     }
 }
 
-Input& Window::input() {
-    return impl_->input;
-}
+Input& Window::input() { return impl_->input; }
 
-const Input& Window::input() const {
-    return impl_->input;
-}
+const Input& Window::input() const { return impl_->input; }
 
-Vec2u Window::size() const {
-    return backend::fromSf(impl_->window.getSize());
-}
+Vec2u Window::size() const { return backend::fromSf(impl_->window.getSize()); }
 
 namespace backend {
 

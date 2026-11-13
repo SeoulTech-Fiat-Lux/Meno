@@ -63,9 +63,7 @@ Vec2f sfmlWorldToScreen(const FakeTarget& target, const sf::View& view, Vec2f wo
                  (1.f - normalized.y) / 2.f * viewport.size.y + viewport.position.y};
 }
 
-float distance(Vec2f a, Vec2f b) {
-    return (a - b).length();
-}
+float distance(Vec2f a, Vec2f b) { return (a - b).length(); }
 
 struct Sample {
     Camera2D camera;

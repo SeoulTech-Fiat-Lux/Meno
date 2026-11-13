@@ -10,7 +10,8 @@ namespace meno {
 namespace {
 
 struct NoOp {
-    template <typename Resource> void operator()(Resource&) const noexcept {}
+    template <typename Resource>
+    void operator()(Resource&) const noexcept {}
 };
 
 template <typename Resource, typename Cache, typename Configure = NoOp>

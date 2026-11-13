@@ -61,9 +61,7 @@ void Music::setLooping(bool looping) {
     }
 }
 
-bool Music::isLooping() const {
-    return impl_ != nullptr && impl_->looping;
-}
+bool Music::isLooping() const { return impl_ != nullptr && impl_->looping; }
 
 void Music::setVolume(float volume) {
     // 잘못된 계산에서 전달된 NaN으로 현재 음량 상태가 오염되지 않게 한다.
@@ -77,9 +75,7 @@ void Music::setVolume(float volume) {
     }
 }
 
-float Music::volume() const {
-    return impl_ == nullptr ? 0.0F : impl_->volume;
-}
+float Music::volume() const { return impl_ == nullptr ? 0.0F : impl_->volume; }
 
 bool Music::isPlaying() const {
     return impl_ != nullptr && impl_->music != nullptr &&

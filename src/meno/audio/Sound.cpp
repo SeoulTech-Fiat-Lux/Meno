@@ -73,9 +73,7 @@ void Sound::setVolume(float volume) {
     }
 }
 
-float Sound::volume() const {
-    return impl_ == nullptr ? 0.0F : impl_->volume;
-}
+float Sound::volume() const { return impl_ == nullptr ? 0.0F : impl_->volume; }
 
 bool Sound::isPlaying() const {
     return impl_ != nullptr && impl_->sound != nullptr &&

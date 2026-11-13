@@ -78,12 +78,8 @@ void Application::run(Clock& clock) {
     onStop();
 }
 
-void Application::stop() noexcept {
-    running_ = false;
-}
-bool Application::isRunning() const noexcept {
-    return running_;
-}
+void Application::stop() noexcept { running_ = false; }
+bool Application::isRunning() const noexcept { return running_; }
 void Application::onStart() {}
 void Application::processEvents() {}
 void Application::update(double) {}

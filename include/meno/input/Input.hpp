@@ -100,7 +100,8 @@ private:
 
     /// 하나의 틱이 이뤄질 동안에 쌓이는 휠 혹은 텍스트 값.
     /// 프레임용과 update용을 따로 두며, 다른 틱의 값이 들어오면 그때 비운다.
-    template <typename T> struct Accumulator {
+    template <typename T>
+    struct Accumulator {
         T frameValue{};
         T stepValue{};
         Tick tick;
@@ -131,7 +132,8 @@ private:
 
     [[nodiscard]] Tick now() const noexcept;
     [[nodiscard]] bool isCurrent(const Tick& tick) const noexcept;
-    template <typename T> [[nodiscard]] T current(const Accumulator<T>& accumulator) const;
+    template <typename T>
+    [[nodiscard]] T current(const Accumulator<T>& accumulator) const;
 
     /// 이미 눌린 키의 자동 반복은 무시하는 함수로, 상태가 바뀌면 true를 반환한다.
     static bool press(ButtonState& state, const Tick& now) noexcept;

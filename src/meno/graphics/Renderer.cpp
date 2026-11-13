@@ -49,7 +49,8 @@ namespace {
     return drawable;
 }
 
-template <typename Shape> void applyShapeParams(Shape& shape, const ShapeParams& params) {
+template <typename Shape>
+void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setFillColor(backend::toSf(params.fill));
     shape.setOutlineColor(backend::toSf(params.outline));
     shape.setOutlineThickness(params.outlineThickness);
@@ -127,9 +128,7 @@ void Renderer::beginFrame(Color clearColor) {
     impl_->target->clear(backend::toSf(clearColor));
 }
 
-void Renderer::endFrame() {
-    impl_->target->display();
-}
+void Renderer::endFrame() { impl_->target->display(); }
 
 // --- 스프라이트 -----------------------------------------------------------
 
@@ -345,9 +344,7 @@ void Renderer::resetCamera() {
     impl_->applyView();
 }
 
-std::optional<Camera2D> Renderer::camera() const {
-    return impl_->camera;
-}
+std::optional<Camera2D> Renderer::camera() const { return impl_->camera; }
 
 Vec2f Renderer::worldToScreen(Vec2f worldPoint) const {
     return meno::worldToScreen(impl_->activeCamera(), impl_->framebuffer(), worldPoint);
@@ -363,8 +360,6 @@ Rectf Renderer::visibleWorldBounds() const {
 
 // --- 정보 -----------------------------------------------------------------
 
-Vec2u Renderer::framebufferSize() const {
-    return impl_->framebuffer();
-}
+Vec2u Renderer::framebufferSize() const { return impl_->framebuffer(); }
 
 } // namespace meno

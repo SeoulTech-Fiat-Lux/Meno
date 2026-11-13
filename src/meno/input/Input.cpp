@@ -14,12 +14,14 @@ using detail::TimeAccess;
 namespace {
 
 // 잘못 캐스팅한 enum과 같이 배열의 범위를 벗어난 값이 들어오면, nullptr로 처리한다.
-template <typename States, typename Id> auto* stateOf(States& states, Id id) noexcept {
+template <typename States, typename Id>
+auto* stateOf(States& states, Id id) noexcept {
     const auto index = static_cast<std::size_t>(id);
     return index < states.size() ? &states[index] : nullptr;
 }
 
-template <typename T> void addOnce(std::vector<T>& values, T value) {
+template <typename T>
+void addOnce(std::vector<T>& values, T value) {
     if (std::ranges::find(values, value) == values.end()) {
         values.push_back(value);
     }
@@ -67,7 +69,8 @@ bool Input::isCurrent(const Tick& tick) const noexcept {
     return TimeAccess::isInStep() ? tick.step == TimeAccess::stepNumber() : tick.frame == frame_;
 }
 
-template <typename T> T Input::current(const Accumulator<T>& accumulator) const {
+template <typename T>
+T Input::current(const Accumulator<T>& accumulator) const {
     if (!isCurrent(accumulator.tick)) {
         return T{};
     }
@@ -134,17 +137,11 @@ bool Input::wasReleased(MouseButton button) const noexcept {
     return state != nullptr && isCurrent(state->released);
 }
 
-Vec2i Input::mousePosition() const noexcept {
-    return mousePosition_;
-}
+Vec2i Input::mousePosition() const noexcept { return mousePosition_; }
 
-float Input::mouseWheelDelta() const noexcept {
-    return current(wheel_);
-}
+float Input::mouseWheelDelta() const noexcept { return current(wheel_); }
 
-std::string Input::text() const {
-    return current(text_);
-}
+std::string Input::text() const { return current(text_); }
 
 // --- 액션 --------------------------------------------------------------------
 
@@ -206,9 +203,7 @@ void Input::refreshActions(const Tick& now) noexcept {
 
 // --- 이벤트 ----------------------------------------------------
 
-void Input::beginFrame() noexcept {
-    ++frame_;
-}
+void Input::beginFrame() noexcept { ++frame_; }
 
 void Input::handleEvent(const Event& event) {
     std::visit([this](const auto& e) { on(e); }, event);
@@ -234,9 +229,7 @@ void Input::on(const event::KeyPressed& event) {
     }
 }
 
-void Input::on(const event::KeyReleased& event) {
-    applyButton(stateOf(keys_, event.key), release);
-}
+void Input::on(const event::KeyReleased& event) { applyButton(stateOf(keys_, event.key), release); }
 
 void Input::on(const event::MouseButtonPressed& event) {
     mousePosition_ = event.position;
@@ -248,9 +241,7 @@ void Input::on(const event::MouseButtonReleased& event) {
     applyButton(stateOf(mouseButtons_, event.button), release);
 }
 
-void Input::on(const event::MouseMoved& event) {
-    mousePosition_ = event.position;
-}
+void Input::on(const event::MouseMoved& event) { mousePosition_ = event.position; }
 
 void Input::on(const event::MouseWheelScrolled& event) {
     mousePosition_ = event.position;

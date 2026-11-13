@@ -37,18 +37,12 @@ namespace {
 
 using meno::test::check;
 
-bool near(float a, float b, float tolerance = 1e-3f) {
-    return std::fabs(a - b) < tolerance;
-}
+bool near(float a, float b, float tolerance = 1e-3f) { return std::fabs(a - b) < tolerance; }
 bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return near(a.x, b.x, tolerance) && near(a.y, b.y, tolerance);
 }
-bool same(const Rectf& a, const Rectf& b) {
-    return a.position == b.position && a.size == b.size;
-}
-bool finite(Vec2f v) {
-    return std::isfinite(v.x) && std::isfinite(v.y);
-}
+bool same(const Rectf& a, const Rectf& b) { return a.position == b.position && a.size == b.size; }
+bool finite(Vec2f v) { return std::isfinite(v.x) && std::isfinite(v.y); }
 
 // 경계 위의 점도 포함으로 본다. Rect::contains는 오른쪽/아래 경계를 제외하는데,
 // 회전된 화면의 모서리는 정확히 그 경계 위에 떨어지기 때문이다.
@@ -76,7 +70,8 @@ void checkDefaults() {
               near(screenToWorld(screen, kScreen, {799.f, 599.f}), Vec2f{799.f, 599.f}),
           "화면 좌표 카메라: 픽셀 좌표 == 월드 좌표");
 
-    // 정수로 자르지 않는다. 수정 전 Renderer는 static_cast<int>로 0 방향 절삭을 해서 -0.5가 0이 되었다.
+    // 정수로 자르지 않는다. 수정 전 Renderer는 static_cast<int>로 0 방향 절삭을 해서 -0.5가 0이
+    // 되었다.
     check(near(screenToWorld(screen, kScreen, {-0.5f, 10.25f}), Vec2f{-0.5f, 10.25f}),
           "screenToWorld는 소수와 음수를 그대로 유지한다 (-0.5 -> -0.5)");
     check(near(worldToScreen(screen, kScreen, {0.25f, -3.75f}), Vec2f{0.25f, -3.75f}),

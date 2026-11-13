@@ -59,9 +59,7 @@ void Game::processEvents() {
     }
 }
 
-void Game::update(double fixedDeltaTime) {
-    scenes_.update(fixedDeltaTime);
-}
+void Game::update(double fixedDeltaTime) { scenes_.update(fixedDeltaTime); }
 
 void Game::render(double) {
     renderer_.beginFrame(clearColor_);

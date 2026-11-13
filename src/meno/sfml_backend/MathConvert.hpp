@@ -13,22 +13,27 @@
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 
-// 내부 전용 헤더. meno 수학 타입(Vec2, Rect, Color, 각도, 카메라) ↔ SFML 타입 변환을 한곳에 모아둔다.
+// 내부 전용 헤더. meno 수학 타입(Vec2, Rect, Color, 각도, 카메라) ↔ SFML 타입 변환을 한곳에
+// 모아둔다.
 namespace meno::backend {
 
-template <typename T> [[nodiscard]] constexpr sf::Vector2<T> toSf(const Vec2<T>& v) noexcept {
+template <typename T>
+[[nodiscard]] constexpr sf::Vector2<T> toSf(const Vec2<T>& v) noexcept {
     return {v.x, v.y};
 }
 
-template <typename T> [[nodiscard]] constexpr Vec2<T> fromSf(const sf::Vector2<T>& v) noexcept {
+template <typename T>
+[[nodiscard]] constexpr Vec2<T> fromSf(const sf::Vector2<T>& v) noexcept {
     return {v.x, v.y};
 }
 
-template <typename T> [[nodiscard]] constexpr sf::Rect<T> toSf(const Rect<T>& r) noexcept {
+template <typename T>
+[[nodiscard]] constexpr sf::Rect<T> toSf(const Rect<T>& r) noexcept {
     return sf::Rect<T>{toSf(r.position), toSf(r.size)};
 }
 
-template <typename T> [[nodiscard]] constexpr Rect<T> fromSf(const sf::Rect<T>& r) noexcept {
+template <typename T>
+[[nodiscard]] constexpr Rect<T> fromSf(const sf::Rect<T>& r) noexcept {
     return Rect<T>{fromSf(r.position), fromSf(r.size)};
 }
 

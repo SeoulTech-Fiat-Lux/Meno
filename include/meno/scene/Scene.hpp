@@ -138,7 +138,8 @@ public:
     /// 이미 유효한 상태가 있으면 std::logic_error를 던진다.
     /// 실패 시 기존 상태는 유지되며 전달받은 객체는 정리된다.
     /// 빈 unique_ptr은 상태를 등록하지 않으며 이후 다시 등록할 수 있다.
-    template <typename T> void setState(std::unique_ptr<T> state) {
+    template <typename T>
+    void setState(std::unique_ptr<T> state) {
         if (state_) {
             throw std::logic_error("Scene state already exists");
         }
@@ -150,14 +151,16 @@ public:
     /// 소유권 이전 없이 상태를 조회한다. 미등록 상태에서는 nullptr을 반환한다.
     /// T가 setState에 사용한 타입과 다르면 nullptr을 반환한다.
     /// 반환 포인터는 Scene 소멸 전까지 유효하다. 호출자가 delete하면 안 된다.
-    template <typename T> T* getState() noexcept {
+    template <typename T>
+    T* getState() noexcept {
         if (!state_ || *stateType_ != typeid(T))
             return nullptr;
         return static_cast<T*>(state_.get());
     }
 
     /// const Scene에서는 const T*를 반환하며, 타입과 수명 계약은 위와 같다.
-    template <typename T> const T* getState() const noexcept {
+    template <typename T>
+    const T* getState() const noexcept {
         if (!state_ || *stateType_ != typeid(T))
             return nullptr;
         return static_cast<const T*>(state_.get());

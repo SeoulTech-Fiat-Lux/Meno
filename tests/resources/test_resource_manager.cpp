@@ -46,12 +46,8 @@ std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& path) 
     }
     return Texture{};
 }
-void Texture::setSmooth(bool smooth) {
-    impl_->smooth = smooth;
-}
-bool Texture::isSmooth() const {
-    return impl_ != nullptr && impl_->smooth;
-}
+void Texture::setSmooth(bool smooth) { impl_->smooth = smooth; }
+bool Texture::isSmooth() const { return impl_ != nullptr && impl_->smooth; }
 
 struct Font::Impl {};
 Font::Font() : impl_(std::make_unique<Impl>()) {}

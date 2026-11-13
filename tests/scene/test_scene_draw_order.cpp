@@ -23,9 +23,7 @@ Window::~Window() = default;
 struct Renderer::Impl {};
 Renderer::Renderer(Window&) {}
 Renderer::~Renderer() = default;
-void Sprite::draw(Renderer&) const {
-    drawn.push_back(parent->id());
-}
+void Sprite::draw(Renderer&) const { drawn.push_back(parent->id()); }
 } // namespace meno
 
 int main() {

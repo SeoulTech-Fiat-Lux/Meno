@@ -43,7 +43,8 @@ constexpr Vec2u kWindowSize{320u, 180u};
 constexpr Vec2f kCenter = static_cast<Vec2f>(kWindowSize) / 2.f;
 
 // 한 프레임을 그리고 그 결과를 읽는다.
-template <typename Draw> sf::Image drawAndCapture(Window& window, Renderer& renderer, Draw draw) {
+template <typename Draw>
+sf::Image drawAndCapture(Window& window, Renderer& renderer, Draw draw) {
     renderer.beginFrame(kClear);
     draw();
     const sf::Image image = capture(window);

@@ -13,9 +13,7 @@
 
 namespace {
 
-bool near(double left, double right) {
-    return std::abs(left - right) < 1e-9;
-}
+bool near(double left, double right) { return std::abs(left - right) < 1e-9; }
 
 class TestApplication final : public meno::Application {
 public:

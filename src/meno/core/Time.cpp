@@ -12,21 +12,11 @@ double Time::realElapsedTime_ = 0.0;
 std::uint64_t Time::stepNumber_ = 0;
 bool Time::inStep_ = false;
 
-double Time::deltaTime() noexcept {
-    return deltaTime_;
-}
-double Time::fixedDeltaTime() noexcept {
-    return fixedDeltaTime_;
-}
-double Time::elapsedTime() noexcept {
-    return elapsedTime_;
-}
-double Time::frameDeltaTime() noexcept {
-    return frameDeltaTime_;
-}
-double Time::realElapsedTime() noexcept {
-    return realElapsedTime_;
-}
+double Time::deltaTime() noexcept { return deltaTime_; }
+double Time::fixedDeltaTime() noexcept { return fixedDeltaTime_; }
+double Time::elapsedTime() noexcept { return elapsedTime_; }
+double Time::frameDeltaTime() noexcept { return frameDeltaTime_; }
+double Time::realElapsedTime() noexcept { return realElapsedTime_; }
 
 void Time::beginRun(double fixedDeltaTime) noexcept {
     deltaTime_ = 0.0;
@@ -49,18 +39,12 @@ void Time::advanceStep(double deltaTime) noexcept {
     inStep_ = true;
 }
 
-void Time::endStep() noexcept {
-    inStep_ = false;
-}
+void Time::endStep() noexcept { inStep_ = false; }
 
 namespace detail {
 
-std::uint64_t TimeAccess::stepNumber() noexcept {
-    return Time::stepNumber_;
-}
-bool TimeAccess::isInStep() noexcept {
-    return Time::inStep_;
-}
+std::uint64_t TimeAccess::stepNumber() noexcept { return Time::stepNumber_; }
+bool TimeAccess::isInStep() noexcept { return Time::inStep_; }
 
 } // namespace detail
 

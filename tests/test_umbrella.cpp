@@ -9,6 +9,4 @@
 
 #include <meno/Meno.hpp> // IWYU pragma: keep
 
-int main() {
-    return 0;
-}
+int main() { return 0; }

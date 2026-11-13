@@ -63,9 +63,7 @@ namespace {
 using meno::test::check;
 using meno::test::env;
 
-bool near(float a, float b, float tolerance = 1e-3f) {
-    return std::fabs(a - b) < tolerance;
-}
+bool near(float a, float b, float tolerance = 1e-3f) { return std::fabs(a - b) < tolerance; }
 bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return near(a.x, b.x, tolerance) && near(a.y, b.y, tolerance);
 }
@@ -102,7 +100,8 @@ std::optional<Font> loadTestFont() {
 
 void checkMovedFrom(Renderer& renderer) {
     // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다.
-    // 예제가 checker.size()를 부르는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이 {0, 0}이어야 한다.
+    // 예제가 checker.size()를 부르는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이 {0, 0}이어야
+    // 한다.
     Texture texture;
     Texture keepTexture = std::move(texture);
     check(texture.size() == Vec2u{0u, 0u}, "이동당한 Texture의 size()는 {0,0}");
