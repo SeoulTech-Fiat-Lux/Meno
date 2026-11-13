@@ -124,7 +124,7 @@ int main() {
 
     meno::Music movedMusic{std::move(music)};
     MENO_CHECK(movedMusic.isLooping());
-    MENO_CHECK(!music.isLooping());
+    MENO_CHECK(!music.isLooping()); // NOLINT(bugprone-use-after-move)
     movedMusic.setLooping(false);
     MENO_CHECK(!movedMusic.isLooping());
 
