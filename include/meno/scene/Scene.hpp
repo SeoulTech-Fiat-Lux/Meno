@@ -69,7 +69,7 @@ public:
     void setExitHandler(ExitHandler handler) { exitHandler_ = std::move(handler); }
 
 private:
-    // SceneManager의 재진입 가드 안에서만 핸들러를 실행한다.
+    /// SceneManager의 재진입 가드 안에서만 핸들러를 실행한다.
     void onEnter() const {
         if (enterHandler_)
             enterHandler_();

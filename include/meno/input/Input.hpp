@@ -84,9 +84,9 @@ public:
 private:
     static constexpr std::uint64_t never = std::numeric_limits<std::uint64_t>::max();
 
-    // 이벤트가 처리된 시점으로, 통칭 틱(Tick).
-    // 프레임 번호와 해당 이벤트를 처음 보게 될 update()의 단계 번호를 함께 기록한다.
-    // Tick 내부 번호를 묻는 곳(update 안팎)에 따라 둘 중 하나를 선택하여 비교한다.
+    /// 이벤트가 처리된 시점으로, 통칭 틱(Tick).
+    /// 프레임 번호와 해당 이벤트를 처음 보게 될 update()의 단계 번호를 함께 기록한다.
+    /// Tick 내부 번호를 묻는 곳(update 안팎)에 따라 둘 중 하나를 선택하여 비교한다.
     struct Tick {
         std::uint64_t frame = never;
         std::uint64_t step = never;
@@ -98,8 +98,8 @@ private:
         Tick released;
     };
 
-    // 하나의 틱이 이뤄질 동안에 쌓이는 휠 혹은 텍스트 값.
-    // 프레임용과 update용을 따로 두며, 다른 틱의 값이 들어오면 그때 비운다.
+    /// 하나의 틱이 이뤄질 동안에 쌓이는 휠 혹은 텍스트 값.
+    /// 프레임용과 update용을 따로 두며, 다른 틱의 값이 들어오면 그때 비운다.
     template <typename T> struct Accumulator {
         T frameValue{};
         T stepValue{};
@@ -119,8 +119,8 @@ private:
         }
     };
 
-    // 액션의 상태는 매번 계산하지 않은 채로 들고 있다.
-    // 묶인 키나 버튼이 안 눌려있다가 눌리는 순간을 동작 단위로 적어야 하기 때문이다.
+    /// 액션의 상태는 매번 계산하지 않은 채로 들고 있다.
+    /// 묶인 키나 버튼이 안 눌려있다가 눌리는 순간을 동작 단위로 적어야 하기 때문이다.
     struct Action {
         std::vector<Key> keys;
         std::vector<MouseButton> buttons;
@@ -133,20 +133,20 @@ private:
     [[nodiscard]] bool isCurrent(const Tick& tick) const noexcept;
     template <typename T> [[nodiscard]] T current(const Accumulator<T>& accumulator) const;
 
-    // 이미 눌린 키의 자동 반복은 무시하는 함수로, 상태가 바뀌면 true를 반환한다.
+    /// 이미 눌린 키의 자동 반복은 무시하는 함수로, 상태가 바뀌면 true를 반환한다.
     static bool press(ButtonState& state, const Tick& now) noexcept;
     static bool release(ButtonState& state, const Tick& now) noexcept;
 
-    // press 또는 release를 가리키는 함수 포인터
+    /// press 또는 release를 가리키는 함수 포인터
     using ButtonChange = bool (*)(ButtonState&, const Tick&) noexcept;
-    // 키나 버튼 하나에 change를 적용하고, 상태가 실제로 바뀐 경우에만 액션을 다시 계산한다.
-    // state가 nullptr이라면 아무 것도 수행하지 않는다.
+    /// 키나 버튼 하나에 change를 적용하고, 상태가 실제로 바뀐 경우에만 액션을 다시 계산한다.
+    /// state가 nullptr이라면 아무 것도 수행하지 않는다.
     void applyButton(ButtonState* state, ButtonChange change) noexcept;
 
     [[nodiscard]] const Action* findAction(std::string_view name) const;
     [[nodiscard]] bool anyBoundDown(const Action& action) const noexcept;
-    // 키나 버튼의 상태가 바뀐 뒤 호출한다.
-    // 각 동작이 눌렸는지에 대한 여부를 다시 계산하고, 바뀐 액션에 대해서는 현재 시점을 적는다.
+    /// 키나 버튼의 상태가 바뀐 뒤 호출한다.
+    /// 각 동작이 눌렸는지에 대한 여부를 다시 계산하고, 바뀐 액션에 대해서는 현재 시점을 적는다.
     void refreshActions(const Tick& now) noexcept;
 
     void on(const event::FocusLost& event);

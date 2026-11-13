@@ -44,8 +44,8 @@ public:
 
 private:
     struct Impl;
-    // SFML 타입을 공개 헤더에서 감추는 pimpl.
-    // 생성자에서 만들고 이동이 없으므로 끝까지 nullptr이 아니다.
+    /// SFML 타입을 공개 헤더에서 감추는 pimpl.
+    /// 생성자에서 만들고 이동이 없으므로 끝까지 nullptr이 아니다.
     std::unique_ptr<Impl> impl_;
 
     friend struct backend::WindowAccess;

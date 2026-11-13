@@ -59,14 +59,14 @@ private:
     void render(double interpolationAlpha) final;
     void onStop() final;
 
-    // 장면은 ~Game 본문에서 먼저 정리한다. 이후 resources -> renderer -> window
-    // 순서로 소멸하므로 컴포넌트 소멸 중에도 이 의존성들을 사용할 수 있다.
+    /// 장면은 ~Game 본문에서 먼저 정리한다. 이후 resources -> renderer -> window
+    /// 순서로 소멸하므로 컴포넌트 소멸 중에도 이 의존성들을 사용할 수 있다.
     Window window_;
     Renderer renderer_;
     ResourceManager resources_;
     Color clearColor_;
     bool runInvocationActive_ = false;
-    // 멤버 소멸 순서에서도 가장 먼저 정리되도록 마지막에 선언한다.
+    /// 멤버 소멸 순서에서도 가장 먼저 정리되도록 마지막에 선언한다.
     SceneManager scenes_;
 };
 
