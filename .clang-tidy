@@ -1,0 +1,26 @@
+# 처음에는 경고만 낸다(WarningsAsErrors 비움). 경고가 줄어들면 검사별로 오류로 올린다.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cppcoreguidelines-special-member-functions,
+  misc-include-cleaner,
+  misc-redundant-expression,
+  misc-unused-using-decls,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  performance-*,
+  readability-container-size-empty,
+  readability-duplicate-include,
+  readability-redundant-declaration,
+  readability-redundant-member-init
+WarningsAsErrors: ''
+# include/meno와 src/meno만 본다. SFML(_deps)은 대상이 아니다.
+HeaderFilterRegex: '.*/(include|src)/meno/.*'
+FormatStyle: file
+CheckOptions:
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: true
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: true
+  # SFML 헤더는 세분 include 제안을 하지 않는다.
+  misc-include-cleaner.IgnoreHeaders: 'SFML/.*'
