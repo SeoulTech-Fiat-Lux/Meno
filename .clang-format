@@ -15,10 +15,11 @@ AccessModifierOffset: -4
 NamespaceIndentation: None
 FixNamespaceComments: true
 
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 
+BreakTemplateDeclarations: Yes
 BreakBeforeBraces: Attach
 PointerAlignment: Left
 

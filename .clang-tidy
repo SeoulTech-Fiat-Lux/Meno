@@ -24,3 +24,4 @@ CheckOptions:
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: true
   # SFML 헤더는 세분 include 제안을 하지 않는다.
   misc-include-cleaner.IgnoreHeaders: 'SFML/.*'
+  misc-include-cleaner.MissingIncludes: false
