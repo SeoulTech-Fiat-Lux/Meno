@@ -14,16 +14,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# clangd / VS Code IntelliSense가 참조하는 compile_commands.json 생성
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # 아래 기본값은 meno를 직접 빌드할 때만 적용.
 # 다른 프로젝트가 add_subdirectory나 FetchContent로 가져가면 해당 빌드 타입은 건드리지 않는다.
 if(PROJECT_IS_TOP_LEVEL)
     # clangd / VS Code IntelliSense가 참조하는 compile_commands.json 생성
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-    IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
         set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
     endif()
 endif()
