@@ -1,5 +1,7 @@
 #include <meno/scene/SceneManager.hpp>
+
 #include <exception>
+#include <utility>
 
 namespace meno {
 namespace {
@@ -18,9 +20,14 @@ Scene& SceneManager::createScene() {
     return result;
 }
 
-Scene* SceneManager::getScene(Scene::SceneID id) const noexcept {
+const Scene* SceneManager::getScene(Scene::SceneID id) const noexcept {
     const auto it = scenes_.find(id);
     return it == scenes_.end() ? nullptr : it->second.get();
+}
+
+Scene* SceneManager::getScene(Scene::SceneID id) noexcept {
+    // 구현은 const 쪽 하나만 둔다. *this가 non-const이므로 const를 벗겨도 안전하다.
+    return const_cast<Scene*>(std::as_const(*this).getScene(id));
 }
 
 bool SceneManager::changeScene(Scene::SceneID id) {

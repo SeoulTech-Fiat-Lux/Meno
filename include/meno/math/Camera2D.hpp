@@ -1,6 +1,7 @@
 #ifndef MENO_CAMERA2D_HPP
 #define MENO_CAMERA2D_HPP
 
+#include <meno/math/Angle.hpp>
 #include <meno/math/Rect.hpp>
 #include <meno/math/Vec2.hpp>
 
@@ -74,31 +75,9 @@ struct Camera2D {
 
 namespace detail {
 
-inline constexpr float kPi = 3.14159265358979323846f;
-
 // 유한한 양수인지 확인하는 인라인 함수. NaN, 무한대, 0 이하를 한 번에 거른다.
 [[nodiscard]] inline bool isPositiveFinite(float value) {
     return std::isfinite(value) && value > 0.f;
-}
-
-// 각도를 [0, 360)으로 접는다.
-// 큰 각도를 그대로 라디안으로 바꾸면 float 정밀도가 모자라 sin/cos가 어긋난다. (1e7도에서 3픽셀 차이)
-// fmod는 오차 없이 계산되므로 먼저 접어 두면 몇 바퀴를 돌았든 같은 결과가 나온다.
-// backend::toSfView도 이 값을 SFML에 넘겨서, 그리는 쪽과 계산하는 쪽의 각도가 일치하도록 한다.
-[[nodiscard]] inline float wrapDegrees(float degrees) {
-    if (!std::isfinite(degrees)) {
-        return 0.f;
-    }
-    float wrapped = std::fmod(degrees, 360.f);
-    if (wrapped < 0.f) {
-        wrapped += 360.f;
-    }
-    // -1e-6 + 360처럼 더한 결과가 반올림되어 정확히 360이 되는 경우.
-    return wrapped < 360.f ? wrapped : 0.f;
-}
-
-[[nodiscard]] inline float toRadians(float degrees) {
-    return degrees * (kPi / 180.f);
 }
 
 } // namespace detail
@@ -181,7 +160,7 @@ inline constexpr float kPi = 3.14159265358979323846f;
 // e.g. 45도면 두 축 모두 (w + h) / √2. 정사각형일 때만 정확히 √2배가 된다.
 [[nodiscard]] inline Rectf visibleWorldBounds(const Camera2D& camera, Vec2u framebuffer) {
     const Vec2f size = viewRect(camera, framebuffer).size;
-    const float radians = detail::toRadians(detail::wrapDegrees(camera.rotation));
+    const float radians = toRadians(wrapDegrees(camera.rotation));
     const float cosAbs = std::abs(std::cos(radians));
     const float sinAbs = std::abs(std::sin(radians));
     const Vec2f extent{size.x * cosAbs + size.y * sinAbs, size.x * sinAbs + size.y * cosAbs};
@@ -193,7 +172,7 @@ inline constexpr float kPi = 3.14159265358979323846f;
 [[nodiscard]] inline Vec2f worldToScreen(const Camera2D& camera, Vec2u framebuffer, Vec2f worldPoint) {
     const Rectf pixels = viewportPixels(camera, framebuffer);
     const Vec2f size = viewRect(camera, framebuffer).size;
-    const float radians = detail::toRadians(detail::wrapDegrees(camera.rotation));
+    const float radians = toRadians(wrapDegrees(camera.rotation));
     const float cosine = std::cos(radians);
     const float sine = std::sin(radians);
 
@@ -215,7 +194,7 @@ inline constexpr float kPi = 3.14159265358979323846f;
     }
 
     const Vec2f size = viewRect(camera, framebuffer).size;
-    const float radians = detail::toRadians(detail::wrapDegrees(camera.rotation));
+    const float radians = toRadians(wrapDegrees(camera.rotation));
     const float cosine = std::cos(radians);
     const float sine = std::sin(radians);
 

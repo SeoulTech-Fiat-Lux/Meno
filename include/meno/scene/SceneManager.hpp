@@ -43,7 +43,8 @@ public:
 
     /// 비활성 Scene을 생성한다. 참조는 해당 Scene 삭제/shutdown까지 유효하다.
     [[nodiscard]] Scene& createScene();
-    [[nodiscard]] Scene* getScene(Scene::SceneID id) const noexcept;
+    [[nodiscard]] Scene* getScene(Scene::SceneID id) noexcept;
+    [[nodiscard]] const Scene* getScene(Scene::SceneID id) const noexcept;
     [[nodiscard]] Scene* activeScene() noexcept { return active_; }
     [[nodiscard]] const Scene* activeScene() const noexcept { return active_; }
 

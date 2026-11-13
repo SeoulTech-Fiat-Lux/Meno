@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <limits>
 
 using namespace meno;
 
@@ -220,6 +221,14 @@ int main() {
         check(viewport.position == sf::Vector2f{0.f, 0.f} &&
                   viewport.size == sf::Vector2f{1.f, 1.f},
               "창 크기 {0,0}: 뷰포트는 기본값 그대로 (NaN 없음)");
+    }
+
+    // SFML로 넘기는 각도는 toSfAngle 한 곳에서 접는다. 스프라이트와 도형, 텍스트의 회전도 같은 규칙을 따른다.
+    {
+        check(std::fabs(backend::toSfAngle(361.5f).asDegrees() - 1.5f) < 1e-4f,
+              "toSfAngle은 각도를 [0, 360)으로 접어서 넘긴다");
+        check(backend::toSfAngle(std::numeric_limits<float>::quiet_NaN()).asDegrees() == 0.f,
+              "toSfAngle은 NaN을 0으로 넘긴다");
     }
 
     return meno::test::report();
