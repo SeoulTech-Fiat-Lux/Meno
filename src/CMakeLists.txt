@@ -42,7 +42,7 @@ add_library(meno::meno ALIAS meno)
 target_include_directories(meno
         PUBLIC
         # 공개 헤더. 이 라이브러리를 쓰는 타깃에 전파된다.
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
         PRIVATE
         # sfml_backend/*.hpp 를 "sfml_backend/..." 로 include 하기 위한 경로.

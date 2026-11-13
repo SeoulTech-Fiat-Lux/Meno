@@ -3,7 +3,7 @@
 # 내부 헤더(sfml_backend/Convert.hpp)와 sf:: 타입을 직접 쓰므로 내부 헤더 경로와 SFML을 연결한다.
 # meno 본체는 링크하지 않는다. 대조하는 코드가 전부 헤더에 있기 때문이다.
 meno_add_test(camera_parity)
-target_include_directories(meno_test_camera_parity PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+target_include_directories(meno_test_camera_parity PRIVATE ${PROJECT_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_camera_parity PRIVATE SFML::Graphics)
 
 # 렌더 계층 테스트.
@@ -17,7 +17,7 @@ meno_display_test(render)
 # 창 크기를 바꾸고 픽셀을 읽으려고 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼내므로,
 # 내부 헤더 경로와 SFML을 직접 연결한다. 그리기는 공개 API(Renderer)로만 한다.
 meno_add_test(render_resize)
-target_include_directories(meno_test_render_resize PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+target_include_directories(meno_test_render_resize PRIVATE ${PROJECT_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_render_resize PRIVATE meno::meno SFML::Graphics)
 meno_display_test(render_resize)
 
@@ -25,6 +25,6 @@ meno_display_test(render_resize)
 # 픽셀을 읽으려고 render_resize처럼 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼내므로,
 # 내부 헤더 경로와 SFML을 직접 연결한다.
 meno_add_test(render_shapes)
-target_include_directories(meno_test_render_shapes PRIVATE ${CMAKE_SOURCE_DIR}/src/meno)
+target_include_directories(meno_test_render_shapes PRIVATE ${PROJECT_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_render_shapes PRIVATE meno::meno SFML::Graphics)
 meno_display_test(render_shapes)
