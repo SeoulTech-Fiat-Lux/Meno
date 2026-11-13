@@ -53,7 +53,8 @@ struct ApplicationConfig {
 class Application {
 public:
     /// 루프 설정으로 만듭니다.
-    /// \throws std::invalid_argument fixedTimeStep이 0 이하이거나 maxUpdatesPerFrame이 0일 때
+    /// \throws std::invalid_argument fixedTimeStep이 양의 유한수가 아니거나
+    /// maxUpdatesPerFrame이 0일 때
     explicit Application(ApplicationConfig config = {});
     virtual ~Application() = default;
 
