@@ -1,21 +1,24 @@
 // 창 크기가 바뀐 뒤의 Renderer와, 뷰포트가 실제로 그리는 픽셀 검사.
 //
-// 좌표 계산의 규칙은 tests/math/test_camera.cpp가, 그 규칙을 SFML이 따르는지는 test_camera_parity.cpp가 본다.
-// 그러나 위 두 검사로는 아래 사안을 확인할 수 없으므로, test_render_resize.cpp를 따로 둔다:
-//   1. 크키가 재설정된 Renderer가 여전히 기존 규칙을 잘 따르는가 (카메라 보관, beginFrame마다 재적용)
+// 좌표 계산의 규칙은 tests/math/test_camera.cpp가, 그 규칙을 SFML이 따르는지는
+// test_camera_parity.cpp가 본다. 그러나 위 두 검사로는 아래 사안을 확인할 수 없으므로,
+// test_render_resize.cpp를 따로 둔다:
+//   1. 크키가 재설정된 Renderer가 여전히 기존 규칙을 잘 따르는가 (카메라 보관, beginFrame마다
+//   재적용)
 //   2. GPU가 그린 픽셀이 실제로 해당 위치에 있는가 (레터박스 띠, 3등분 화면의 틈, 빈 뷰포트)
 
-// 이 테스트를 위해서는 창과 GL 컨텍스트가 필요하기 때문에, test_render와 같이 MENO_DISPLAY_TESTS=1일 때만 돈다.
-// 창 크기를 바꾸고 픽셀을 읽기 위해 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼낸다.
-// 렌더링 자체는 공개 API(Renderer)로만 한다.
+// 이 테스트를 위해서는 창과 GL 컨텍스트가 필요하기 때문에, test_render와 같이
+// MENO_DISPLAY_TESTS=1일 때만 돈다. 창 크기를 바꾸고 픽셀을 읽기 위해 내부
+// 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼낸다. 렌더링 자체는 공개 API(Renderer)로만
+// 한다.
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_resize --output-on-failure
 
-#include <meno/core/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
+#include <meno/window/Window.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include "check.hpp"
 #include "display.hpp"
@@ -47,9 +50,10 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
 }
 
 // 창 크기를 바꾸고, SFML이 Resized 이벤트를 받아 크기를 갱신할 때까지 pollEvents를 돌린다.
-// SFML은 pollEvent 안에서 getSize()를 새 값으로 바꾼다. Renderer가 별도의 통지 없이 리사이즈를 따라가는 근거다.
+// SFML은 pollEvent 안에서 getSize()를 새 값으로 바꾼다. Renderer가 별도의 통지 없이 리사이즈를
+// 따라가는 근거다.
 bool resize(Window& window, Renderer& renderer, Vec2u size) {
-    backend::WindowAccess::native(window)->setSize(backend::toSf(size));
+    backend::WindowAccess::native(window).setSize(backend::toSf(size));
     for (int i = 0; i < 200 && window.size() != size; ++i) {
         window.pollEvents();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -57,7 +61,8 @@ bool resize(Window& window, Renderer& renderer, Vec2u size) {
 
     // 빈 프레임을 한 번 표시한다. 드라이버에 따라(Xvfb의 Mesa 등) GL 백 버퍼는 창 크기를 바꾼 뒤
     // 다음 버퍼 교체 때에야 새 크기로 바뀐다. 그 전에 읽으면 옛 크기의 버퍼를 읽게 된다.
-    // 카메라가 옛 크기에 묶이는 버그는 이후 프레임에도 계속 남으므로, 한 프레임을 버려도 검사는 약해지지 않는다.
+    // 카메라가 옛 크기에 묶이는 버그는 이후 프레임에도 계속 남으므로, 한 프레임을 버려도 검사는
+    // 약해지지 않는다.
     renderer.beginFrame(kClear);
     renderer.endFrame();
     return window.size() == size;
@@ -84,15 +89,16 @@ void checkScreenCoordinates(Window& window, Renderer& renderer) {
     check(isColor(image, 610, 330, kInk),
           "리사이즈 후 화면 좌표: 우하단에 그린 사각형이 그 픽셀에 있다");
     check(near(renderer.screenToWorld({639.f, 359.f}), Vec2f{639.f, 359.f}),
-          "리사이즈 후 화면 좌표: 픽셀 좌표 == 월드 좌표 (수정 전에는 {319.5, 179.5})");
+          "리사이즈 후 화면 좌표: 픽셀 좌표 == 월드 좌표");
     check(near(renderer.screenToWorld({-0.5f, 0.5f}), Vec2f{-0.5f, 0.5f}),
-          "screenToWorld는 정수로 자르지 않는다 (수정 전에는 -0.5 -> 0)");
+          "screenToWorld는 정수로 자르지 않는다");
 }
 
 // --- 리사이즈 전에 설정한 카메라도 새 크기로 다시 적용된다 -----------------
 
 void checkCameraKeptAcrossResize(Window& window, Renderer& renderer) {
-    // size {0,0} 카메라는 1픽셀 = 1월드유닛이어야 한다. 크기는 setCamera 시점이 아니라 그리는 시점의 창 크기다.
+    // size {0,0} 카메라는 1픽셀 = 1월드유닛이어야 한다. 크기는 setCamera 시점이 아니라 그리는
+    // 시점의 창 크기다.
     const Camera2D camera{.center = {0.f, 0.f}};
     renderer.setCamera(camera);
     check(renderer.camera().has_value() && renderer.camera()->center == camera.center,
@@ -167,7 +173,8 @@ void checkSplitScreen(Window& window, Renderer& renderer) {
 }
 
 void checkEmptyViewport(Window& window, Renderer& renderer) {
-    // 크기 0인 뷰포트는 아무것도 그리지 않는다. 0으로 나눠 화면 전체에 번지거나 GL 오류를 내지 않는다.
+    // 크기 0인 뷰포트는 아무것도 그리지 않는다. 0으로 나눠 화면 전체에 번지거나 GL 오류를 내지
+    // 않는다.
     renderer.beginFrame(kClear);
     renderer.setCamera({.viewport = {0.5f, 0.5f, 0.f, 0.f}});
     renderer.drawRect(kEverywhere, {.fill = kInk});

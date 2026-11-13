@@ -1,6 +1,6 @@
 # 카메라 수학과 SFML의 대조. backend::toSfView로 만든 뷰를 SFML의 좌표 변환에 넣어
 # math/Camera2D.hpp의 결과와 비교한다. 크기만 가진 가짜 렌더 타깃을 쓰므로 창도 디스플레이도 필요 없다.
-# 내부 헤더(sfml_backend/Convert.hpp)와 sf:: 타입을 직접 쓰므로 내부 헤더 경로와 SFML을 연결한다.
+# 내부 헤더(sfml_backend/MathConvert.hpp)와 sf:: 타입을 직접 쓰므로 내부 헤더 경로와 SFML을 연결한다.
 # meno 본체는 링크하지 않는다. 대조하는 코드가 전부 헤더에 있기 때문이다.
 meno_add_test(camera_parity)
 target_include_directories(meno_test_camera_parity PRIVATE ${PROJECT_SOURCE_DIR}/src/meno)

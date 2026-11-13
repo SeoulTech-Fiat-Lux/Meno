@@ -1,11 +1,11 @@
 #ifndef MENO_RENDERER_HPP
 #define MENO_RENDERER_HPP
 
-#include <meno/math/Vec2.hpp>
-#include <meno/math/Rect.hpp>
-#include <meno/math/Color.hpp>
-#include <meno/math/Camera2D.hpp>
 #include <meno/graphics/DrawParams.hpp>
+#include <meno/math/Camera2D.hpp>
+#include <meno/math/Color.hpp>
+#include <meno/math/Rect.hpp>
+#include <meno/math/Vec2.hpp>
 
 #include <initializer_list>
 #include <memory>
@@ -19,141 +19,121 @@ class Font;
 class Texture;
 class Window;
 
-// 2D 렌더 API.
-//
-// 즉시 모드다. draw를 호출한 순서가 곧 그려지는 순서이고(나중 호출이 위),
-// 내부에 커맨드 버퍼나 정렬 단계가 없다. 레이어가 필요하면 호출 순서로
-// 표현한다 -- 배경 먼저, 캐릭터 나중.
-//
-// 한 프레임의 형태:
-//
-//     renderer.beginFrame(colors::Black);
-//     renderer.draw(playerTexture, {.position = {100.f, 50.f}});
-//     renderer.endFrame();
-//
-// 이 헤더는 SFML을 include하지 않는다. 사용자 빌드에 SFML 헤더 경로가 없어도 컴파일된다.
+/// 2D 렌더 API.
+///
+/// 즉시 모드다. draw를 호출한 순서가 곧 그려지는 순서이고(나중 호출이 위),
+/// 내부에 커맨드 버퍼나 정렬 단계가 없다. 레이어가 필요하면 호출 순서로
+/// 표현한다 -- 배경 먼저, 캐릭터 나중.
+///
+/// 한 프레임의 형태:
+///
+///     renderer.beginFrame(colors::Black);
+///     renderer.draw(playerTexture, {.position = {100.f, 50.f}});
+///     renderer.endFrame();
+///
 class Renderer {
 public:
-    // window는 Renderer보다 오래 살아야 한다. 소유하지 않는다.
-
-    // 생성 시점에 window의 렌터 타깃을 붙잡는다.
-    // 이후 window에 다른 Window를 이동 대입하면 붙잡은 타깃이 파괴되고, Renderer도 잇따라 새로 만들어야 한다.
-    // 렌더 타깃이 없는 Window(이동당한 빈 껍데기)를 넘기면 std::invalid_argument를 던진다.
+    /// window는 Renderer보다 오래 살아야 한다. 소유하지 않는다.
+    /// 생성 시점에 window의 렌더 타깃을 붙잡는다. Window는 이동할 수 없으므로 붙잡은 타깃은 끝까지
+    /// 유효하다.
     explicit Renderer(Window& window);
     ~Renderer();
 
-    // 위에 따라, Renderer의 복사와 이동 모두 금지한다.
-    // Window를 빌려 쓰는 타입이라 옮길 이유가 거의 없고,
-    // 이동을 열어두면 이동당한 쪽(impl_ == nullptr)을 모든 함수가 굳이 검사해야 한다.
-    // 복사와 이동을 막아두면 "살아있는 Renderer는 항상 유효한 렌더 타깃을 갖는다"는 불변식이 자료형으로 보장된다.
-
-    // 혹시 여러 곳에서 사용해야 한다면 Renderer&로 넘긴다.
-    // 생성을 미뤄야 할 경우에는 std::optional<Renderer>::emplace나 std::unique_ptr<Renderer>를 쓴다.
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
     Renderer(Renderer&&) = delete;
     Renderer& operator=(Renderer&&) = delete;
 
-    // --- 프레임 -----------------------------------------------------------
-
-    // 화면을 clearColor로 지우고 그리기를 시작한다.
-    // 이때 현재 카메라를 지금의 창 크기로 다시 적용한다. 창 크기가 바뀌어도 따로 할 일이 없는 이유다.
-    // (창 크기는 Window::pollEvents가 OS 이벤트를 꺼낼 때 갱신되므로, pollEvents를 beginFrame보다 먼저 부른다.)
+    /// 화면을 clearColor로 지우고 그리기를 시작한다.
+    /// 이때 현재 카메라를 지금의 창 크기로 다시 적용한다. 창 크기가 바뀌어도 따로 할 일이 없는
+    /// 이유다. (창 크기는 Window::pollEvents가 OS 이벤트를 꺼낼 때 갱신되므로, pollEvents를
+    /// beginFrame보다 먼저 부른다.)
     void beginFrame(Color clearColor = colors::Black);
 
-    // 이번 프레임에 쌓인 그리기를 화면에 표시한다.
+    /// 이번 프레임에 쌓인 그리기를 화면에 표시한다.
     void endFrame();
 
-    // --- 스프라이트 -------------------------------------------------------
-
-    // 텍스처를 position에 원본 크기로 그린다. 가장 짧은 형태.
+    /// 텍스처를 position에 원본 크기로 그린다. 가장 짧은 형태.
     void draw(const Texture& texture, Vec2f position);
 
-    // 옵션을 지정해서 그린다. SpriteParams 참고.
+    /// 옵션을 지정해서 그린다. SpriteParams 참고.
     void draw(const Texture& texture, const SpriteParams& params);
-
-    // --- 기본 도형 --------------------------------------------------------
 
     void drawRect(const Rectf& rect, const ShapeParams& params = {});
 
-    // radius가 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
+    /// radius가 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
     void drawCircle(Vec2f center, float radius, const ShapeParams& params = {});
-    void drawLine(Vec2f from, Vec2f to, Color color = colors::White, float thickness = 1.f);
+    /// 두께 있는 선. from에서 시작해 to에서 끝나며, 두께는 선 양쪽으로 반씩 퍼진다.
+    /// 길이나 두께가 양의 유한수가 아니면(0, 음수, NaN, 무한대) 그리지 않는다.
+    void drawLine(Vec2f from, Vec2f to, const LineParams& params = {});
 
-    // 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막 점을
-    // 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0,
-    // 0}이면 position을 축으로 돈다. 점이 3개 미만이면 그리지 않는다. points는 이 호출 안에서만
-    // 읽으므로 호출이 끝나면 버려도 된다. SFML이 바운딩 박스 중심에서 부채를 펴는 식으로 면을
-    // 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
+    /// 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막
+    /// 점을 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0,
+    /// 0}이면 position을 축으로 돈다. 점이 3개 미만이면 그리지 않는다. points는 이 호출 안에서만
+    /// 읽으므로 호출이 끝나면 버려도 된다. SFML이 바운딩 박스 중심에서 부채를 펴는 식으로 면을
+    /// 채우기 때문에 볼록한 형태의 다각형만 보장한다. 외곽선만 그리면 오목해도 된다.
     void drawPolygon(Vec2f position, std::span<const Vec2f> points, const ShapeParams& params = {});
 
-    // 위 함수의 오버로딩. C++20의 std::span은 {a, b, c}를 받지 못하므로 따로 둔다.
-    // ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill =
-    // colors::Red});
+    /// 위 함수의 오버로딩. C++20의 std::span은 {a, b, c}를 받지 못하므로 따로 둔다.
+    /// ex.  renderer.drawPolygon(pos, {{0.f, -12.f}, {9.f, 8.f}, {-9.f, 8.f}}, {.fill =
+    /// colors::Red});
     void drawPolygon(Vec2f position, std::initializer_list<Vec2f> points,
                      const ShapeParams& params = {});
 
-    // 부채꼴 그리기 함수. 각도는 도 단위이며 sweepDeg가 양수면 시계방향, 음수면 반시계 방향으로
-    // 펼친다. |sweepDeg| >= 360이면 drawCircle과 같다. sweepDeg가 0이거나 radius가 0 이하(NaN
-    // 포함)면 그리지 않는다. params.origin과 rotation은 drawCircle처럼 중심을 기준으로 삼는다.
+    /// 부채꼴 그리기 함수. 각도는 도 단위이며 sweepDeg가 양수면 시계방향, 음수면 반시계 방향으로
+    /// 펼친다. |sweepDeg| >= 360이면 drawCircle과 같다. sweepDeg가 0이거나 radius가 0 이하(NaN
+    /// 포함)면 그리지 않는다. params.origin과 rotation은 drawCircle처럼 중심을 기준으로 삼는다.
     void drawSector(Vec2f center, float radius, float startDeg, float sweepDeg,
                     const ShapeParams& params = {});
 
-    // --- 텍스트 -----------------------------------------------------------
-
-    // text는 UTF-8로 해석한다. 한글 문자열 리터럴이 그대로 들어간다.
+    /// text는 UTF-8로 해석한다. 한글 문자열 리터럴이 그대로 들어간다.
     void drawText(const Font& font, std::string_view text, Vec2f position,
                   const TextParams& params = {});
 
-    // 그리지 않고 차지할 크기만 잰다. 같은 params로 drawText한 결과와 크기가 같다.
+    /// 그리지 않고 차지할 크기만 잰다. 같은 params로 drawText한 결과와 크기가 같다.
 
-    // 주의: 글자의 실제 잉크는 drawText의 position에서 바로 시작하지 않는다.
-    // 윗부분 여백(글리프 베어링)과 외곽선만큼 어긋나 있어서, 크기만으로 정렬하면 몇 픽셀 틀어진다.
-    // 픽셀 단위로 세심히 맞추고 싶을 경우, 아래의 measureTextBounds를 쓰자.
+    /// 주의: 글자의 실제 잉크는 drawText의 position에서 바로 시작하지 않는다.
+    /// 윗부분 여백(글리프 베어링)과 외곽선만큼 어긋나 있어서, 크기만으로 정렬하면 몇 픽셀 틀어진다.
+    /// 픽셀 단위로 세심히 맞추고 싶을 경우, 아래의 measureTextBounds를 쓰자.
     [[nodiscard]] Vec2f measureText(const Font& font, std::string_view text,
                                     const TextParams& params = {}) const;
 
-    // drawText(font, text, {0, 0}, params)로 그렸을 때, 실제 잉크가 차지하는 영역을 Rectf로 반환한다.
-    // params의 origin과 rotation을 적용하기 전의 로컬 좌표이다.
+    /// drawText(font, text, {0, 0}, params)로 그렸을 때, 실제 잉크가 차지하는 영역을 Rectf로
+    /// 반환한다. params의 origin과 rotation을 적용하기 전의 로컬 좌표이다.
 
-    // position이 {0, 0}이 아니라는 점이 measureText와 다르다. 가운데 정렬을 예로 들면:
-    //     TextParams params{.characterSize = 32};
-    //     params.origin = renderer.measureTextBounds(font, text, params).center();
-    //     renderer.drawText(font, text, screenCenter, params);   // 회전해도 제자리
+    /// position이 {0, 0}이 아니라는 점이 measureText와 다르다. 가운데 정렬을 예로 들면:
+    ///     TextParams params{.characterSize = 32};
+    ///     params.origin = renderer.measureTextBounds(font, text, params).center();
+    ///     renderer.drawText(font, text, screenCenter, params);   // 회전해도 제자리
 
-    // 로드되지 않거나 이동된 폰트라면 빈 사각형을 돌려준다.
+    /// 로드되지 않거나 이동된 폰트라면 빈 사각형을 돌려준다.
     [[nodiscard]] Rectf measureTextBounds(const Font& font, std::string_view text,
                                           const TextParams& params = {}) const;
 
-    // --- 카메라 -----------------------------------------------------------
-    // 계산 규칙은 전부 math/Camera2D.hpp의 같은 이름 자유 함수에 있다.
-    // 아래 함수들은 지금 카메라와 지금 창 크기를 넣어 그 함수들을 부를 뿐이다.
-
-    // 이후의 그리기를 이 카메라의 월드 좌표로 해석한다.
-    // Renderer가 카메라를 기억해 두었다가 beginFrame마다 다시 적용하므로, 매 프레임 다시 부를 필요는 없다.
+    /// 이후의 그리기를 이 카메라의 월드 좌표로 해석한다.
+    /// Renderer가 카메라를 기억해 두었다가 beginFrame마다 다시 적용하므로, 매 프레임 다시 부를
+    /// 필요는 없다.
     void setCamera(const Camera2D& camera);
 
-    // 화면 좌표로 되돌린다. 원점은 창의 좌상단, 1픽셀 = 1월드유닛. UI를 그리기 전에 호출한다.
-    // 창 크기가 바뀌면 화면 좌표도 새 크기를 따른다. 처음 만들어진 Renderer도 이 상태다.
+    /// 화면 좌표로 되돌린다. 원점은 창의 좌상단, 1픽셀 = 1월드유닛. UI를 그리기 전에 호출한다.
+    /// 창 크기가 바뀌면 화면 좌표도 새 크기를 따른다. 처음 만들어진 Renderer도 이 상태다.
     void resetCamera();
 
-    // 지금 적용 중인 카메라. resetCamera() 상태(화면 좌표)면 std::nullopt.
+    /// 지금 적용 중인 카메라. resetCamera() 상태(화면 좌표)면 std::nullopt.
     [[nodiscard]] std::optional<Camera2D> camera() const;
 
-    // 월드 좌표 <-> 창 픽셀 좌표. 정수로 자르지 않은 실수를 돌려준다.
-    // 마우스 위치로 월드의 물체를 고를 때는 screenToWorld를 쓴다.
+    /// 월드 좌표 <-> 창 픽셀 좌표. 정수로 자르지 않은 실수를 돌려준다.
+    /// 마우스 위치로 월드의 물체를 고를 때는 screenToWorld를 쓴다.
     [[nodiscard]] Vec2f worldToScreen(Vec2f worldPoint) const;
     [[nodiscard]] Vec2f screenToWorld(Vec2f screenPoint) const;
 
-    // 현재 카메라로 보이는 월드 영역. 화면 밖 오브젝트를 건너뛸 때 쓴다.
+    /// 현재 카메라로 보이는 월드 영역. 화면 밖 오브젝트를 건너뛸 때 쓴다.
 
-    // 카메라가 회전해 있으면 보이는 영역은 기울어진 사각형이 된다.
-    // 이때 그것을 감싸는 축 정렬 사각형을 돌려준다. (회전된 사각형의 외접 사각형)
-    // 실제보다 조금 넓을 수는 있어도 좁지는 않으므로,
-    // 컬링에 써도 보이는 오브젝트를 놓치지 않는다.
+    /// 카메라가 회전해 있으면 보이는 영역은 기울어진 사각형이 된다.
+    /// 이때 그것을 감싸는 축 정렬 사각형을 돌려준다. (회전된 사각형의 외접 사각형)
+    /// 실제보다 조금 넓을 수는 있어도 좁지는 않으므로,
+    /// 컬링에 써도 보이는 오브젝트를 놓치지 않는다.
     [[nodiscard]] Rectf visibleWorldBounds() const;
-
-    // --- 정보 -------------------------------------------------------------
 
     [[nodiscard]] Vec2u framebufferSize() const;
 
@@ -164,4 +144,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_RENDERER_HPP
+#endif // MENO_RENDERER_HPP

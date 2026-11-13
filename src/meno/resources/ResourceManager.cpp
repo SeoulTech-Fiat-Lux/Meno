@@ -15,9 +15,9 @@ struct NoOp {
 };
 
 template <typename Resource, typename Cache, typename Configure = NoOp>
-std::shared_ptr<const Resource>
-loadResource(Cache& cache, const typename Cache::key_type& key,
-             const std::filesystem::path& path, Configure configure = {}) {
+std::shared_ptr<const Resource> loadResource(Cache& cache, const typename Cache::key_type& key,
+                                             const std::filesystem::path& path,
+                                             Configure configure = {}) {
     if (const auto found = cache.find(key); found != cache.end()) {
         return found->second;
     }
@@ -35,19 +35,17 @@ loadResource(Cache& cache, const typename Cache::key_type& key,
 
 } // namespace
 
-std::shared_ptr<const Texture>
-ResourceManager::loadTexture(const std::filesystem::path& path, TextureOptions options) {
+std::shared_ptr<const Texture> ResourceManager::loadTexture(const std::filesystem::path& path,
+                                                            TextureOptions options) {
     auto key = makeKey(path);
     // 파일 경로에는 NUL 문자가 올 수 없으므로 옵션 구분자로 안전하게 사용할 수 있다.
     key.push_back(u8'\0');
     key.push_back(options.smooth ? u8'1' : u8'0');
-    return loadResource<Texture>(textures_, key, path, [options](Texture& texture) {
-        texture.setSmooth(options.smooth);
-    });
+    return loadResource<Texture>(
+        textures_, key, path, [options](Texture& texture) { texture.setSmooth(options.smooth); });
 }
 
-std::shared_ptr<const Font>
-ResourceManager::loadFont(const std::filesystem::path& path) {
+std::shared_ptr<const Font> ResourceManager::loadFont(const std::filesystem::path& path) {
     return loadResource<Font>(fonts_, makeKey(path), path);
 }
 

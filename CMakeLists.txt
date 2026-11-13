@@ -74,11 +74,3 @@ if(MENO_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
-# ---------------------------------------------------------------------------
-# 이전 GameObjectDemo 타깃에 대해
-# ---------------------------------------------------------------------------
-# src/gameobject_demo/ 와 src/main.cpp 는 그대로 두었다(상준 담당).
-# 다만 이 브랜치에서는 빌드 대상에 넣지 않는다.
-# GameObject.h 가 포함하는 Vec2D.h 가 이 브랜치에 없어서 컴파일되지 않기 때문.
-# GameObject-Demo 브랜치를 병합할 때 examples/gameobject_demo/로 옮기고 examples/CMakeLists.txt에 타깃을 추가하거나, 다른 방법을 쓰면 되겠다.

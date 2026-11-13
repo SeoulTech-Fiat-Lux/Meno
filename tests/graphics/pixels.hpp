@@ -5,12 +5,12 @@
 // 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼내므로, CMake에서 src/meno 경로와
 // SFML::Graphics를 직접 연결한 테스트만 include할 수 있다. 예: render_resize, render_shapes
 
-#include <meno/core/Window.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Vec2.hpp>
+#include <meno/window/Window.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -20,7 +20,7 @@ namespace meno::test {
 
 // 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 불러야 한다.
 [[nodiscard]] inline sf::Image capture(Window& window) {
-    sf::RenderWindow& native = *backend::WindowAccess::native(window);
+    sf::RenderWindow& native = backend::WindowAccess::native(window);
     sf::Texture texture{native.getSize()};
     texture.update(native);
     return texture.copyToImage();

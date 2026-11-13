@@ -23,8 +23,7 @@ public:
     SoundBuffer(SoundBuffer&&) noexcept;
     SoundBuffer& operator=(SoundBuffer&&) noexcept;
 
-    [[nodiscard]] static std::optional<SoundBuffer>
-    loadFromFile(const std::filesystem::path& path);
+    [[nodiscard]] static std::optional<SoundBuffer> loadFromFile(const std::filesystem::path& path);
 
 private:
     struct Impl;

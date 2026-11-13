@@ -1,5 +1,5 @@
-#ifndef MENO_DRAWPARAMS_HPP
-#define MENO_DRAWPARAMS_HPP
+#ifndef MENO_DRAW_PARAMS_HPP
+#define MENO_DRAW_PARAMS_HPP
 
 #include <meno/math/Color.hpp>
 #include <meno/math/Rect.hpp>
@@ -37,7 +37,7 @@ struct SpriteParams {
 
     /// 텍스처의 일부만 그릴 때 지정한다(스프라이트 시트, 애니메이션 프레임).
     /// 비어 있으면 텍스처 전체.
-    std::optional<Recti> source{};
+    std::optional<Recti> source{}; // NOLINT(readability-redundant-member-init)
 
     bool flipX{false};
     bool flipY{false};
@@ -53,6 +53,14 @@ struct ShapeParams {
 
     Vec2f origin{0.f, 0.f};
     float rotation{0.f};
+};
+
+/// 선 그리기 옵션.
+struct LineParams {
+    Color color{colors::White};
+
+    /// 픽셀 단위 두께. 선을 가운데에 두고 양쪽으로 반씩 퍼진다. 양의 유한수가 아니면 그리지 않는다.
+    float thickness{1.f};
 };
 
 /// 텍스트 그리기 옵션.
@@ -71,4 +79,4 @@ struct TextParams {
 
 } // namespace meno
 
-#endif  // MENO_DRAWPARAMS_HPP
+#endif // MENO_DRAW_PARAMS_HPP

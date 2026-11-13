@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -80,8 +81,17 @@ jobs:
         include:
           - name: Windows / MSVC
             os: windows-latest
+            cache-id: windows-msvc
+            cmake-args: ""
           - name: Ubuntu / GCC
             os: ubuntu-latest
+            cache-id: ubuntu-gcc
+            cmake-args: ""
+          # ② Ubuntu 러너에 기본으로 깔린 Clang을 쓴다.
+          - name: Ubuntu / Clang
+            os: ubuntu-latest
+            cache-id: ubuntu-clang
+            cmake-args: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     steps:
       - uses: actions/checkout@v4
@@ -104,11 +114,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/_deps
-          key: deps-${{ runner.os }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
-          restore-keys: deps-${{ runner.os }}-sfml3.1.0-
+          key: deps-${{ matrix.cache-id }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: deps-${{ matrix.cache-id }}-sfml3.1.0-
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake-args }}
 
       - name: Build
         run: cmake --build build --config Release
@@ -127,3 +137,89 @@ jobs:
       - name: Test (Windows)
         if: runner.os != 'Linux'
         run: ctest --test-dir build --build-config Release --output-on-failure
+
+  # ---------------------------------------------------------------------------
+  # 메모리·미정의 동작 검사 (ASan + UBSan).
+  # 수명 규칙을 바꾸는 Window, SceneManager의 안전망이다.
+  # ---------------------------------------------------------------------------
+  sanitizers:
+    name: Ubuntu / Clang + ASan·UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 시스템 의존성 설치
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
+            libfreetype-dev libgl1-mesa-dev libegl1-mesa-dev \
+            libflac-dev libvorbis-dev libogg-dev \
+            libharfbuzz-dev \
+            xvfb fonts-dejavu-core
+
+      # SFML도 같은 플래그로 빌드되므로 일반 빌드와 캐시를 섞지 않는다.
+      - name: SFML 빌드 캐시
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-ubuntu-asan-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: deps-ubuntu-asan-sfml3.1.0-
+
+      # -fno-sanitize-recover=undefined가 없으면 UBSan은 경고만 찍고 테스트는 통과한다.
+      # 예제는 일반 빌드 잡이 이미 컴파일하므로 여기서는 끈다.
+      - name: Configure
+        env:
+          SAN_FLAGS: -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DMENO_BUILD_EXAMPLES=OFF \
+            "-DCMAKE_C_FLAGS=$SAN_FLAGS" \
+            "-DCMAKE_CXX_FLAGS=$SAN_FLAGS" \
+            "-DCMAKE_EXE_LINKER_FLAGS=$SAN_FLAGS"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      # 누수 검사는 우선 끈다. xvfb·Mesa 드라이버가 남기는 할당을 LeakSanitizer가 누수로 보고하기 때문이다.
+      # 오탐 범위를 확인한 뒤 suppression 파일로 좁혀서 다시 켠다.
+      - name: Test
+        env:
+          MENO_DISPLAY_TESTS: "1"
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" ctest --test-dir build --output-on-failure
+
+  # ---------------------------------------------------------------------------
+  # 정적 분석 (clang-tidy). 처음에는 경고만 내고 실패시키지 않는다.
+  # 규칙은 저장소 루트의 .clang-tidy에 있다.
+  # ---------------------------------------------------------------------------
+  tidy:
+    name: clang-tidy (경고만)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 시스템 의존성 설치
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy \
+            libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
+            libfreetype-dev libgl1-mesa-dev libegl1-mesa-dev \
+            libflac-dev libvorbis-dev libogg-dev \
+            libharfbuzz-dev
+
+      # 빌드하지 않는다. configure만으로 compile_commands.json과 SFML 소스(헤더)가 준비된다.
+      - name: Configure
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DMENO_BUILD_TESTS=OFF -DMENO_BUILD_EXAMPLES=OFF
+
+      # 라이브러리 소스만 검사한다. src/main.cpp는 어느 타깃에도 없어서 제외된다.
+      - name: clang-tidy
+        run: |
+          clang-tidy --version
+          git ls-files -z 'src/meno/*.cpp' | xargs -0 clang-tidy -p build --quiet

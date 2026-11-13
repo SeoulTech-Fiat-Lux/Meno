@@ -1,4 +1,4 @@
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/SceneManager.hpp>
 
 #include "check.hpp"
 
@@ -6,6 +6,11 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+
+// Scene 구현을 장치 없이 링크하기 위한 그리기 대역.
+namespace meno {
+void Sprite::draw(Renderer&) const {}
+} // namespace meno
 
 namespace {
 struct State {
@@ -18,10 +23,9 @@ struct State {
     State& operator=(const State&) = delete;
 };
 
-static_assert(std::is_same_v<
-    decltype(std::declval<meno::Scene&>().getState<State>()), State*>);
-static_assert(std::is_same_v<
-    decltype(std::declval<const meno::Scene&>().getState<State>()), const State*>);
+static_assert(std::is_same_v<decltype(std::declval<meno::Scene&>().getState<State>()), State*>);
+static_assert(
+    std::is_same_v<decltype(std::declval<const meno::Scene&>().getState<State>()), const State*>);
 
 void testRegistration(meno::SceneManager& manager) {
     int originalLive = 0;
@@ -112,7 +116,7 @@ void testLifetime(meno::SceneManager& manager) {
 } // namespace
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     testRegistration(manager);
     testEmptyRegistration(manager);
     testLifetime(manager);

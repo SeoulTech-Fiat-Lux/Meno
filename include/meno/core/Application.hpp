@@ -24,12 +24,12 @@ public:
     Application& operator=(const Application&) = delete;
 
     /// 내부 Clock을 생성하고 ApplicationConfig의 프레임 제한을 적용해 실행한다.
-    /// 이미 실행 중인 Application에 다시 호출하면 std::logic_error를 던진다.
+    /// 어느 Application이든 실행 중이면 std::logic_error를 던진다(onStop 완료까지).
     /// 콜백의 예외는 상태를 정리한 뒤 재전파하며 onStop은 정상 종료에서만 호출된다.
     virtual void run();
     /// 주입된 Clock으로 실행한다. Clock에 기존 설정된 프레임 제한은
     /// ApplicationConfig::framerateLimit으로 덮어쓴다.
-    /// 이미 실행 중인 Application에 다시 호출하면 std::logic_error를 던진다.
+    /// 어느 Application이든 실행 중이면 std::logic_error를 던진다(onStop 완료까지).
     /// 콜백의 예외는 상태를 정리한 뒤 재전파하며 onStop은 정상 종료에서만 호출된다.
     virtual void run(Clock& clock);
     void stop() noexcept;
@@ -50,4 +50,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_APPLICAION_HPP
+#endif // MENO_APPLICATION_HPP

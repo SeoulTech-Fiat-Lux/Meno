@@ -1,14 +1,17 @@
-#ifndef MENO_SCENEMANAGER_HPP
-#define MENO_SCENEMANAGER_HPP
+#ifndef MENO_SCENE_MANAGER_HPP
+#define MENO_SCENE_MANAGER_HPP
 
 #include <meno/scene/Scene.hpp>
+#include <memory>
 #include <optional>
+#include <unordered_map>
 
 namespace meno {
 
 class Game;
 
-/// 단일 스레드 게임 루프에서 사용한다. 최초 접근 시 생성, 정상 종료 시 소멸한다.
+/// 단일 스레드 게임 루프에서 사용하며, 소유자가 생성과 소멸 시점을 관리한다.
+/// 소멸 시 onExit은 호출하지 않는다. 종료 콜백이 필요하면 shutdown()을 호출한다.
 class SceneManager final {
 private:
     friend class Game;
@@ -22,18 +25,14 @@ private:
     Scene* active_{nullptr};
     std::optional<Scene::SceneID> pending_;
     bool busy_{false};
+    void applyPending();
+    /// Game의 마지막 소멸 방어선. 파생 Game이 이미 소멸한 시점이므로
+    /// 사용자 onExit 콜백은 호출하지 않고 소유한 Scene만 폐기한다.
+    void discard() noexcept;
 
-// private 맴버 함수 필드
+public:
     SceneManager() = default;
     ~SceneManager() = default;
-
-    void applyPending();
-    // Game의 마지막 소멸 방어선. 파생 Game이 이미 소멸한 시점이므로
-    // 사용자 onExit 콜백은 호출하지 않고 소유한 Scene만 폐기한다.
-    void discard() noexcept;
-    
-public:
-    [[nodiscard]] static SceneManager& instance();
 
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;
@@ -54,7 +53,8 @@ public:
     [[nodiscard]] bool deleteScene(Scene::SceneID id);
     void update(double dt);
     void draw(Renderer& renderer) {
-        if (active_) active_->drawScene(renderer);
+        if (active_)
+            active_->drawScene(renderer);
     }
     /// 창/오디오 시스템 종료 전에 호출한다. 콜백 안에서는 false를 반환한다.
     /// Scene을 모두 해제하지만 매니저는 유지되며 다시 사용할 수 있다.
@@ -63,4 +63,4 @@ public:
 };
 
 } // namespace meno
-#endif
+#endif // MENO_SCENE_MANAGER_HPP

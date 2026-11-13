@@ -5,11 +5,11 @@
 //
 // 이 파일에는 SFML이 한 번도 등장하지 않는다. 그게 이 설계의 목표다.
 
-#include <meno/core/Window.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/window/Window.hpp>
 
 #include <array>
 #include <cmath>
@@ -23,15 +23,15 @@ namespace {
 /// 8x8 체커보드 RGBA 텍스처를 만든다. 에셋 없이 스프라이트를 시험하기 위한 것.
 meno::Texture makeCheckerTexture() {
     constexpr unsigned int kSize = 8;
-    std::vector<std::uint8_t> pixels(kSize * kSize * 4);
+    std::vector<std::uint8_t> pixels(std::size_t{kSize} * kSize * 4);
 
     for (unsigned int y = 0; y < kSize; ++y) {
         for (unsigned int x = 0; x < kSize; ++x) {
             const bool light = ((x / 2) + (y / 2)) % 2 == 0;
-            const std::size_t index = (y * kSize + x) * 4;
+            const std::size_t index = (std::size_t{y} * kSize + x) * 4;
             pixels[index + 0] = light ? 240 : 70;
             pixels[index + 1] = light ? 200 : 60;
-            pixels[index + 2] = light ? 120 : 120;
+            pixels[index + 2] = 120; // 파랑은 밝은 칸과 어두운 칸이 같다
             pixels[index + 3] = 255;
         }
     }
@@ -70,14 +70,13 @@ std::optional<meno::Font> findSystemFont() {
 /// 월드에 놓인 것들을 그린다. 메인 카메라와 미니맵이 같은 월드를 서로 다른 카메라로 비춘다.
 void drawWorld(meno::Renderer& renderer, const meno::Texture& checker, double elapsed) {
     // 기준선. 원점이 어디인지 보여준다.
-    renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, meno::colors::Gray, 1.f);
-    renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, meno::colors::Gray, 1.f);
+    renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, {.color = meno::colors::Gray});
+    renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, {.color = meno::colors::Gray});
 
     // 도형: 채우기 + 외곽선
-    renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
-                      {.fill = meno::Color::fromRgb(0x4C6EF5),
-                       .outline = meno::colors::White,
-                       .outlineThickness = 2.f});
+    renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}}, {.fill = meno::Color::fromRgb(0x4C6EF5),
+                                                          .outline = meno::colors::White,
+                                                          .outlineThickness = 2.f});
 
     renderer.drawCircle({-260.f, 120.f}, 45.f,
                         {.fill = meno::Color::fromRgb(0x51CF66),
@@ -129,15 +128,16 @@ int main() {
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
         // size를 정하지 않았으므로 1월드유닛 = 1픽셀이다. 창을 키우면 월드가 더 넓게 보인다.
         // 카메라가 시계 방향으로 돌면 화면 속 월드는 반시계 방향으로 돈다.
-        const meno::Camera2D camera{
-            .center = {0.f, 0.f},
-            .zoom = 1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7)),
-            .rotation = 12.f * static_cast<float>(std::sin(elapsed * 0.4))};
+        const meno::Camera2D camera{.center = {0.f, 0.f},
+                                    .zoom =
+                                        1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7)),
+                                    .rotation = 12.f * static_cast<float>(std::sin(elapsed * 0.4))};
         renderer.setCamera(camera);
         drawWorld(renderer, checker, elapsed);
 
         // --- 미니맵: 화면 우상단의 작은 뷰포트 ----------------------------
-        // 월드 1920x1080을 16:9 고정 비율로 담는다. 창의 종횡비가 달라도 Letterbox가 비율을 지키고 남는 부분은 비운다.
+        // 월드 1920x1080을 16:9 고정 비율로 담는다. 창의 종횡비가 달라도 Letterbox가 비율을 지키고
+        // 남는 부분은 비운다.
         const meno::Camera2D minimap{.center = {0.f, 0.f},
                                      .size = {1920.f, 1080.f},
                                      .viewport = {0.70f, 0.03f, 0.27f, 0.27f},
@@ -166,22 +166,22 @@ int main() {
 
         if (font) {
             const meno::TextParams title{.characterSize = 20,
-                                          .color = meno::colors::White,
-                                          .outlineThickness = 2.f,
-                                          .outlineColor = meno::colors::Black};
+                                         .color = meno::colors::White,
+                                         .outlineThickness = 2.f,
+                                         .outlineColor = meno::colors::Black};
             renderer.drawText(*font, "meno 2D 렌더 API", {16.f, 12.f}, title);
 
-            // measureTextBounds()로 글자가 실제 차지하는 영역을 계산하여, 화면 오른쪽 아래에 붙인다. (우하단 정렬)
-            // 글자 잉크의 우하단이 화면 우하단으로부터 16픽셀 안쪽으로 떨어지도록 위치를 계산한다.
-            // {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는 아래쪽이 몇 픽셀 어긋난다.
-            const meno::TextParams hint{.characterSize = 14,
-                                         .color = meno::colors::Gray};
+            // measureTextBounds()로 글자가 실제 차지하는 영역을 계산하여, 화면 오른쪽 아래에
+            // 붙인다. (우하단 정렬) 글자 잉크의 우하단이 화면 우하단으로부터 16픽셀 안쪽으로
+            // 떨어지도록 위치를 계산한다. {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는
+            // 아래쪽이 몇 픽셀 어긋난다.
+            const meno::TextParams hint{.characterSize = 14, .color = meno::colors::Gray};
             const char* hintText = "카메라가 자동으로 줌·회전합니다. 창 크기를 바꿔 보세요";
             const meno::Rectf hintBounds = renderer.measureTextBounds(*font, hintText, hint);
             const auto screen = static_cast<meno::Vec2f>(renderer.framebufferSize());
             const meno::Vec2f inkBottomRight{hintBounds.right(), hintBounds.bottom()};
-            renderer.drawText(*font, hintText,
-                              screen - meno::Vec2f{16.f, 16.f} - inkBottomRight, hint);
+            renderer.drawText(*font, hintText, screen - meno::Vec2f{16.f, 16.f} - inkBottomRight,
+                              hint);
         }
 
         renderer.endFrame();

@@ -13,7 +13,7 @@
 
 // SFML 입력 타입을 meno 입력 타입으로 변환하는 내부 전용 헤더.
 
-// Convert.hpp과 역할이 같으나, SFML/Window 헤더를 끌고 오므로 따로 두었다.
+// MathConvert.h와 역할이 같으나, SFML/Window 헤더를 끌고 오므로 따로 두었다.
 // 렌더러와 같이, 입력과 관련 없는 구현부가 위 헤더를 포함하지 않게 하기 위해서 취한 조치이다.
 namespace meno::backend {
 
@@ -27,6 +27,5 @@ namespace meno::backend {
 [[nodiscard]] std::optional<Event> fromSf(const sf::Event& event) noexcept;
 
 } // namespace meno::backend
-
 
 #endif // MENO_INPUT_CONVERT_HPP

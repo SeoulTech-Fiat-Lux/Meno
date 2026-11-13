@@ -1,81 +1,113 @@
-#include <meno/scene/Scene.hpp>
 #include <meno/scene/GameObject.hpp>
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/Scene.hpp>
+#include <algorithm>
 #include <exception>
 
 namespace meno {
 
-[[nodiscard]]
-GameObject* Scene::getGameObject(GameObject::GameObjectID id) noexcept {
-    auto it = objects_.find(id);
+GameObject& Scene::createGameObject() {
+    const GameObject::GameObjectID id = nextId_++;
 
-    if (it != objects_.end()) return it->second.get();
-    const auto pending = pending_objects_.find(id);
-    return pending == pending_objects_.end() ? nullptr : pending->second.get();
+    std::unique_ptr<GameObject> object{new GameObject(id)};
+
+    GameObject& ref = *object;
+    if (updating_) {
+        pendingObjects_.emplace(id, std::move(object));
+    } else {
+        objects_.emplace(id, std::move(object));
+        drawOrderDirty_ = true;
+    }
+
+    return ref;
 }
 
-[[nodiscard]]
+void Scene::drawScene(Renderer& renderer) const {
+    if (drawOrderDirty_) {
+        drawOrder_.clear();
+        drawOrder_.reserve(objects_.size());
+        for (const auto& [id, object] : objects_)
+            drawOrder_.push_back(object.get());
+
+        std::ranges::sort(drawOrder_, [](const GameObject* a, const GameObject* b) {
+            if (a->layer() != b->layer())
+                return a->layer() < b->layer();
+            return a->id() < b->id();
+        });
+        drawOrderDirty_ = false;
+    }
+
+    for (const auto* object : drawOrder_)
+        object->draw(renderer);
+}
+
+GameObject* Scene::getGameObject(GameObject::GameObjectID id) noexcept {
+    return const_cast<GameObject*>(std::as_const(*this).getGameObject(id));
+}
+
 const GameObject* Scene::getGameObject(GameObject::GameObjectID id) const noexcept {
     auto it = objects_.find(id);
 
-    if (it != objects_.end()) return it->second.get();
-    const auto pending = pending_objects_.find(id);
-    return pending == pending_objects_.end() ? nullptr : pending->second.get();
+    if (it != objects_.end())
+        return it->second.get();
+    const auto pending = pendingObjects_.find(id);
+    return pending == pendingObjects_.end() ? nullptr : pending->second.get();
 }
 
-[[nodiscard]]
 bool Scene::deleteGameObject(GameObject::GameObjectID id) noexcept {
     auto* object = getGameObject(id);
-    if (!object || object->pending_delete_) return false;
+    if (!object || object->pendingDelete_)
+        return false;
     if (updating_) {
-        object->pending_delete_ = true;
-        pending_deletions_ = true;
+        object->pendingDelete_ = true;
+        pendingDeletions_ = true;
         return true;
     }
     // 객체를 파괴하기 전에 캐시의 포인터를 제거한다.
-    draw_order_.clear();
-    draw_order_dirty_ = true;
+    drawOrder_.clear();
+    drawOrderDirty_ = true;
     objects_.erase(id);
     return true;
 }
 
 void Scene::applyObjectChanges() {
-    if (!pending_deletions_ && pending_objects_.empty()) return;
-    draw_order_.clear();
-    draw_order_dirty_ = true;
-    if (pending_deletions_) {
-        const auto deleted = [](const auto& entry) {
-            return entry.second->pending_delete_;
-        };
+    if (!pendingDeletions_ && pendingObjects_.empty())
+        return;
+    drawOrder_.clear();
+    drawOrderDirty_ = true;
+    if (pendingDeletions_) {
+        const auto deleted = [](const auto& entry) { return entry.second->pendingDelete_; };
         std::erase_if(objects_, deleted);
-        std::erase_if(pending_objects_, deleted);
-        pending_deletions_ = false;
+        std::erase_if(pendingObjects_, deleted);
+        pendingDeletions_ = false;
     }
-    objects_.merge(pending_objects_);
+    objects_.merge(pendingObjects_);
 }
 
 void Scene::onUpdate(double dt) {
     updating_ = true;
     std::exception_ptr error;
     try {
-        if (update_handler_) update_handler_(dt);
+        if (updateHandler_)
+            updateHandler_(dt);
     } catch (...) {
         error = std::current_exception();
     }
     updating_ = false;
     // 씬 전환/exit보다 먼저 반영하며, 콜백 예외 시에도 예약을 남기지 않는다.
     applyObjectChanges();
-    if (error) std::rethrow_exception(error);
+    if (error)
+        std::rethrow_exception(error);
 }
 
 bool Scene::setLayer(GameObject::GameObjectID id, int layer) noexcept {
     auto* object = getGameObject(id);
-    if (!object) return false;
+    if (!object)
+        return false;
     if (object->layer_ != layer) {
         object->layer_ = layer;
-        draw_order_dirty_ = true;
+        drawOrderDirty_ = true;
     }
     return true;
 }
 
-}
+} // namespace meno

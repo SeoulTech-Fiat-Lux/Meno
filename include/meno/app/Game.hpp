@@ -2,12 +2,12 @@
 #define MENO_GAME_HPP
 
 #include <meno/core/Application.hpp>
-#include <meno/core/SceneManager.hpp>
-#include <meno/core/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Vec2.hpp>
 #include <meno/resources/ResourceManager.hpp>
+#include <meno/scene/SceneManager.hpp>
+#include <meno/window/Window.hpp>
 
 #include <string>
 
@@ -25,10 +25,10 @@ struct GameConfig {
 ///
 /// 파생 클래스는 보통 onStart()에서 장면만 구성한다. 이벤트 처리, fixed update,
 /// 장면 렌더링과 정상 종료 정리는 Game이 담당하며 재정의할 수 없다.
-/// SceneManager가 전역 싱글턴이므로 동시에 존재할 수 있는 Game은 하나뿐이다.
+/// 각 Game은 독립적인 SceneManager를 직접 소유한다.
 class Game : public Application {
 public:
-    explicit Game(GameConfig config = {});
+    explicit Game(const GameConfig& config = {});
     ~Game() noexcept override;
 
     Game(const Game&) = delete;
@@ -59,14 +59,15 @@ private:
     void render(double interpolationAlpha) final;
     void onStop() final;
 
-    // 선언의 역순으로 resources -> renderer -> window가 소멸한다.
-    // SceneManager의 장면은 소멸자 본문에서 이 멤버들보다 먼저 정리한다.
+    /// 장면은 ~Game 본문에서 먼저 정리한다. 이후 resources -> renderer -> window
+    /// 순서로 소멸하므로 컴포넌트 소멸 중에도 이 의존성들을 사용할 수 있다.
     Window window_;
     Renderer renderer_;
     ResourceManager resources_;
-    SceneManager& scenes_;
     Color clearColor_;
     bool runInvocationActive_ = false;
+    /// 멤버 소멸 순서에서도 가장 먼저 정리되도록 마지막에 선언한다.
+    SceneManager scenes_;
 };
 
 } // namespace meno

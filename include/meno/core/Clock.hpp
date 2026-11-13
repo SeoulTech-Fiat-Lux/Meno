@@ -34,4 +34,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_CLOCK_HPP
+#endif // MENO_CLOCK_HPP

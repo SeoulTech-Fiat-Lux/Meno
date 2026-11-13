@@ -1,11 +1,9 @@
 #include <meno/graphics/Texture.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include <SFML/Graphics/Image.hpp>
-
-#include <utility>
 
 namespace meno {
 
@@ -63,9 +61,7 @@ void Texture::setSmooth(bool smooth) {
     impl_->texture.setSmooth(smooth);
 }
 
-bool Texture::isSmooth() const {
-    return impl_ != nullptr && impl_->texture.isSmooth();
-}
+bool Texture::isSmooth() const { return impl_ != nullptr && impl_->texture.isSmooth(); }
 
 namespace backend {
 

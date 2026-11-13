@@ -1,5 +1,5 @@
-#include <meno/scene/Audio.hpp>
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/AudioSource.hpp>
+#include <meno/scene/SceneManager.hpp>
 
 #include "check.hpp"
 
@@ -10,11 +10,16 @@
 // 이 타깃은 실제 Sound.cpp 대신 아래 테스트 대역을 링크한다.
 // 장치 없이 컴포넌트의 소유권/호출 전달/실패 처리를 검사한다.
 // 실제 오디오 구현의 링크는 별도 audio 테스트가 담당한다.
+// Scene 구현을 장치 없이 링크하기 위한 그리기 대역.
+namespace meno {
+void Sprite::draw(Renderer&) const {}
+} // namespace meno
+
 namespace {
 int liveSounds = 0;
 int playingSounds = 0;
 float appliedVolume = 1.0F;
-}
+} // namespace
 
 namespace meno {
 struct Sound::Impl {
@@ -23,7 +28,8 @@ struct Sound::Impl {
     Impl() { ++liveSounds; }
     ~Impl() {
         --liveSounds;
-        if (playing) --playingSounds;
+        if (playing)
+            --playingSounds;
     }
 };
 Sound::Sound() : impl_(std::make_unique<Impl>()) {}
@@ -31,7 +37,8 @@ Sound::~Sound() = default;
 Sound::Sound(Sound&&) noexcept = default;
 Sound& Sound::operator=(Sound&&) noexcept = default;
 std::optional<Sound> Sound::loadFromFile(const std::filesystem::path& path) {
-    if (path == "missing.wav") return std::nullopt;
+    if (path == "missing.wav")
+        return std::nullopt;
     return Sound{};
 }
 void Sound::play() {
@@ -48,24 +55,25 @@ void Sound::stop() {
     }
 }
 void Sound::setVolume(float volume) {
-    if (impl_) appliedVolume = impl_->volume = volume;
+    if (impl_)
+        appliedVolume = impl_->volume = volume;
 }
 float Sound::volume() const { return impl_ ? impl_->volume : 0.0F; }
 bool Sound::isPlaying() const { return impl_ && impl_->playing; }
 } // namespace meno
 
-static_assert(std::is_base_of_v<meno::Component, meno::Audio>);
-static_assert(!std::is_copy_constructible_v<meno::Audio>);
-static_assert(!std::is_move_constructible_v<meno::Audio>);
+static_assert(std::is_base_of_v<meno::Component, meno::AudioSource>);
+static_assert(!std::is_copy_constructible_v<meno::AudioSource>);
+static_assert(!std::is_move_constructible_v<meno::AudioSource>);
 
 int main() {
-    auto& manager = meno::SceneManager::instance();
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     auto& object = scene.createGameObject();
     const auto id = object.id();
-    auto& audio = object.addComponent<meno::Audio>();
-    MENO_CHECK(object.getComponent<meno::Audio>() == &audio);
-    MENO_CHECK(audio.parent == &object);
+    auto& audio = object.addComponent<meno::AudioSource>();
+    MENO_CHECK(object.getComponent<meno::AudioSource>() == &audio);
+    MENO_CHECK(audio.parent() == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(!audio.hasSound());
     MENO_CHECK(!audio.isPlaying());
@@ -85,6 +93,16 @@ int main() {
 
     MENO_CHECK(audio.loadFromFile("first.wav"));
     MENO_CHECK(audio.hasSound());
+    MENO_CHECK(appliedVolume == 0.25F);
+    audio.setVolume(std::numeric_limits<float>::infinity());
+    MENO_CHECK(audio.volume() == 1.0F);
+    MENO_CHECK(appliedVolume == 1.0F);
+    audio.setVolume(-std::numeric_limits<float>::infinity());
+    MENO_CHECK(audio.volume() == 0.0F);
+    MENO_CHECK(appliedVolume == 0.0F);
+    audio.setVolume(0.25F);
+    audio.setVolume(std::numeric_limits<float>::quiet_NaN());
+    MENO_CHECK(audio.volume() == 0.25F);
     MENO_CHECK(appliedVolume == 0.25F);
     MENO_CHECK(!audio.isPlaying());
     audio.play();
@@ -120,8 +138,8 @@ int main() {
     MENO_CHECK(!audio.isPlaying());
     MENO_CHECK(appliedVolume == 0.5F);
     audio.play();
-    auto& replacement = object.addComponent<meno::Audio>();
-    MENO_CHECK(replacement.parent == &object);
+    auto& replacement = object.addComponent<meno::AudioSource>();
+    MENO_CHECK(replacement.parent() == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(playingSounds == 0);
     MENO_CHECK(replacement.loadFromFile("third.wav"));
@@ -131,7 +149,7 @@ int main() {
     MENO_CHECK(playingSounds == 0);
 
     {
-        meno::Audio owned{meno::Sound{}};
+        meno::AudioSource owned{meno::Sound{}};
         owned.play();
         MENO_CHECK(playingSounds == 1);
     }

@@ -27,7 +27,16 @@ int main() {
 
 요구 사항: **CMake 3.28+**, **C++20 컴파일러** (MSVC 2022 / GCC 13+ / Clang 16+)
 
-SFML은 CMake가 자동으로 받아온다. 별도 설치가 필요 없다.
+SFML은 CMake가 자동으로 받아온다. Windows는 별도 설치가 필요 없다.
+Linux는 SFML이 쓰는 시스템 개발 패키지를 먼저 설치한다(Ubuntu 기준, CI와 같은 목록).
+
+```bash
+sudo apt-get install -y \
+  libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
+  libfreetype-dev libgl1-mesa-dev libegl1-mesa-dev \
+  libflac-dev libvorbis-dev libogg-dev \
+  libharfbuzz-dev
+```
 
 ```bash
 cmake -S . -B build
@@ -50,13 +59,37 @@ cmake --build build
 
 씬 전환 예제: `./build/examples/meno_example_scene_transition`
 — 파란 씬과 주황 씬이 3초마다 전환된다.
-콜백 흐름과 빌드 방법은 [씬 전환 예제 안내](examples/scene_transition/README.md)를 참고한다.
+씬 전환 콜백의 흐름은 [예제 코드](examples/scene_transition/main.cpp)에서 확인할 수 있다.
 
 테스트:
 
 ```bash
 ctest --test-dir build --output-on-failure
 ```
+
+## 내 프로젝트에 넣기
+
+CMake의 FetchContent로 가져온다. SFML도 함께 받아 링크하므로 따로 연결하지 않는다.
+
+```cmake
+cmake_minimum_required(VERSION 3.28)
+project(my_game LANGUAGES CXX)
+
+include(FetchContent)
+FetchContent_Declare(
+    meno
+    GIT_REPOSITORY https://github.com/SeoulTech-Fiat-Lux/Meno.git
+    GIT_TAG        v0.1.0
+)
+FetchContent_MakeAvailable(meno)
+
+add_executable(my_game main.cpp)
+target_link_libraries(my_game PRIVATE meno::meno)
+```
+
+- 저장소를 프로젝트 안에 받아 두었다면 FetchContent 대신 `add_subdirectory(<meno 경로>)`를 쓴다.
+- 이렇게 가져가면 meno의 테스트와 예제는 기본으로 꺼진다.
+- meno는 사용자 프로젝트의 `CMAKE_BUILD_TYPE`과 `BUILD_SHARED_LIBS`를 바꾸지 않는다.
 
 ## 고정 timestep 게임 루프
 
@@ -117,7 +150,7 @@ struct GameState {
     int score = 0;
 };
 
-auto& scenes = meno::SceneManager::instance();
+meno::SceneManager scenes;
 auto& scene = scenes.createScene();
 scene.setState(std::make_unique<GameState>());
 
@@ -130,8 +163,7 @@ const meno::Scene& view = scene;
 const GameState* state = view.getState<GameState>();
 ```
 
-- `getState<T>()`의 `T`는 등록할 때 사용한 타입과 같아야 한다. 런타임 타입 검사는
-  하지 않으며, 잘못된 타입으로 객체에 접근하면 정의되지 않은 동작이 발생할 수 있다.
+- `getState<T>()`는 등록된 타입을 런타임에 검사하며, 타입이 다르면 `nullptr`을 반환한다.
 - 상태가 없으면 `nullptr`을 반환한다. `const Scene`에서는 `const T*`를 반환한다.
 - 반환 포인터는 빌린 포인터다. 호출자가 `delete`하거나 다른 소유 포인터로 감싸면 안 된다.
   상태는 Scene이 소멸할 때 함께 파괴되므로, Scene 삭제 또는 `SceneManager::shutdown()`으로
@@ -150,7 +182,7 @@ renderer.beginFrame(meno::Color::fromRgb(0x14181F)); // 배경색으로 지운�
 
 renderer.drawRect({{40.f, 40.f}, {120.f, 16.f}}, {.fill = meno::colors::White});
 renderer.drawCircle(ball.position, 8.f, {.fill = meno::Color::fromRgb(0xE5533D)});
-renderer.drawLine(from, to, meno::Color::fromRgb(0x4FC3F7), 2.f); // 두께 2px
+renderer.drawLine(from, to, {.color = meno::Color::fromRgb(0x4FC3F7), .thickness = 2.f}); // 두께 2px
 
 // 다각형. 점은 position 기준 로컬 좌표이고, rotation은 position을 축으로 돈다.
 renderer.drawPolygon(ship.position, {{14.f, 0.f}, {-10.f, -8.f}, {-10.f, 8.f}},
@@ -307,20 +339,24 @@ second.play(); // 같은 샘플 데이터를 공유하며 독립적으로 재생
 ```
 include/meno/     공개 헤더 — 여기에 SFML은 등장하지 않는다
   Meno.hpp          통합 헤더
-  core/             Window, Application, Game, Clock, Time
-  math/             Vec2, Rect, Color, Camera2D
-  graphics/         Renderer, Texture, Font, DrawParams
-  resources/        ResourceManager
-  audio/            SoundBuffer, Sound, Music
+  math/             Vec2, Rect, Color, Angle, Camera2D
+  core/             Application, Clock, Time
   input/            Input, Key, MouseButton, Event
-  scene/            Scene, GameObject, Component와 파생 Components
-src/meno/         구현 — 사용자에게 배포되지 않는다
-  sfml_backend/     SFML을 include하는 유일한 곳
+  window/           Window
+  graphics/         Renderer, Texture, Font, DrawParams
+  audio/            SoundBuffer, Sound, Music
+  resources/        ResourceManager
+  scene/            Scene, SceneManager, GameObject, Component와 Transform·Sprite·Collider·AudioSource
+  app/              Game
+src/meno/         구현 — 사용자에게 배포되지 않는다. SFML은 여기서만 include한다
+  sfml_backend/     SFML과 meno 타입 사이의 변환, 내부 접근 통로
 examples/         데모 게임
-tests/            테스트
+tests/            테스트 (consumer/는 하위 프로젝트 빌드 검사)
 tools/            check_headers.py — 공개 헤더 SFML 유출 검사
 docs/             설계 문서
 ```
+
+각 모듈은 위 목록에서 자기보다 위에 있는 모듈만 참조한다. 모듈 사이에 순환 의존이 없다.
 
 `include/`와 `src/`가 나뉜 게 핵심이다. CMake에서 `include/`는 `PUBLIC`,
 `src/`는 `PRIVATE`으로 지정해 **SFML이 사용자 빌드로 새지 않게** 한다.
@@ -338,23 +374,31 @@ python tools/check_headers.py
 |---|---|
 | [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 색·도형 규칙, 담당자 간 계약, SFML 3 변경점 |
 | [docs/game-api.md](docs/game-api.md) | Game 통합 루프, 접근자, 종료 순서와 예제 변경량 |
-| [docs/render-api.md](docs/render-api.md) | 2D 렌더 API 설계 근거, 담당자 간 계약, SFML 3 변경점 |
 | [docs/input-api.md](docs/input-api.md) | 입력 API 구조, "이번 틱" 판정 규칙, 액션 매핑 규칙 |
 | [docs/collision-api.md](docs/collision-api.md) | 콜라이더 등록, 객체 간 충돌 검사, 점 포함 검사와 사용 예제 |
-| [docs/cpp-guide.md](docs/cpp-guide.md) | 이 코드로 배우는 현업 C++ — pimpl·RAII·소유권 |
 
 ## 개발
 
-브랜치는 기능 단위로 파고 PR로 병합한다.
+작업은 이슈 단위로 브랜치를 따서 PR로 `main`에 병합한다.
 
-| 브랜치 | 담당 영역 |
-|---|---|
-| `2D_Renderer` | `graphics/`, `math/`, `sfml_backend/` |
-| `GameObject-Demo` | `scene/`, `collision/` |
+- 브랜치: `<유형>/#<이슈 번호>-<설명>` (예: `Bugfix/#26-Project-Compatibility`)
+- 커밋: `<유형>: <설명> #<이슈 번호>` (예: `fix: Ignore non-positive radius #35`)
 
 `math/`는 렌더러와 충돌 판정이 함께 쓰는 공용 타입이라, 변경 시 양쪽 리뷰를 거친다.
 
-코드 스타일은 `.clang-format`이 강제한다. 저장 시 자동 포맷을 켜두면 된다.
+코드 스타일은 `.clang-format`을 따른다. 버전마다 결과가 조금씩 달라지므로 **clang-format 21.1.7**을 쓴다.
+저장 시 자동 포맷을 켜두면 된다.
+
+```bash
+pip install clang-format==21.1.7
+```
+
+저장소 전체를 포맷한 커밋은 `.git-blame-ignore-revs`에 모아 두었다.
+클론한 뒤 한 번 설정하면 `git blame`이 이 커밋들을 건너뛴다.
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
 
 ## 라이선스
 

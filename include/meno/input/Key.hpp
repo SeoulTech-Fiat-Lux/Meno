@@ -6,11 +6,9 @@
 
 namespace meno {
 
-// 키캡에 적힌 글자 즉, 자판 배열을 따르는 키보드 키.
-// ex. AZERTY 자판에서 Key::A는 QWERTY 자판에서 Key::Q에 해당한다.
+/// 키캡에 적힌 글자 즉, 자판 배열을 따르는 키보드 키.
+/// ex. AZERTY 자판에서 Key::A는 QWERTY 자판에서 Key::Q에 해당한다.
 
-// Unknown 다음의 순서는 SFML 3.1의 sf::Keyboard::Key 열거형과 순서를 같게 두었다.
-// 변환 과정에서 이름으로 짝지으므로 동작 순서에 구애받지 않으며, 대조하여 읽기도 쉽기 때문이다.
 enum class Key : std::uint8_t {
     Unknown,
     // clang-format off
@@ -34,7 +32,7 @@ enum class Key : std::uint8_t {
     // clang-format on
 };
 
-// Unknown을 포함한 Key 열거형의 값 개수. 키별 상태 배열을 만들 때 그 크기로 활용한다.
+/// Unknown을 포함한 Key 열거형의 값 개수. 키별 상태 배열을 만들 때 그 크기로 활용한다.
 inline constexpr std::size_t keyCount = static_cast<std::size_t>(Key::Pause) + 1;
 
 } // namespace meno

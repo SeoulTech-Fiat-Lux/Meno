@@ -14,10 +14,10 @@
 
 // 폰트는 흔한 시스템 경로에서 찾는다. 없으면 MENO_TEST_FONT로 경로를 지정한다.
 
-#include <meno/core/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/window/Window.hpp>
 
 #include "check.hpp"
 #include "display.hpp"
@@ -27,7 +27,6 @@
 #include <cstdio>
 #include <filesystem>
 #include <optional>
-#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -37,7 +36,8 @@ using namespace meno;
 // --- 컴파일 타임 검사 -------------------------------------------------------
 
 // Renderer는 Window를 빌려 쓰는 타입이므로 복사와 이동을 막는다.
-// 이동다한 Renderer(impl_ == nullptr)가 생길 수 없어야, 맴버 함수들이 검사 없이 역참조해도 안전하다.
+// 이동다한 Renderer(impl_ == nullptr)가 생길 수 없어야, 맴버 함수들이 검사 없이 역참조해도
+// 안전하다.
 static_assert(!std::is_copy_constructible_v<Renderer>);
 static_assert(!std::is_copy_assignable_v<Renderer>);
 static_assert(!std::is_move_constructible_v<Renderer>);
@@ -51,6 +51,11 @@ static_assert(std::is_nothrow_move_assignable_v<Texture>);
 static_assert(!std::is_copy_constructible_v<Font>);
 static_assert(std::is_nothrow_move_constructible_v<Font>);
 static_assert(std::is_nothrow_move_assignable_v<Font>);
+
+// LineParams의 기본값과 필드 순서. 지정 초기화가 컴파일되지 않으면 순서가 바뀐 것이다.
+static_assert(LineParams{}.thickness == 1.f);
+static_assert(LineParams{}.color == colors::White);
+static_assert(LineParams{.color = colors::Red, .thickness = 2.f}.thickness == 2.f);
 
 // --- 런타임 검사 ------------------------------------------------------------
 
@@ -72,10 +77,10 @@ bool containsInclusive(const Rectf& rect, Vec2f point, float tolerance = 0.5f) {
 
 std::optional<Font> loadTestFont() {
     const std::array<std::string_view, 5> candidates{
-        env("MENO_TEST_FONT"),  // 환경 변수로 지정한 폰트
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",   // Ubuntu (fonts-dejavu-core)
+        env("MENO_TEST_FONT"),                             // 환경 변수로 지정한 폰트
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", // Ubuntu (fonts-dejavu-core)
         "C:/Windows/Fonts/arial.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",  // macOS
+        "/System/Library/Fonts/Supplemental/Arial.ttf", // macOS
         "/Library/Fonts/Arial.ttf",
     };
 
@@ -94,25 +99,9 @@ std::optional<Font> loadTestFont() {
 // --- 이동당한 객체 -----------------------------------------------------------
 
 void checkMovedFrom(Renderer& renderer) {
-    // 이동당한 Window로는 Renderer를 만들 수 없다. 받아 두면 첫 draw에서 널 역참조가 난다.
-    Window source{{64u, 64u}, "moved-from"};
-    const Window owner = std::move(source);
-
-    bool threw = false;
-    try {
-        const Renderer invalid{source};
-    } catch (const std::invalid_argument&) {
-        threw = true;
-    }
-    check(threw, "이동당한 Window로 Renderer를 만들면 std::invalid_argument");
-
-    // 이동당한 Window 자체도 크래시 없이 닫힌 창처럼 행동한다.
-    check(!source.isOpen() && source.size() == Vec2u{0u, 0u}, "이동당한 Window는 닫힌 창처럼 보인다");
-    source.pollEvents();
-    source.close();
-
-    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다(docs/render-api.md §4).
-    // 수정 전에는 size()에서 널 역참조로 죽었다. 예제가 checker.size()를 부르므로 실제 경로다.
+    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다.
+    // 예제가 checker.size()를 부르는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이 {0, 0}이어야
+    // 한다.
     Texture texture;
     Texture keepTexture = std::move(texture);
     check(texture.size() == Vec2u{0u, 0u}, "이동당한 Texture의 size()는 {0,0}");
@@ -152,11 +141,13 @@ void checkText(const Renderer& renderer, const Font& font) {
     check(a.size.x > 0.f && a.size.y > 0.f, "글자가 있으면 크기가 0보다 크다");
 
     // SFML은 외곽선 t가 있으면 바운드를 축마다 ceil(t)씩 양쪽으로 넓힌다.
-    // 수정 전에는 측정용 sf::Text에 외곽선이 빠져 있어서 b == a였다.
+    // 측정용 sf::Text에도 외곽선이 들어가야 잰 크기와 그린 크기가 같다.
     check(near(b.size, a.size + Vec2f{4.f, 4.f}), "외곽선 2를 주면 잰 크기가 축마다 4 커진다");
-    check(near(b.position, a.position - Vec2f{2.f, 2.f}), "외곽선 2를 주면 바운드 원점이 2씩 당겨진다");
+    check(near(b.position, a.position - Vec2f{2.f, 2.f}),
+          "외곽선 2를 주면 바운드 원점이 2씩 당겨진다");
 
-    check(renderer.measureText(font, text, outlined) == b.size, "measureText == measureTextBounds().size");
+    check(renderer.measureText(font, text, outlined) == b.size,
+          "measureText == measureTextBounds().size");
 
     // 바운드 원점은 {0,0}이 아니다(글자 위 여백). measureText만으로 정렬하면 이만큼 틀어진다.
     check(a.position.y > 0.f, "바운드 원점에 윗여백이 있다 (measureTextBounds가 필요한 이유)");
@@ -166,7 +157,8 @@ void checkText(const Renderer& renderer, const Font& font) {
     transformed.origin = {50.f, 10.f};
     transformed.rotation = 30.f;
     const Rectf c = renderer.measureTextBounds(font, text, transformed);
-    check(c.position == b.position && c.size == b.size, "origin/rotation은 측정 결과에 영향을 주지 않는다");
+    check(c.position == b.position && c.size == b.size,
+          "origin/rotation은 측정 결과에 영향을 주지 않는다");
 
     check(renderer.measureText(font, "", plain) == Vec2f{0.f, 0.f}, "빈 문자열의 크기는 {0,0}");
 }
@@ -188,20 +180,23 @@ void checkCamera(Renderer& renderer) {
     check(near(quarter.size, Vec2f{screen.y, screen.x}, 0.01f), "90도 회전: 폭과 높이가 바뀐다");
 
     // 45도: 화면 네 모서리에 비치는 월드 좌표가 모두 영역 안에 있어야 한다.
-    // 수정 전에는 회전을 무시한 사각형이 나와 모서리가 영역 밖으로 빠졌다
-    // (= 그 결과로 컬링하면 화면 모서리에 보이는 오브젝트가 사라진다).
+    // 회전을 무시한 사각형을 돌려주면 모서리가 영역 밖으로 빠지고,
+    // 그 결과로 컬링하면 화면 모서리에 보이는 오브젝트가 사라진다.
     renderer.setCamera({.rotation = 45.f});
     const Rectf tilted = renderer.visibleWorldBounds();
     bool allCornersInside = true;
-    for (const Vec2f corner : {Vec2f{0.f, 0.f}, Vec2f{screen.x, 0.f}, Vec2f{0.f, screen.y}, screen}) {
-        allCornersInside = allCornersInside && containsInclusive(tilted, renderer.screenToWorld(corner));
+    for (const Vec2f corner :
+         {Vec2f{0.f, 0.f}, Vec2f{screen.x, 0.f}, Vec2f{0.f, screen.y}, screen}) {
+        allCornersInside =
+            allCornersInside && containsInclusive(tilted, renderer.screenToWorld(corner));
     }
-    check(allCornersInside, "45도 회전: 화면 모서리의 월드 좌표가 모두 visibleWorldBounds 안에 있다");
+    check(allCornersInside,
+          "45도 회전: 화면 모서리의 월드 좌표가 모두 visibleWorldBounds 안에 있다");
 
     renderer.resetCamera();
 }
 
-}   // namespace
+} // namespace
 
 int main() {
     if (meno::test::skipWithoutDisplay()) {

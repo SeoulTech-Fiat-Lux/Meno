@@ -1,12 +1,15 @@
+#include <meno/scene/Collider.hpp>
 #include <meno/scene/Component.hpp>
-#include <meno/scene/Sprite.hpp>
 #include <meno/scene/GameObject.hpp>
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/SceneManager.hpp>
+#include <meno/scene/Sprite.hpp>
+#include <meno/scene/Transform.hpp>
 
 #include "check.hpp"
 
-#include <type_traits>
 #include <cmath>
+#include <numbers>
+#include <type_traits>
 
 namespace {
 
@@ -23,15 +26,31 @@ struct Name final : meno::Component {
 };
 
 template <typename T>
-concept CanAddComponent = requires(meno::GameObject& object) {
-    object.template addComponent<T>();
-};
+concept CanAddComponent = requires(meno::GameObject& object) { object.template addComponent<T>(); };
+
+template <typename Object, typename T>
+concept CanGetComponent = requires(Object& object) { object.template getComponent<T>(); };
+
+template <typename T>
+void checkComponentCopy(meno::GameObject& source, meno::GameObject& target, T& original, T& owned) {
+    T copied(original);
+    MENO_CHECK(copied.parent() == nullptr);
+    T assigned;
+    assigned = original;
+    MENO_CHECK(assigned.parent() == nullptr);
+    owned = original;
+    MENO_CHECK(owned.parent() == &target);
+    MENO_CHECK(original.parent() == &source);
+    auto& self = owned;
+    owned = self;
+    MENO_CHECK(owned.parent() == &target);
+}
 
 } // namespace
 
 int main() {
     meno::Component detached;
-    MENO_CHECK(detached.parent == nullptr);
+    MENO_CHECK(detached.parent() == nullptr);
 
     static_assert(!std::is_copy_constructible_v<meno::GameObject>);
     static_assert(!std::is_copy_assignable_v<meno::GameObject>);
@@ -40,36 +59,32 @@ int main() {
     static_assert(!CanAddComponent<meno::Transform>);
     static_assert(!CanAddComponent<meno::Sprite>);
 
-    auto& manager = meno::SceneManager::instance();
+    static_assert(!std::is_move_constructible_v<meno::GameObject>);
+    static_assert(!std::is_move_assignable_v<meno::GameObject>);
+    static_assert(CanGetComponent<meno::GameObject, Health>);
+    static_assert(CanGetComponent<const meno::GameObject, Health>);
+    static_assert(!CanGetComponent<meno::GameObject, meno::Transform>);
+    static_assert(!CanGetComponent<const meno::GameObject, meno::Transform>);
+    static_assert(!CanGetComponent<meno::GameObject, meno::Sprite>);
+    static_assert(!CanGetComponent<const meno::GameObject, meno::Sprite>);
+    static_assert(
+        std::is_same_v<decltype(std::declval<const meno::GameObject&>().getComponent<Health>()),
+                       const Health*>);
+
+    meno::SceneManager manager;
     auto& scene = manager.createScene();
     meno::GameObject& object = scene.createGameObject();
-    MENO_CHECK(object.transform().parent == &object);
-    meno::Sprite sprite(&object);
-    MENO_CHECK(sprite.parent == &object);
-    MENO_CHECK(object.sprite().parent == &object);
+    MENO_CHECK(object.transform().parent() == &object);
+    MENO_CHECK(object.sprite().parent() == &object);
     MENO_CHECK(!object.sprite().texture());
-    meno::Sprite detachedSprite(nullptr);
+    meno::Sprite detachedSprite;
     MENO_CHECK(detachedSprite.drawParams().position == meno::Vec2f{0.f, 0.f});
     MENO_CHECK(detachedSprite.drawParams().scale == meno::Vec2f{1.f, 1.f});
 
     MENO_CHECK(object.id() == 1);
-    MENO_CHECK(object.transform().pos == meno::Vec2f{0.f, 0.f});
-    MENO_CHECK(object.transform().magnitude == 1);
-    MENO_CHECK(object.transform().rotation == 0);
-    MENO_CHECK(object.transform().width == 0);
-    MENO_CHECK(object.transform().height == 0);
-
-    object.transform().pos = meno::Vec2f{12.f, 34.f};
-    object.transform().magnitude = 2;
-    object.transform().rotation = 90;
-    object.transform().width = 64;
-    object.transform().height = 32;
-
-    MENO_CHECK(object.transform().pos == meno::Vec2f{12.f, 34.f});
-    MENO_CHECK(object.transform().magnitude == 2);
-    MENO_CHECK(object.transform().rotation == 90);
-    MENO_CHECK(object.transform().width == 64);
-    MENO_CHECK(object.transform().height == 32);
+    object.transform().position = {12.f, 34.f};
+    object.transform().scale = 2.f;
+    object.transform().rotation = 90.f;
 
     object.sprite().origin = {8.f, 16.f};
     object.sprite().tint = meno::colors::Red;
@@ -88,35 +103,35 @@ int main() {
     MENO_CHECK(params.flipX && params.flipY);
 
     // 변환을 캐싱하지 않아 다음 프레임에 변경된 위치가 반영되어야 한다.
-    object.transform().pos = {56.f, 78.f};
+    object.transform().position = {56.f, 78.f};
     MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{56.f, 78.f});
 
     // offset은 부모 기준 위치이고 origin/flip은 그 위치를 바꾸지 않는다.
-    object.transform().pos = {100.f, 100.f};
+    object.transform().position = {100.f, 100.f};
     object.transform().rotation = 0;
-    object.transform().magnitude = 1;
+    object.transform().scale = 1;
     object.sprite().offset = {10.f, 10.f};
     MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{110.f, 110.f});
-    MENO_CHECK(object.transform().pos == meno::Vec2f{100.f, 100.f});
+    MENO_CHECK(object.transform().position == meno::Vec2f{100.f, 100.f});
 
     object.transform().rotation = 90;
-    object.transform().magnitude = 2;
+    object.transform().scale = 2;
     const auto rotated = object.sprite().drawParams();
     MENO_CHECK(std::abs(rotated.position.x - 80.f) < 0.0001f);
     MENO_CHECK(std::abs(rotated.position.y - 120.f) < 0.0001f);
 
-    object.transform().magnitude = 0.25f;
+    object.transform().scale = 0.25f;
     const auto fractional = object.sprite().drawParams();
     MENO_CHECK(std::abs(fractional.position.x - 97.5f) < 0.0001f);
     MENO_CHECK(std::abs(fractional.position.y - 102.5f) < 0.0001f);
     MENO_CHECK(fractional.scale == meno::Vec2f{0.25f, 0.25f});
-    object.transform().magnitude = -0.5f;
+    object.transform().scale = -0.5f;
     const auto mirrored = object.sprite().drawParams();
     MENO_CHECK(std::abs(mirrored.position.x - 105.f) < 0.0001f);
     MENO_CHECK(std::abs(mirrored.position.y - 95.f) < 0.0001f);
     MENO_CHECK(mirrored.scale == meno::Vec2f{-0.5f, -0.5f});
-    object.transform().magnitude = 0.f;
-    MENO_CHECK(object.sprite().drawParams().position == object.transform().pos);
+    object.transform().scale = 0.f;
+    MENO_CHECK(object.sprite().drawParams().position == object.transform().position);
     MENO_CHECK(object.sprite().drawParams().scale == meno::Vec2f{});
 
     static_assert(std::is_same_v<decltype(meno::Transform::rotation), float>);
@@ -126,7 +141,7 @@ int main() {
     MENO_CHECK(std::abs(object.transform().rotation - 90.f) < 0.0001f);
     for (float angle : {361.5f, -361.5f}) {
         object.transform().rotation = angle;
-        const float expected = angle > 0.f ? 1.5f : -1.5f;
+        const float expected = angle > 0.f ? 1.5f : 358.5f;
         MENO_CHECK(std::abs(object.sprite().drawParams().rotation - expected) < 0.0001f);
         const auto direction = object.transform().rotateVector({1.f, 0.f});
         const float radians = expected * std::numbers::pi_v<float> / 180.f;
@@ -140,13 +155,13 @@ int main() {
     MENO_CHECK(object.getComponent<Health>() == nullptr);
 
     Health& health = object.addComponent<Health>(10);
-    MENO_CHECK(health.parent == &object);
+    MENO_CHECK(health.parent() == &object);
     MENO_CHECK(object.getComponent<Health>() == &health);
     MENO_CHECK(object.getComponent<Health>()->value == 10);
     MENO_CHECK(object.getComponent<Name>() == nullptr);
 
     Health& replacedHealth = object.addComponent<Health>(25);
-    MENO_CHECK(replacedHealth.parent == &object);
+    MENO_CHECK(replacedHealth.parent() == &object);
     MENO_CHECK(object.getComponent<Health>() == &replacedHealth);
     MENO_CHECK(object.getComponent<Health>()->value == 25);
 
@@ -160,6 +175,20 @@ int main() {
     MENO_CHECK(&constObject->transform() == &object.transform());
     MENO_CHECK(constObject->getComponent<Health>() != nullptr);
     MENO_CHECK(constObject->getComponent<Health>()->value == 25);
+
+    auto& target = scene.createGameObject();
+    checkComponentCopy(object, target, object.transform(), target.transform());
+    checkComponentCopy(object, target, object.sprite(), target.sprite());
+    auto& sourceBox =
+        object.addComponent<meno::BoxCollider>(meno::Vec2f{1.f, 2.f}, meno::Vec2f{3.f, 4.f});
+    auto& targetBox = target.addComponent<meno::BoxCollider>();
+    checkComponentCopy(object, target, sourceBox, targetBox);
+    MENO_CHECK(targetBox.offset == sourceBox.offset);
+    MENO_CHECK(targetBox.size == sourceBox.size);
+    auto& addedCopy = scene.createGameObject();
+    auto& copiedBox = addedCopy.addComponent<meno::BoxCollider>(sourceBox);
+    MENO_CHECK(copiedBox.parent() == &addedCopy);
+    MENO_CHECK(sourceBox.parent() == &object);
 
     MENO_CHECK(manager.shutdown());
     return meno::test::report();

@@ -5,14 +5,3 @@ meno_add_test(application
         ${PROJECT_SOURCE_DIR}/src/meno/core/Clock.cpp
         ${PROJECT_SOURCE_DIR}/src/meno/core/Time.cpp
 )
-
-# Window/Renderer까지 소유하는 Game의 통합 루프와 종료 순서를 검사한다.
-# 창이 필요하므로 MENO_DISPLAY_TESTS=1일 때만 돈다.
-meno_add_test(game)
-target_link_libraries(meno_test_game PRIVATE meno::meno)
-meno_display_test(game)
-
-meno_add_test(scene_manager
-        ${PROJECT_SOURCE_DIR}/src/meno/core/SceneManager.cpp
-        ${PROJECT_SOURCE_DIR}/src/meno/scene/Scene.cpp
-)

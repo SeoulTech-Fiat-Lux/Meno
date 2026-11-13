@@ -44,7 +44,7 @@ renderer.draw(texture, {.position = {100.f, 50.f},           // 옵션 지정
 renderer.endFrame();
 ```
 
-`SpriteParams` / `ShapeParams` / `TextParams`는 전부 기본값을 가지므로 필요한 필드만 쓴다.
+`SpriteParams` / `ShapeParams` / `LineParams` / `TextParams`는 전부 기본값을 가지므로 필요한 필드만 쓴다.
 
 ### 색상 리터럴
 
@@ -242,26 +242,17 @@ renderer.resetCamera();  // UI
 - **거리 비교·정렬에는 `lengthSquared()`를 쓰자.** `sqrt`를 피하고, 정수 벡터에서 정확하다.
   단 `Vec2i`는 성분이 약 46341을 넘으면 오버플로한다.
 
-### Core(Window/Clock) 담당자에게
-
-`include/meno/core/Window.hpp`와 `src/meno/core/Window.cpp`는 **내가 만든 임시 스텁**이다.
-렌더 API를 지금 컴파일하고 눈으로 확인하려고 최소한만 넣었다. 실제 Window를 만들면
-통째로 교체하면 된다.
+### Window 담당자에게
 
 `Renderer`가 `Window`에게 요구하는 건 두 가지뿐이다:
 
-1. `backend::WindowAccess::native()`로 꺼낼 수 있는 `sf::RenderWindow*`
-2. **매 프레임 SFML 이벤트 큐를 비우는 것** (지금은 `pollEvents()`가 한다)
+1. `backend::WindowAccess::native()`로 꺼낼 수 있는 `sf::RenderWindow&`
+2. **매 프레임 SFML 이벤트 큐를 비우는 것** (`pollEvents()`가 한다)
 
-이 둘만 유지되면 이벤트 큐든 Config 연동이든 자유롭게 설계해도 렌더 쪽은 영향받지 않는다.
-
-`Renderer`는 생성 시점에 위 1번의 `sf::RenderWindow*`를 꺼내 붙잡아 둔다. 그래서 알아둘 점이 둘 있다.
-
-- `native()`가 `nullptr`을 돌려주면(이동당한 Window) `Renderer` 생성자가
-  `std::invalid_argument`를 던진다.
-- Window에 다른 Window를 **이동 대입**하면 기존 렌더 타깃이 파괴되어 붙잡은 포인터가
-  허공을 가리킨다. 창을 다시 만드는 기능(전체 화면 전환 등)을 넣는다면 Renderer도 함께
-  다시 만들거나, Window를 이동 불가로 바꾸는 쪽을 검토해 달라.
+`Renderer`는 생성 시점에 위 1번의 렌더 타깃 주소를 붙잡아 둔다. 그래서 `Window`는 `Renderer`와 같이
+**복사도 이동도 할 수 없다.** 이동을 허용하면, 다른 창을 이동 대입했을 때 붙잡은 주소가 허공을 가리킨다.
+창을 다시 만드는 기능(전체 화면 전환 등)이 필요하면 `Window` 안의 `sf::RenderWindow`를 제자리에서
+다시 만드는(`create()`) 방식으로 넣는다. 주소가 그대로라 `Renderer`를 다시 만들 필요가 없다.
 
 `pollEvents()`는 닫기 버튼을 처리하고, 키보드·마우스 이벤트는 `Window`가 가진 `Input`에 넘긴다.
 입력 쪽 규칙은 [input-api.md](input-api.md)에 있다.

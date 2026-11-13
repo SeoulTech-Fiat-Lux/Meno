@@ -9,7 +9,7 @@
 
 #include <meno/math/Camera2D.hpp>
 
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include "check.hpp"
 
@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <limits>
 
 using namespace meno;
 
@@ -53,8 +54,8 @@ private:
     std::uint32_t state_;
 };
 
-// SFML의 mapCoordsToPixel은 결과를 정수로 자른다(Vector2i). 같은 계산을 자르기 직전까지만 따라 한다.
-// (SFML/Graphics/RenderTarget.cpp의 mapCoordsToPixel과 같은 식)
+// SFML의 mapCoordsToPixel은 결과를 정수로 자른다(Vector2i). 같은 계산을 자르기 직전까지만 따라
+// 한다. (SFML/Graphics/RenderTarget.cpp의 mapCoordsToPixel과 같은 식)
 Vec2f sfmlWorldToScreen(const FakeTarget& target, const sf::View& view, Vec2f world) {
     const sf::Vector2f normalized = view.getTransform().transformPoint(backend::toSf(world));
     const sf::FloatRect viewport{target.getViewport(view)};
@@ -62,9 +63,7 @@ Vec2f sfmlWorldToScreen(const FakeTarget& target, const sf::View& view, Vec2f wo
                  (1.f - normalized.y) / 2.f * viewport.size.y + viewport.position.y};
 }
 
-float distance(Vec2f a, Vec2f b) {
-    return (a - b).length();
-}
+float distance(Vec2f a, Vec2f b) { return (a - b).length(); }
 
 struct Sample {
     Camera2D camera;
@@ -130,7 +129,8 @@ int main() {
         }
 
         // 허용치: 픽셀 단위. float의 상대 오차는 좌표의 크기에 비례하므로, 월드 좌표의 크기와
-        // 월드 1유닛이 차지하는 픽셀 수(배율)를 곱해 둔다. 규칙이 어긋나면 수 픽셀 이상 틀리므로 구분된다.
+        // 월드 1유닛이 차지하는 픽셀 수(배율)를 곱해 둔다. 규칙이 어긋나면 수 픽셀 이상 틀리므로
+        // 구분된다.
         const Vec2f viewSize = viewRect(camera, framebuffer).size;
         const float pixelsPerUnit =
             std::max(pixels.size.x / viewSize.x, pixels.size.y / viewSize.y);
@@ -162,7 +162,8 @@ int main() {
             std::printf("   seed %u: 좌표 변환이 SFML과 어긋난다\n", seed);
         }
 
-        // 3. 가시 영역: NDC 사각형 [-1,1]^2를 SFML의 역변환으로 월드에 옮긴 외접 사각형과 같아야 한다.
+        // 3. 가시 영역: NDC 사각형 [-1,1]^2를 SFML의 역변환으로 월드에 옮긴 외접 사각형과 같아야
+        // 한다.
         const sf::FloatRect sfmlBounds =
             view.getInverseTransform().transformRect({{-1.f, -1.f}, {2.f, 2.f}});
         const Rectf bounds = visibleWorldBounds(camera, framebuffer);
@@ -203,7 +204,8 @@ int main() {
               "3등분 화면: SFML이 실제로 쓰는 뷰포트에도 틈이 없다");
     }
 
-    // 아주 큰 각도. 360으로 접지 않고 넘기면 SFML이 라디안으로 바꾸며 정밀도를 잃어 몇 픽셀씩 어긋난다.
+    // 아주 큰 각도. 360으로 접지 않고 넘기면 SFML이 라디안으로 바꾸며 정밀도를 잃어 몇 픽셀씩
+    // 어긋난다.
     {
         constexpr Vec2u kScreen{1280u, 720u};
         const FakeTarget target{kScreen};
@@ -220,6 +222,15 @@ int main() {
         check(viewport.position == sf::Vector2f{0.f, 0.f} &&
                   viewport.size == sf::Vector2f{1.f, 1.f},
               "창 크기 {0,0}: 뷰포트는 기본값 그대로 (NaN 없음)");
+    }
+
+    // SFML로 넘기는 각도는 toSfAngle 한 곳에서 접는다. 스프라이트와 도형, 텍스트의 회전도 같은
+    // 규칙을 따른다.
+    {
+        check(std::fabs(backend::toSfAngle(361.5f).asDegrees() - 1.5f) < 1e-4f,
+              "toSfAngle은 각도를 [0, 360)으로 접어서 넘긴다");
+        check(backend::toSfAngle(std::numeric_limits<float>::quiet_NaN()).asDegrees() == 0.f,
+              "toSfAngle은 NaN을 0으로 넘긴다");
     }
 
     return meno::test::report();

@@ -1,9 +1,9 @@
 #ifndef MENO_ACCESS_HPP
 #define MENO_ACCESS_HPP
 
-#include <meno/core/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/window/Window.hpp>
 
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -27,9 +27,10 @@ struct FontAccess {
 };
 
 struct WindowAccess {
-    [[nodiscard]] static sf::RenderWindow* native(const Window& window) noexcept;
+    /// Window는 이동할 수 없으므로 항상 유효한 렌더 타깃을 돌려준다.
+    [[nodiscard]] static sf::RenderWindow& native(const Window& window) noexcept;
 };
 
 } // namespace meno::backend
 
-#endif  // MENO_ACCESS_HPP
+#endif // MENO_ACCESS_HPP

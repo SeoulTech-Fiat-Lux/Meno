@@ -1,22 +1,24 @@
-//
-// Created by 최상준 on 26. 9. 7..
-//
-
 #include <meno/scene/Sprite.hpp>
 
-#include <meno/scene/GameObject.hpp>
 #include <meno/graphics/Renderer.hpp>
+#include <meno/graphics/Texture.hpp>
+#include <meno/math/Angle.hpp>
+#include <meno/scene/GameObject.hpp>
 
 namespace meno {
+
+void Sprite::setTexture(Texture&& texture) {
+    texture_ = std::make_shared<Texture>(std::move(texture));
+}
 
 SpriteParams Sprite::drawParams() const {
     SpriteParams params;
     params.position = offset;
-    if (parent != nullptr) {
-        const auto& transform = parent->transform();
+    if (parent() != nullptr) {
+        const auto& transform = parent()->transform();
         params.position = transform.transformPoint(offset);
-        params.rotation = std::fmod(transform.rotation, 360.f);
-        const float scale = transform.magnitude;
+        params.rotation = wrapDegrees(transform.rotation);
+        const float scale = transform.scale;
         params.scale = {scale, scale};
     }
     params.origin = origin;
