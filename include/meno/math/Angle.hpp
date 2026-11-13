@@ -22,8 +22,8 @@ namespace meno {
     if (wrapped < 0.f) {
         wrapped += 360.f;
     }
-    // -1e-6 + 360처럼 더한 결과가 반올림되어 정확히 360이 되는 경우.
-    return wrapped < 360.f ? wrapped : 0.f;
+    // -1e-6 + 360처럼 반올림되어 360이 된 경우와, -0(-720 등)을 모두 0으로 맞춘다.
+    return (wrapped < 360.f && wrapped != 0.f) ? wrapped : 0.f;
 }
 
 } // namespace meno

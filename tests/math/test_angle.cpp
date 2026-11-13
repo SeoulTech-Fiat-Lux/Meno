@@ -32,6 +32,7 @@ int main() {
     check(wrapDegrees(720.25f) == 0.25f, "여러 바퀴도 나머지");
     check(wrapDegrees(-1.5f) == 358.5f, "음수는 양수 쪽으로 접는다");
     check(wrapDegrees(-360.f) == 0.f, "-360은 0");
+    check(!std::signbit(wrapDegrees(-720.f)), "-720은 -0이 아니라 +0");
 
     // -1e-6 + 360은 float에서 정확히 360으로 반올림된다. 360이 아니라 0이어야 한다.
     check(wrapDegrees(-1e-6f) == 0.f, "반올림으로 360이 되면 0");
@@ -39,9 +40,12 @@ int main() {
     // 유한하지 않은 값은 0으로 본다.
     check(wrapDegrees(std::numeric_limits<float>::quiet_NaN()) == 0.f, "NaN은 0");
     check(wrapDegrees(std::numeric_limits<float>::infinity()) == 0.f, "무한대는 0");
+    check(wrapDegrees(-std::numeric_limits<float>::infinity()) == 0.f, "음의 무한대도 0");
 
     // 몇 바퀴를 돌았든 같은 각도가 나온다.
     check(wrapDegrees(30.f + 360.f * 1000.f) == wrapDegrees(30.f), "1000바퀴를 돌아도 같은 각도");
+    check(wrapDegrees(10000030.f) == 310.f, "1e7도대도 정확히 접는다");
+    check(wrapDegrees(-10000030.f) == 50.f, "음수 1e7도대도 양수 쪽으로 접는다");
 
     return meno::test::report();
 }

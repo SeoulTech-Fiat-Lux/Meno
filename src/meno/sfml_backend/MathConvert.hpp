@@ -48,9 +48,9 @@ template <typename T>
 }
 
 // meno의 각도는 전부 "도(degree), 시계 방향"이다.
-// SFML 3는 sf::Angle이라는 별도 타입을 쓰므로 여기서 감싼다.
+// SFML 3는 sf::Angle이라는 별도 타입을 쓰므로 여기서 감싸고, 큰 각도의 정밀도 손실을 막기 위해 먼저 접는다.
 [[nodiscard]] inline sf::Angle toSfAngle(float degrees) noexcept {
-    return sf::degrees(degrees);
+    return sf::degrees(wrapDegrees(degrees));
 }
 
 // Camera2D를 sf::View로 바꾸는 유일한 지점. framebuffer는 렌더 타깃의 현재 픽셀 크기다.
@@ -63,7 +63,7 @@ template <typename T>
 
     // 360으로 접은 각도를 넘긴다. 큰 각도를 그대로 넘기면 SFML이 라디안으로 바꾸는 단계에서 정밀도를 잃어
     // 화면에 그려진 위치가 좌표 계산 결과와 몇 픽셀씩 어긋난다.
-    view.setRotation(toSfAngle(wrapDegrees(camera.rotation)));
+    view.setRotation(toSfAngle(camera.rotation));
 
     // SFML은 비율 뷰포트에 창 크기를 곱한 뒤 위치와 크기를 따로 반올림한다.
     // 모서리 기준으로 반올림해 둔 픽셀 사각형을 다시 비율로 바꿔 넘기면, SFML이 반올림해도 정확히 같은 정수가 나온다.
