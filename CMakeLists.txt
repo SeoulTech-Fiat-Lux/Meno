@@ -17,12 +17,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # clangd / VS Code IntelliSense가 참조하는 compile_commands.json 생성
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+# 아래 기본값은 meno를 직접 빌드할 때만 적용.
+# 다른 프로젝트가 add_subdirectory나 FetchContent로 가져가면 해당 빌드 타입은 건드리지 않는다.
+if(PROJECT_IS_TOP_LEVEL AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
 endif()
 
-option(MENO_BUILD_EXAMPLES "예제 실행 파일을 빌드한다" ON)
-option(MENO_BUILD_TESTS    "테스트를 빌드한다"        ON)
+option(MENO_BUILD_EXAMPLES "예제 실행 파일을 빌드한다." ${PROJECT_IS_TOP_LEVEL})
+option(MENO_BUILD_TESTS "테스트를 빌드한다" ${PROJECT_IS_TOP_LEVEL})
 
 # ---------------------------------------------------------------------------
 # 의존성: SFML
@@ -32,7 +34,7 @@ include(FetchContent)
 set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(SFML_BUILD_DOC      OFF CACHE BOOL "" FORCE)
 set(SFML_BUILD_NETWORK  OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS   OFF)
 
 FetchContent_Declare(
         SFML
