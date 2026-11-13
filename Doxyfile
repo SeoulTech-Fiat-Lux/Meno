@@ -1,5 +1,5 @@
 # meno API 레퍼런스 설정
-# 기준 버전: Doxygen 1.9.8 (CI의 Ubuntu 24.04). 여기 없는 항목은 Doxygen 기본값을 쓴다.
+# 기준 버전: Doxygen 1.15.0 (docs.yml이 같은 버전을 쓴다). 여기 없는 항목은 Doxygen 기본값을 쓴다.
 #
 #   mkdir -p build-docs && doxygen Doxyfile 2> build-docs/warnings.txt
 #
@@ -24,7 +24,7 @@ EXTRACT_PRIVATE        = NO
 EXCLUDE_SYMBOLS        = meno::detail meno::backend
 HIDE_FRIEND_COMPOUNDS  = YES
 
-# 주석 규칙: 첫 문장이 요약이 되고, ///@{ ... ///@} 묶음의 설명은 묶인 멤버 모두에 붙는다.
+# 주석 규칙: 첫 문장이 요약이 되고, /// \{ ... /// \} 묶음의 설명은 묶인 멤버 모두에 붙는다.
 JAVADOC_AUTOBRIEF      = YES
 DISTRIBUTE_GROUP_DOC   = YES
 
@@ -38,3 +38,15 @@ WARN_NO_PARAMDOC       = NO
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
+
+# 테마: doxygen-awesome-css v2.5.0(MIT)을 docs/theme/doxygen-awesome-css에 고치지 않고 두고,
+# 팀 로고와 색은 docs/theme/meno.css에서 덮어쓴다. HTML_COLORSTYLE = LIGHT는 테마가 요구하는
+# 값이며, 다크 모드는 테마가 시스템 설정을 따라 바꾼다.
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = docs/theme/doxygen-awesome-css/doxygen-awesome.css \
+                         docs/theme/meno.css
+HTML_EXTRA_FILES       = docs/theme/logo/meno-logo-on-dark.svg
+PROJECT_ICON           = docs/theme/logo/meno-favicon.svg
