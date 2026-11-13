@@ -73,6 +73,27 @@ endfunction()
 # 통합 헤더가 컴파일되는지만 확인한다. 검사할 동작이 없으므로 해당 소스 코드는 한 줄뿐이다.
 meno_add_test(umbrella)
 
+# 공개 헤더마다 독립된 번역 단위를 생성해 필수 include 누락을 검사한다.
+# SFML이나 meno를 링크하지 않고 공개 include 경로만 제공한다.
+file(GLOB_RECURSE meno_public_headers CONFIGURE_DEPENDS
+        RELATIVE "${PROJECT_SOURCE_DIR}/include"
+        "${PROJECT_SOURCE_DIR}/include/meno/*.hpp")
+set(meno_header_check_sources)
+foreach(header IN LISTS meno_public_headers)
+    set(source "${CMAKE_CURRENT_BINARY_DIR}/header_checks/${header}.cpp")
+    file(GENERATE OUTPUT "${source}" CONTENT "#include <${header}>\n")
+    list(APPEND meno_header_check_sources "${source}")
+endforeach()
+
+add_library(meno_header_checks OBJECT ${meno_header_check_sources})
+target_include_directories(meno_header_checks PRIVATE "${PROJECT_SOURCE_DIR}/include")
+target_compile_features(meno_header_checks PRIVATE cxx_std_20)
+# Unity 빌드에서도 다른 헤더의 include에 의존하지 않도록 각각 컴파일한다.
+set_target_properties(meno_header_checks PROPERTIES UNITY_BUILD OFF)
+if(MSVC)
+    target_compile_options(meno_header_checks PRIVATE /utf-8)
+endif()
+
 # 알파벳 순으로 한 줄에 하나씩 둔다. 끝에 덧붙이지 않아야 두 브랜치가 동시에 모듈을 추가해도
 # 서로 다른 줄에 끼워 넣게 되어 충돌이 잘 나지 않는다.
 add_subdirectory(audio)
