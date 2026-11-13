@@ -1,21 +1,51 @@
 #include <meno/scene/GameObject.hpp>
 #include <meno/scene/Scene.hpp>
 #include <meno/scene/SceneManager.hpp>
+#include <algorithm>
 #include <exception>
 
 namespace meno {
 
-[[nodiscard]]
-GameObject* Scene::getGameObject(GameObject::GameObjectID id) noexcept {
-    auto it = objects_.find(id);
+GameObject& Scene::createGameObject() {
+    const GameObject::GameObjectID id = nextId_++;
 
-    if (it != objects_.end())
-        return it->second.get();
-    const auto pending = pendingObjects_.find(id);
-    return pending == pendingObjects_.end() ? nullptr : pending->second.get();
+    std::unique_ptr<GameObject> object{new GameObject(id)};
+
+    GameObject& ref = *object;
+    if (updating_) {
+        pendingObjects_.emplace(id, std::move(object));
+    } else {
+        objects_.emplace(id, std::move(object));
+        drawOrderDirty_ = true;
+    }
+
+    return ref;
 }
 
-[[nodiscard]]
+void Scene::drawScene(Renderer& renderer) const {
+    if (drawOrderDirty_) {
+        drawOrder_.clear();
+        drawOrder_.reserve(objects_.size());
+        for (const auto& [id, object] : objects_)
+            drawOrder_.push_back(object.get());
+
+        std::sort(drawOrder_.begin(), drawOrder_.end(),
+                  [](const GameObject* a, const GameObject* b) {
+                      if (a->layer() != b->layer())
+                          return a->layer() < b->layer();
+                      return a->id() < b->id();
+                  });
+        drawOrderDirty_ = false;
+    }
+
+    for (const auto* object : drawOrder_)
+        object->draw(renderer);
+}
+
+GameObject* Scene::getGameObject(GameObject::GameObjectID id) noexcept {
+    return const_cast<GameObject*>(std::as_const(*this).getGameObject(id));
+}
+
 const GameObject* Scene::getGameObject(GameObject::GameObjectID id) const noexcept {
     auto it = objects_.find(id);
 
@@ -25,7 +55,6 @@ const GameObject* Scene::getGameObject(GameObject::GameObjectID id) const noexce
     return pending == pendingObjects_.end() ? nullptr : pending->second.get();
 }
 
-[[nodiscard]]
 bool Scene::deleteGameObject(GameObject::GameObjectID id) noexcept {
     auto* object = getGameObject(id);
     if (!object || object->pendingDelete_)

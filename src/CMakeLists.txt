@@ -27,11 +27,9 @@ add_library(meno STATIC
         meno/core/Clock.cpp
         meno/core/Time.cpp
         meno/window/Window.cpp
-        meno/scene/Component.cpp
         meno/scene/Collider.cpp
         meno/scene/Scene.cpp
         meno/scene/Sprite.cpp
-        meno/scene/GameObject.cpp
         meno/graphics/Font.cpp
         meno/graphics/Renderer.cpp
         meno/graphics/Texture.cpp

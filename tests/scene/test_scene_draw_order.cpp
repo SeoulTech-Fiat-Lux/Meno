@@ -1,4 +1,5 @@
 #include "check.hpp"
+#include <meno/graphics/Renderer.hpp>
 #include <meno/scene/SceneManager.hpp>
 #include <meno/window/Window.hpp>
 
@@ -23,7 +24,7 @@ Window::~Window() = default;
 struct Renderer::Impl {};
 Renderer::Renderer(Window&) {}
 Renderer::~Renderer() = default;
-void Sprite::draw(Renderer&) const { drawn.push_back(parent->id()); }
+void Sprite::draw(Renderer&) const { drawn.push_back(parent()->id()); }
 } // namespace meno
 
 int main() {

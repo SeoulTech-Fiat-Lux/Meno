@@ -130,8 +130,7 @@ const meno::Scene& view = scene;
 const GameState* state = view.getState<GameState>();
 ```
 
-- `getState<T>()`의 `T`는 등록할 때 사용한 타입과 같아야 한다. 런타임 타입 검사는
-  하지 않으며, 잘못된 타입으로 객체에 접근하면 정의되지 않은 동작이 발생할 수 있다.
+- `getState<T>()`는 등록된 타입을 런타임에 검사하며, 타입이 다르면 `nullptr`을 반환한다.
 - 상태가 없으면 `nullptr`을 반환한다. `const Scene`에서는 `const T*`를 반환한다.
 - 반환 포인터는 빌린 포인터다. 호출자가 `delete`하거나 다른 소유 포인터로 감싸면 안 된다.
   상태는 Scene이 소멸할 때 함께 파괴되므로, Scene 삭제 또는 `SceneManager::shutdown()`으로

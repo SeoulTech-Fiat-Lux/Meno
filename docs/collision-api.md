@@ -13,7 +13,7 @@
 
 ```cpp
 auto& player = scene.createGameObject();
-player.transform().pos = {100.f, 200.f};
+player.transform().position = {100.f, 200.f};
 
 auto& playerBox = player.addComponent<meno::BoxCollider>(
     meno::Vec2f{5.f, 10.f},   // 객체 기준 충돌 영역의 좌상단
@@ -31,7 +31,7 @@ auto& playerBox = player.addComponent<meno::BoxCollider>(
 
 ```cpp
 auto& enemy = scene.createGameObject();
-enemy.transform().pos = {120.f, 220.f};
+enemy.transform().position = {120.f, 220.f};
 
 enemy.addComponent<meno::CircleCollider>(
     meno::Vec2f{0.f, 0.f}, // 원 중심을 객체 위치에 둔다
@@ -62,11 +62,11 @@ if (meno::intersects(player, enemy)) {
 
 ```cpp
 // player와 wall에는 각각 콜라이더가 등록되어 있다고 가정한다.
-const meno::Vec2f previousPosition = player.transform().pos;
-player.transform().pos.x += 2.f;
+const meno::Vec2f previousPosition = player.transform().position;
+player.transform().position.x += 2.f;
 
 if (meno::intersects(player, wall)) {
-    player.transform().pos = previousPosition;
+    player.transform().position = previousPosition;
 }
 ```
 
@@ -103,9 +103,9 @@ if (playerBox.contains(worldPoint)) {
 객체의 Transform을 변경하면 충돌 영역에도 적용된다. 콜라이더를 다시 등록할 필요가 없다.
 
 ```cpp
-player.transform().pos = {300.f, 200.f};
+player.transform().position = {300.f, 200.f};
 player.transform().rotation = 45.f; // 도 단위, 시계 방향
-player.transform().magnitude = 2.f; // 가로·세로를 함께 2배 확대
+player.transform().scale = 2.f; // 가로·세로를 함께 2배 확대
 ```
 
 회전과 확대의 기준점은 객체의 로컬 원점이다. 따라서 충돌 영역의 크기뿐 아니라
@@ -133,8 +133,6 @@ playerBox.size = {24.f, 36.f};
 | 검사할 콜라이더 조합이 없음 | `intersects()`는 `false` |
 | 사각형의 가로·세로 또는 원의 반지름이 0 이하 | 해당 콜라이더는 충돌하지 않는다 |
 | 배율이 0, 무한대 또는 NaN | 해당 콜라이더는 충돌하지 않는다 |
-| `isTrigger` 설정 | 겹침 결과는 바뀌지 않고, 자동 이벤트도 발생하지 않는다 |
-| `layer` 설정 | 자동 필터링되지 않는다. 검사할 대상을 게임 코드에서 선택한다 |
 
 위치·회전·offset·크기·반지름에는 유한한 값을 사용한다.
 콜라이더는 `addComponent()`로 객체에 등록해서 사용하며, 부모 객체가 없는 콜라이더는

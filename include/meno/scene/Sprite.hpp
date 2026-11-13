@@ -2,8 +2,6 @@
 #define MENO_SPRITE_HPP
 
 #include <meno/graphics/DrawParams.hpp>
-#include <meno/graphics/Renderer.hpp>
-#include <meno/graphics/Texture.hpp>
 #include <meno/scene/Component.hpp>
 
 #include <memory>
@@ -31,10 +29,10 @@ public:
     bool flipY{false};
 
 public:
-    explicit Sprite(GameObject* parent) { this->parent = parent; }
+    Sprite() = default;
 
     /// 텍스처를 복사하지 않고 소유권을 넘겨받는다.
-    void setTexture(Texture&& texture) { texture_ = std::make_shared<Texture>(std::move(texture)); }
+    void setTexture(Texture&& texture);
     /// nullptr을 지정하면 그리기를 중단하고 기존 텍스처 참조를 해제한다.
     void setTexture(std::shared_ptr<const Texture> texture) noexcept {
         texture_ = std::move(texture);
@@ -44,7 +42,7 @@ public:
         return texture_;
     }
 
-    /// 부모 Transform에 offset을 적용한다. width/height는 사용하지 않는다.
+    /// 부모 Transform에 offset을 적용한다.
     /// 부모가 없으면 offset을 위치로 사용하고 회전/배율은 기본값이다.
     [[nodiscard]] SpriteParams drawParams() const;
 

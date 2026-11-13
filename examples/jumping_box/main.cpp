@@ -75,16 +75,16 @@ private:
     void onStart() override {
         auto& scene = scenes().createScene();
         floor_ = &scene.createGameObject();
-        floor_->transform().pos = {floorX, floorY};
-        floor_->transform().magnitude = scale;
+        floor_->transform().position = {floorX, floorY};
+        floor_->transform().scale = scale;
         floor_->sprite().setTexture(makeTexture(true));
         floor_->addComponent<meno::BoxCollider>(meno::Vec2f{},
                                                 meno::Vec2f{static_cast<float>(floorWidthPixels),
                                                             static_cast<float>(floorHeightPixels)});
 
         crate_ = &scene.createGameObject();
-        crate_->transform().pos = {floorX + 32.f, floorY - crateSize};
-        crate_->transform().magnitude = scale;
+        crate_->transform().position = {floorX + 32.f, floorY - crateSize};
+        crate_->transform().scale = scale;
         crate_->sprite().setTexture(makeTexture(false));
         // Collider도 텍스처와 같은 로컬 크기. Transform 배율은 intersects가 적용한다.
         crate_->addComponent<meno::BoxCollider>(
@@ -98,7 +98,7 @@ private:
     }
 
     void moveBox(double dt) {
-        auto& position = crate_->transform().pos;
+        auto& position = crate_->transform().position;
         const float step = static_cast<float>(dt);
         position.x += direction_ * speed * step;
         const float right = floorX + floorWidth - crateSize;

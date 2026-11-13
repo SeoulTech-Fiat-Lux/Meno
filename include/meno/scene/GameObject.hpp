@@ -1,15 +1,13 @@
 #ifndef MENO_GAME_OBJECT_HPP
 #define MENO_GAME_OBJECT_HPP
 
-#include <meno/math/Vec2.hpp>
 #include <meno/scene/Component.hpp>
 #include <meno/scene/Sprite.hpp>
+#include <meno/scene/Transform.hpp>
 
-#include <cmath>
 #include <concepts>
 #include <cstdint>
 #include <memory>
-#include <numbers>
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
@@ -17,29 +15,6 @@
 #include <utility>
 
 namespace meno {
-
-struct Transform : public Component {
-    /// 로컬 좌상단 원점의 월드 위치 (회전/배율의 기준점).
-    Vec2f pos{0, 0};
-    /// 균일 배율. 음수는 원점 기준 반전, 0은 크기 없음.
-    float magnitude{1.f};
-    /// 도 단위 회전.
-    float rotation{0.f};
-    int width{0}, height{0};
-
-    /// 로컬 방향을 회전한다. 배율과 위치는 적용하지 않는다.
-    [[nodiscard]] Vec2f rotateVector(const Vec2f& vector) const {
-        const float radians = std::fmod(rotation, 360.f) * std::numbers::pi_v<float> / 180.f;
-        const float cosine = std::cos(radians);
-        const float sine = std::sin(radians);
-        return {vector.x * cosine - vector.y * sine, vector.x * sine + vector.y * cosine};
-    }
-
-    /// 부모 좌상단 기준 로컬 좌표를 배율 → 회전 → 평행이동 순으로 변환한다.
-    [[nodiscard]] Vec2f transformPoint(const Vec2f& point) const {
-        return pos + rotateVector(point * magnitude);
-    }
-};
 
 class Scene;
 
@@ -67,12 +42,15 @@ private:
 
     GameObjectID id_;
 
+    GameObject(GameObjectID id) : id_(id) {
+        transform_.parent_ = this;
+        sprite_.parent_ = this;
+    }
+
+public:
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&&) noexcept = delete;
 
-    GameObject(GameObjectID id) : sprite_(this), id_(id) { transform_.parent = this; }
-
-public:
     GameObject& operator=(const GameObject&) = delete;
     GameObject& operator=(GameObject&&) = delete;
 
@@ -106,7 +84,7 @@ public:
                  (!std::is_same_v<T, Sprite>)
     T& addComponent(Args&&... args) {
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
-        ptr->parent = this;
+        ptr->parent_ = this;
 
         T& ref = *ptr;
 
@@ -123,18 +101,15 @@ public:
     /// @return 컴포넌트가 존재하면 해당 객체의 포인터를 반환하며,
     /// 존재하지 않으면 nullptr을 반환합니다.
     template <typename T>
-        requires std::derived_from<T, Component>
+        requires std::derived_from<T, Component> && (!std::is_same_v<T, Transform>) &&
+                 (!std::is_same_v<T, Sprite>)
     T* getComponent() noexcept {
-        auto it = components_.find(std::type_index(typeid(T)));
-
-        if (it == components_.end())
-            return nullptr;
-
-        return static_cast<T*>(it->second.get());
+        return const_cast<T*>(std::as_const(*this).template getComponent<T>());
     }
 
     template <typename T>
-        requires std::derived_from<T, Component>
+        requires std::derived_from<T, Component> && (!std::is_same_v<T, Transform>) &&
+                 (!std::is_same_v<T, Sprite>)
     const T* getComponent() const noexcept {
         auto it = components_.find(std::type_index(typeid(T)));
 

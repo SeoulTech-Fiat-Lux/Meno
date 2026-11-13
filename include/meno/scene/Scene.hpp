@@ -3,7 +3,6 @@
 
 #include <meno/scene/GameObject.hpp>
 
-#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -85,21 +84,7 @@ private:
 public:
     /// 업데이트 중에는 등록을 예약한다. 반환 참조와 ID로 즉시 설정/조회할 수 있다.
     /// 그리기 목록에는 업데이트 종료 시(예외 발생 시도 포함) 추가한다.
-    GameObject& createGameObject() {
-        const GameObject::GameObjectID id = nextId_++;
-
-        std::unique_ptr<GameObject> object{new GameObject(id)};
-
-        GameObject& ref = *object;
-        if (updating_) {
-            pendingObjects_.emplace(id, std::move(object));
-        } else {
-            objects_.emplace(id, std::move(object));
-            drawOrderDirty_ = true;
-        }
-
-        return ref;
-    }
+    GameObject& createGameObject();
 
     [[nodiscard]]
     GameObject* getGameObject(GameObject::GameObjectID) noexcept;
@@ -114,25 +99,7 @@ public:
     [[nodiscard]] bool setLayer(GameObject::GameObjectID id, int layer) noexcept;
 
     /// 작은 레이어부터, 같은 레이어는 ID 순으로 그린다.
-    void drawScene(Renderer& renderer) const {
-        if (drawOrderDirty_) {
-            drawOrder_.clear();
-            drawOrder_.reserve(objects_.size());
-            for (const auto& [id, object] : objects_)
-                drawOrder_.push_back(object.get());
-
-            std::sort(drawOrder_.begin(), drawOrder_.end(),
-                      [](const GameObject* a, const GameObject* b) {
-                          if (a->layer() != b->layer())
-                              return a->layer() < b->layer();
-                          return a->id() < b->id();
-                      });
-            drawOrderDirty_ = false;
-        }
-
-        for (const auto* object : drawOrder_)
-            object->draw(renderer);
-    }
+    void drawScene(Renderer& renderer) const;
 
     /// 상태 객체의 소유권을 Scene으로 이전하며, Scene 소멸 시 함께 파괴한다.
     /// 이미 유효한 상태가 있으면 std::logic_error를 던진다.

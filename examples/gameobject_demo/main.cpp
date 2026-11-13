@@ -52,8 +52,8 @@ private:
 
         auto& scene = scenes().createScene();
         meno::GameObject& crate = scene.createGameObject();
-        crate.transform().pos = {400.f, 300.f};
-        crate.transform().magnitude = 10;
+        crate.transform().position = {400.f, 300.f};
+        crate.transform().scale = 10;
         crate.sprite().origin = {8.f, 8.f};
         crate.sprite().setTexture(std::move(*texture));
 

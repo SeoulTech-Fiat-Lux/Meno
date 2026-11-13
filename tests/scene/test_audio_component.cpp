@@ -10,6 +10,11 @@
 // 이 타깃은 실제 Sound.cpp 대신 아래 테스트 대역을 링크한다.
 // 장치 없이 컴포넌트의 소유권/호출 전달/실패 처리를 검사한다.
 // 실제 오디오 구현의 링크는 별도 audio 테스트가 담당한다.
+// Scene 구현을 장치 없이 링크하기 위한 그리기 대역.
+namespace meno {
+void Sprite::draw(Renderer&) const {}
+} // namespace meno
+
 namespace {
 int liveSounds = 0;
 int playingSounds = 0;
@@ -68,7 +73,7 @@ int main() {
     const auto id = object.id();
     auto& audio = object.addComponent<meno::AudioSource>();
     MENO_CHECK(object.getComponent<meno::AudioSource>() == &audio);
-    MENO_CHECK(audio.parent == &object);
+    MENO_CHECK(audio.parent() == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(!audio.hasSound());
     MENO_CHECK(!audio.isPlaying());
@@ -134,7 +139,7 @@ int main() {
     MENO_CHECK(appliedVolume == 0.5F);
     audio.play();
     auto& replacement = object.addComponent<meno::AudioSource>();
-    MENO_CHECK(replacement.parent == &object);
+    MENO_CHECK(replacement.parent() == &object);
     MENO_CHECK(liveSounds == 0);
     MENO_CHECK(playingSounds == 0);
     MENO_CHECK(replacement.loadFromFile("third.wav"));

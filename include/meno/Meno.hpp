@@ -48,6 +48,7 @@
 #include <meno/scene/Scene.hpp>        // IWYU pragma: export
 #include <meno/scene/SceneManager.hpp> // IWYU pragma: export
 #include <meno/scene/Sprite.hpp>       // IWYU pragma: export
+#include <meno/scene/Transform.hpp>    // IWYU pragma: export
 
 #include <meno/app/Game.hpp> // IWYU pragma: export
 

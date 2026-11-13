@@ -19,7 +19,7 @@ private:
     void onStart() override {
         auto& scene = scenes().createScene();
         auto& player = scene.createGameObject();
-        player.transform().pos = {480.f, 270.f};
+        player.transform().position = {480.f, 270.f};
 
         if (!scenes().changeScene(scene.id())) {
             throw std::runtime_error("Failed to activate scene");

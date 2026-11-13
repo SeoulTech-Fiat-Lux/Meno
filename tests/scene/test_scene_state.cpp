@@ -7,6 +7,11 @@
 #include <type_traits>
 #include <utility>
 
+// Scene 구현을 장치 없이 링크하기 위한 그리기 대역.
+namespace meno {
+void Sprite::draw(Renderer&) const {}
+} // namespace meno
+
 namespace {
 struct State {
     int& live;

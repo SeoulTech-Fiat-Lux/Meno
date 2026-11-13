@@ -32,21 +32,21 @@ private:
                         meno::Color color, float direction,
                         const std::shared_ptr<const meno::Texture>& texture) {
         auto& object = scene.createGameObject();
-        object.transform().pos = {400.f, 280.f};
-        object.transform().magnitude = 100.f;
+        object.transform().position = {400.f, 280.f};
+        object.transform().scale = 100.f;
         object.sprite().origin = {0.5f, 0.5f};
         object.sprite().tint = color;
         object.sprite().setTexture(texture);
 
         scene.setEnterHandler([this, &object, name, color] {
             elapsed_ = 0.0;
-            object.transform().pos = {400.f, 280.f};
+            object.transform().position = {400.f, 280.f};
             object.transform().rotation = 0;
             std::cout << "[enter] " << name << std::endl;
         });
         scene.setUpdateHandler([this, &object, next, direction](double dt) {
             elapsed_ += dt;
-            object.transform().pos.x =
+            object.transform().position.x =
                 400.f + direction * 180.f * static_cast<float>(std::sin(elapsed_ * 2.0));
             object.transform().rotation = static_cast<float>(direction * elapsed_ * 90.0);
 
