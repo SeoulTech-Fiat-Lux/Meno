@@ -1,7 +1,7 @@
 // 외부 에셋 없이 두 Scene을 3초마다 전환한다.
-#include <meno/core/Game.hpp>
-#include <meno/core/SceneManager.hpp>
-#include <meno/core/Window.hpp>
+#include <meno/app/Game.hpp>
+#include <meno/scene/SceneManager.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
 

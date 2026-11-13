@@ -244,7 +244,7 @@ renderer.resetCamera();  // UI
 
 ### Core(Window/Clock) 담당자에게
 
-`include/meno/core/Window.hpp`와 `src/meno/core/Window.cpp`는 **내가 만든 임시 스텁**이다.
+`include/meno/window/Window.hpp`와 `src/meno/window/Window.cpp`는 **내가 만든 임시 스텁**이다.
 렌더 API를 지금 컴파일하고 눈으로 확인하려고 최소한만 넣었다. 실제 Window를 만들면
 통째로 교체하면 된다.
 

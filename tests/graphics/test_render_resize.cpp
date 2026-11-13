@@ -11,11 +11,11 @@
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_resize --output-on-failure
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include "check.hpp"
 #include "display.hpp"

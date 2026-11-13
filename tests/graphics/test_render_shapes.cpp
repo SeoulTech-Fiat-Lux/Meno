@@ -10,7 +10,7 @@
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_shapes --output-on-failure
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 
 #include "check.hpp"

@@ -14,9 +14,3 @@ target_include_directories(meno_test_input PRIVATE ${PROJECT_SOURCE_DIR}/src/men
 meno_add_test(input_convert)
 target_include_directories(meno_test_input_convert PRIVATE ${PROJECT_SOURCE_DIR}/src/meno)
 target_link_libraries(meno_test_input_convert PRIVATE meno::meno SFML::Window)
-
-# Window가 Input을 갖고 이벤트를 넘기는 연결부. 창을 열어야 하므로 render 테스트처럼
-# MENO_DISPLAY_TESTS=1일 때만 돈다.
-meno_add_test(window_input)
-target_link_libraries(meno_test_window_input PRIVATE meno::meno)
-meno_display_test(window_input)

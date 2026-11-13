@@ -8,23 +8,25 @@
 # 다소 하드코딩으로 보이더라도 소스의 이름을 명해두었다.
 #
 # 담당 경계: 새 소스를 추가할 때 자기 영역 아래에만 넣으면 충돌이 없다.
-#   meno/core/       -- Core 담당 (Application, Window, Clock)
+#   meno/core/       -- 게임 루프와 시간 (Application, Clock, Time)
+#   meno/window/     -- 창과 OS 이벤트 (Window)
 #   meno/math/       -- 공용 값 타입 (헤더 전용이라 여기 없음)
 #   meno/graphics/   -- 2D 렌더러 담당
 #   meno/input/      -- 키보드·마우스 입력 (SFML 없이 이벤트로만 상태를 갱신한다)
 #   meno/sfml_backend/ -- SFML 접촉면. 각자 자기 *Access 구조체를 추가한다.
-#   meno/scene/      -- 게임 화면에 나타나는 객체들 및 그 객체를 포함한 장면을 추상화 한 객체
+#   meno/scene/      -- 게임 화면의 객체, 그 객체를 담은 장면, 장면 전환(SceneManager)
+#   meno/app/        -- 위 모듈을 묶어 게임 하나로 실행하는 Game
 add_library(meno STATIC
         meno/audio/Music.cpp
         meno/audio/Sound.cpp
         meno/audio/SoundBuffer.cpp
         meno/core/Application.cpp
-        meno/core/Game.cpp
+        meno/app/Game.cpp
         meno/scene/Audio.cpp
-        meno/core/SceneManager.cpp
+        meno/scene/SceneManager.cpp
         meno/core/Clock.cpp
         meno/core/Time.cpp
-        meno/core/Window.cpp
+        meno/window/Window.cpp
         meno/scene/Component.cpp
         meno/scene/Collider.cpp
         meno/scene/Scene.cpp

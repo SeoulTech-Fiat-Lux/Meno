@@ -1,4 +1,4 @@
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/SceneManager.hpp>
 
 #include "check.hpp"
 

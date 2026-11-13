@@ -1,7 +1,7 @@
 #include <meno/graphics/Texture.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include <SFML/Graphics/Image.hpp>
 

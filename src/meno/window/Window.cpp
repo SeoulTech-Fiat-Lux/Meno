@@ -1,8 +1,8 @@
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/input/Input.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 #include "sfml_backend/InputConvert.hpp"
 
 #include <SFML/Window/Event.hpp>

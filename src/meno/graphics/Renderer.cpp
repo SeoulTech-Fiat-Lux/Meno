@@ -1,11 +1,11 @@
 #include <meno/graphics/Renderer.hpp>
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>

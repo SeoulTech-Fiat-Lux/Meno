@@ -9,7 +9,7 @@
 
 #include <meno/math/Camera2D.hpp>
 
-#include "sfml_backend/Convert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include "check.hpp"
 

@@ -7,11 +7,13 @@
 
 #   tests/math/      -- 공용 값 타입
 #   tests/core/      -- Application, Clock, Time
+#   tests/window/    -- Window와 Input의 연결
 #   tests/graphics/  -- Renderer, Texture, Font
 #   tests/input/     -- Input, SFML 이벤트 변환
 #   tests/audio/     -- Sound, Music
 #   tests/resources/ -- Texture, Font 캐시
-#   tests/scene/     -- Scene, GameObject, Component, Collider
+#   tests/scene/     -- Scene, SceneManager, GameObject, Component, Collider
+#   tests/app/       -- Game
 
 # 테스트를 추가할 때는 대상 코드가 무엇에 의존하는지에 따라 아래 셋 중 하나를 고른다.
 # 가능한 한 위쪽을 고른다. SFML 빌드 없이 돌고, 실패했을 때 원인도 좁아진다.
@@ -96,6 +98,7 @@ endif()
 
 # 알파벳 순으로 한 줄에 하나씩 둔다. 끝에 덧붙이지 않아야 두 브랜치가 동시에 모듈을 추가해도
 # 서로 다른 줄에 끼워 넣게 되어 충돌이 잘 나지 않는다.
+add_subdirectory(app)
 add_subdirectory(audio)
 add_subdirectory(core)
 add_subdirectory(graphics)
@@ -103,6 +106,7 @@ add_subdirectory(input)
 add_subdirectory(math)
 add_subdirectory(resources)
 add_subdirectory(scene)
+add_subdirectory(window)
 
 # ---------------------------------------------------------------------------
 # 등록 누락 검사

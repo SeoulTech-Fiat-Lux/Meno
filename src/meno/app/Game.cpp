@@ -1,4 +1,4 @@
-#include <meno/core/Game.hpp>
+#include <meno/app/Game.hpp>
 
 #include <stdexcept>
 

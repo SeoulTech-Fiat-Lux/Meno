@@ -36,10 +36,10 @@
 // --- 코어 -----------------------------------------------------------------
 #include <meno/core/Application.hpp>  // IWYU pragma: export
 #include <meno/core/Clock.hpp>  // IWYU pragma: export
-#include <meno/core/Game.hpp>  // IWYU pragma: export
 #include <meno/core/Time.hpp>  // IWYU pragma: export
-#include <meno/core/Window.hpp>  // IWYU pragma: export
-#include <meno/core/SceneManager.hpp>  // IWYU pragma: export
+
+// --- 창 -------------------------------------------------------------------
+#include <meno/window/Window.hpp>  // IWYU pragma: export
 
 // --- 입력 -----------------------------------------------------------------
 #include <meno/input/Event.hpp>  // IWYU pragma: export
@@ -53,7 +53,11 @@
 #include <meno/scene/Audio.hpp>  // IWYU pragma: export
 #include <meno/scene/GameObject.hpp>  // IWYU pragma: export
 #include <meno/scene/Scene.hpp>  // IWYU pragma: export
+#include <meno/scene/SceneManager.hpp>  // IWYU pragma: export
 #include <meno/scene/Sprite.hpp>  // IWYU pragma: export
+
+// --- 게임 -----------------------------------------------------------------
+#include <meno/app/Game.hpp>  // IWYU pragma: export
 
 // 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
 

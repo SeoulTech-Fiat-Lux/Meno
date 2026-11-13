@@ -1,4 +1,4 @@
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/input/Input.hpp>
 
 #include "check.hpp"

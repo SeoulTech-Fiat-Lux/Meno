@@ -1,5 +1,5 @@
 #include <meno/core/Clock.hpp>
-#include <meno/core/Game.hpp>
+#include <meno/app/Game.hpp>
 #include <meno/scene/Component.hpp>
 
 #include "check.hpp"

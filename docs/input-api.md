@@ -8,7 +8,7 @@
 
 ```
 OS ─ sf::Event ─▶ Window::pollEvents ─▶ backend::fromSf ─▶ meno::Event ─▶ Input::handleEvent ─▶ 상태 표
-                  (core/Window.cpp)     (sfml_backend/       (input/          (input/Input.cpp)
+                  (window/Window.cpp)   (sfml_backend/       (input/          (input/Input.cpp)
                                          InputConvert.cpp)    Event.hpp)
                                                                    게임 코드 ─▶ window.input().isDown(...)
 ```
@@ -19,7 +19,7 @@ OS ─ sf::Event ─▶ Window::pollEvents ─▶ backend::fromSf ─▶ meno::E
 | `include/meno/input/Event.hpp` | SFML 없는 입력 이벤트(`std::variant`) | 없음 |
 | `include/meno/input/Input.hpp`, `src/meno/input/Input.cpp` | 이벤트로 상태 표를 갱신하고 질의에 답한다 | 없음 |
 | `src/meno/sfml_backend/InputConvert.*` | `sf::Event` → `meno::Event` 변환 | 있음 |
-| `src/meno/core/Window.cpp` | SFML 이벤트를 꺼내 변환해 `Input`에 넘긴다 | 있음 |
+| `src/meno/window/Window.cpp` | SFML 이벤트를 꺼내 변환해 `Input`에 넘긴다 | 있음 |
 
 - SFML을 만지는 곳은 `Window.cpp`와 `InputConvert.cpp` 두 곳뿐이다. `Input`은 SFML을 모른다.
   그래서 테스트는 창 없이 `meno::Event`를 직접 넣어 `Input`을 검증한다.
@@ -132,4 +132,4 @@ if (input.wasActionPressed("jump")) { ... }
 |---|---|---|---|
 | `tests/input/test_input.cpp` | 키·마우스·휠·텍스트·포커스·액션, update 기준 판정(스크립트된 Clock으로 0·1·3회 update) | 없음 | 없음 |
 | `tests/input/test_input_convert.cpp` | SFML 키 101개가 서로 다른 meno 키로 빠짐없이 바뀌는지, 이벤트 변환 | 링크 | 없음 |
-| `tests/input/test_window_input.cpp` | Window 이동 후에도 같은 `Input`, 이동당한 Window의 예외 | 링크 | 필요 (`MENO_DISPLAY_TESTS=1`) |
+| `tests/window/test_window_input.cpp` | Window 이동 후에도 같은 `Input`, 이동당한 Window의 예외 | 링크 | 필요 (`MENO_DISPLAY_TESTS=1`) |

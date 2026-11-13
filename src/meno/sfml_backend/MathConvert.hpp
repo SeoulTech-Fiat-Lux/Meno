@@ -1,5 +1,5 @@
-#ifndef MENO_CONVERT_HPP
-#define MENO_CONVERT_HPP
+#ifndef MENO_MATH_CONVERT_HPP
+#define MENO_MATH_CONVERT_HPP
 
 #include <meno/math/Camera2D.hpp>
 #include <meno/math/Color.hpp>
@@ -78,4 +78,4 @@ template <typename T>
 
 } // namespace meno::backend
 
-#endif  // MENO_CONVERT_HPP
+#endif  // MENO_MATH_CONVERT_HPP

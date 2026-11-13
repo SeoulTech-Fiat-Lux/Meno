@@ -5,7 +5,7 @@
 //
 // 이 파일에는 SFML이 한 번도 등장하지 않는다. 그게 이 설계의 목표다.
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>

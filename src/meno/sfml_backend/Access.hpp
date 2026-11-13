@@ -1,7 +1,7 @@
 #ifndef MENO_ACCESS_HPP
 #define MENO_ACCESS_HPP
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
 

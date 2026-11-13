@@ -14,7 +14,7 @@
 
 // 폰트는 흔한 시스템 경로에서 찾는다. 없으면 MENO_TEST_FONT로 경로를 지정한다.
 
-#include <meno/core/Window.hpp>
+#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>

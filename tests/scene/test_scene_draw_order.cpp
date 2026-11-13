@@ -1,5 +1,5 @@
-#include <meno/core/SceneManager.hpp>
-#include <meno/core/Window.hpp>
+#include <meno/scene/SceneManager.hpp>
+#include <meno/window/Window.hpp>
 #include "check.hpp"
 
 #include <initializer_list>

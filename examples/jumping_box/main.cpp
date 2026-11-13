@@ -1,6 +1,6 @@
 // 기존 공개 API만 사용한다. 중력과 착지 반응은 이 예제의 게임 로직이다.
 #include <meno/Meno.hpp>
-#include <meno/core/SceneManager.hpp>
+#include <meno/scene/SceneManager.hpp>
 
 #include <cstdint>
 #include <iostream>
