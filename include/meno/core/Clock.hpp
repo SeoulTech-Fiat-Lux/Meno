@@ -36,7 +36,8 @@ public:
     /// 시각 함수와 대기 함수를 주입해 만듭니다. 만든 순간의 now() 결과부터 잽니다.
     Clock(NowFunction now, WaitFunction wait);
 
-    /// 지난 restart() 이후(처음이면 만든 뒤) 흐른 시간을 초로 돌려주고, 기준을 지금으로 옮깁니다.
+    /// 지난 restart()나 resetLap() 이후(둘 다 없으면 만든 뒤) 흐른 시간을 초로 돌려주고, 기준을
+    /// 지금으로 옮깁니다.
     ///
     /// 프레임 제한보다 빨리 불리면 남은 시간만큼 기다린 뒤 돌려줍니다.
     [[nodiscard]] double restart();
