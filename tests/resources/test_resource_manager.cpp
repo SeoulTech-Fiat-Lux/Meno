@@ -13,18 +13,15 @@
 
 static_assert(!std::is_copy_constructible_v<meno::ResourceManager>);
 static_assert(std::is_nothrow_move_constructible_v<meno::ResourceManager>);
-static_assert(std::is_same_v<
-              decltype(std::declval<meno::ResourceManager&>().loadTexture(
-                  std::declval<const std::filesystem::path&>())),
-              std::shared_ptr<const meno::Texture>>);
-static_assert(std::is_same_v<
-              decltype(std::declval<meno::ResourceManager&>().loadFont(
-                  std::declval<const std::filesystem::path&>())),
-              std::shared_ptr<const meno::Font>>);
-static_assert(std::is_same_v<
-              decltype(std::declval<meno::ResourceManager&>().loadSoundBuffer(
-                  std::declval<const std::filesystem::path&>())),
-              std::shared_ptr<const meno::SoundBuffer>>);
+static_assert(std::is_same_v<decltype(std::declval<meno::ResourceManager&>().loadTexture(
+                                 std::declval<const std::filesystem::path&>())),
+                             std::shared_ptr<const meno::Texture>>);
+static_assert(std::is_same_v<decltype(std::declval<meno::ResourceManager&>().loadFont(
+                                 std::declval<const std::filesystem::path&>())),
+                             std::shared_ptr<const meno::Font>>);
+static_assert(std::is_same_v<decltype(std::declval<meno::ResourceManager&>().loadSoundBuffer(
+                                 std::declval<const std::filesystem::path&>())),
+                             std::shared_ptr<const meno::SoundBuffer>>);
 
 namespace {
 int textureLoads = 0;
@@ -49,8 +46,12 @@ std::optional<Texture> Texture::loadFromFile(const std::filesystem::path& path) 
     }
     return Texture{};
 }
-void Texture::setSmooth(bool smooth) { impl_->smooth = smooth; }
-bool Texture::isSmooth() const { return impl_ != nullptr && impl_->smooth; }
+void Texture::setSmooth(bool smooth) {
+    impl_->smooth = smooth;
+}
+bool Texture::isSmooth() const {
+    return impl_ != nullptr && impl_->smooth;
+}
 
 struct Font::Impl {};
 Font::Font() : impl_(std::make_unique<Impl>()) {}
@@ -91,8 +92,7 @@ int main() {
         MENO_CHECK(texture == sameTexture);
         MENO_CHECK(textureLoads == 1);
 
-        const auto smoothTexture =
-            resources.loadTexture("assets/player.png", {.smooth = true});
+        const auto smoothTexture = resources.loadTexture("assets/player.png", {.smooth = true});
         const auto sameSmoothTexture =
             resources.loadTexture("assets/./player.png", {.smooth = true});
         MENO_CHECK(smoothTexture != texture);

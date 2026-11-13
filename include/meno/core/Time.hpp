@@ -6,7 +6,9 @@
 namespace meno {
 
 class Application;
-namespace detail { struct TimeAccess; }
+namespace detail {
+struct TimeAccess;
+}
 
 /// Application이 관리하는 게임 시간 정보.
 class Time final {
@@ -48,4 +50,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_TIME_HPP
+#endif // MENO_TIME_HPP

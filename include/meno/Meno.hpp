@@ -13,53 +13,42 @@
 /// 않는다. 사용자 프로젝트는 SFML 헤더 경로 없이 meno만 링크하면 빌드된다.
 /// tools/check_headers.py가 이 규칙을 검사한다.
 
-// --- 값 타입 ---------------------------------------------------------------
-#include <meno/math/Angle.hpp>  // IWYU pragma: export
-#include <meno/math/Camera2D.hpp>  // IWYU pragma: export
-#include <meno/math/Color.hpp>  // IWYU pragma: export
-#include <meno/math/Rect.hpp>  // IWYU pragma: export
-#include <meno/math/Vec2.hpp>  // IWYU pragma: export
+#include <meno/math/Angle.hpp>    // IWYU pragma: export
+#include <meno/math/Camera2D.hpp> // IWYU pragma: export
+#include <meno/math/Color.hpp>    // IWYU pragma: export
+#include <meno/math/Rect.hpp>     // IWYU pragma: export
+#include <meno/math/Vec2.hpp>     // IWYU pragma: export
 
-// --- 오디오 ---------------------------------------------------------------
-#include <meno/audio/Music.hpp>  // IWYU pragma: export
-#include <meno/audio/Sound.hpp>  // IWYU pragma: export
-#include <meno/audio/SoundBuffer.hpp>  // IWYU pragma: export
+#include <meno/audio/Music.hpp>       // IWYU pragma: export
+#include <meno/audio/Sound.hpp>       // IWYU pragma: export
+#include <meno/audio/SoundBuffer.hpp> // IWYU pragma: export
 
-// --- 그래픽 ---------------------------------------------------------------
-#include <meno/graphics/DrawParams.hpp>  // IWYU pragma: export
-#include <meno/graphics/Font.hpp>  // IWYU pragma: export
-#include <meno/graphics/Renderer.hpp>  // IWYU pragma: export
-#include <meno/graphics/Texture.hpp>  // IWYU pragma: export
+#include <meno/graphics/DrawParams.hpp> // IWYU pragma: export
+#include <meno/graphics/Font.hpp>       // IWYU pragma: export
+#include <meno/graphics/Renderer.hpp>   // IWYU pragma: export
+#include <meno/graphics/Texture.hpp>    // IWYU pragma: export
 
-// --- 리소스 ---------------------------------------------------------------
-#include <meno/resources/ResourceManager.hpp>  // IWYU pragma: export
+#include <meno/resources/ResourceManager.hpp> // IWYU pragma: export
 
-// --- 코어 -----------------------------------------------------------------
-#include <meno/core/Application.hpp>  // IWYU pragma: export
-#include <meno/core/Clock.hpp>  // IWYU pragma: export
-#include <meno/core/Time.hpp>  // IWYU pragma: export
+#include <meno/core/Application.hpp> // IWYU pragma: export
+#include <meno/core/Clock.hpp>       // IWYU pragma: export
+#include <meno/core/Time.hpp>        // IWYU pragma: export
 
-// --- 창 -------------------------------------------------------------------
-#include <meno/window/Window.hpp>  // IWYU pragma: export
+#include <meno/window/Window.hpp> // IWYU pragma: export
 
-// --- 입력 -----------------------------------------------------------------
-#include <meno/input/Event.hpp>  // IWYU pragma: export
-#include <meno/input/Input.hpp>  // IWYU pragma: export
-#include <meno/input/Key.hpp>  // IWYU pragma: export
-#include <meno/input/MouseButton.hpp>  // IWYU pragma: export
+#include <meno/input/Event.hpp>       // IWYU pragma: export
+#include <meno/input/Input.hpp>       // IWYU pragma: export
+#include <meno/input/Key.hpp>         // IWYU pragma: export
+#include <meno/input/MouseButton.hpp> // IWYU pragma: export
 
-// --- 씬 -----------------------------------------------------------------
-#include <meno/scene/Collider.hpp>  // IWYU pragma: export
-#include <meno/scene/Component.hpp>  // IWYU pragma: export
 #include <meno/scene/AudioSource.hpp>  // IWYU pragma: export
-#include <meno/scene/GameObject.hpp>  // IWYU pragma: export
-#include <meno/scene/Scene.hpp>  // IWYU pragma: export
-#include <meno/scene/SceneManager.hpp>  // IWYU pragma: export
-#include <meno/scene/Sprite.hpp>  // IWYU pragma: export
+#include <meno/scene/Collider.hpp>     // IWYU pragma: export
+#include <meno/scene/Component.hpp>    // IWYU pragma: export
+#include <meno/scene/GameObject.hpp>   // IWYU pragma: export
+#include <meno/scene/Scene.hpp>        // IWYU pragma: export
+#include <meno/scene/SceneManager.hpp> // IWYU pragma: export
+#include <meno/scene/Sprite.hpp>       // IWYU pragma: export
 
-// --- 게임 -----------------------------------------------------------------
-#include <meno/app/Game.hpp>  // IWYU pragma: export
+#include <meno/app/Game.hpp> // IWYU pragma: export
 
-// 아직 없는 것 (담당자가 추가하면 여기에 한 줄씩 붙인다):
-
-#endif  // MENO_HPP
+#endif // MENO_HPP

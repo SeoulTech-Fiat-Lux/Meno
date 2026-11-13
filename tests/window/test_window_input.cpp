@@ -1,12 +1,13 @@
-#include <meno/window/Window.hpp>
 #include <meno/input/Input.hpp>
+#include <meno/window/Window.hpp>
 
 #include "check.hpp"
 #include "display.hpp"
 
 #include <type_traits>
 
-// Window는 복사도 이동도 할 수 없다. Renderer가 붙잡은 렌더 타깃과 input()의 참조가 끝까지 유효한 근거다.
+// Window는 복사도 이동도 할 수 없다. Renderer가 붙잡은 렌더 타깃과 input()의 참조가 끝까지 유효한
+// 근거다.
 static_assert(!std::is_copy_constructible_v<meno::Window>);
 static_assert(!std::is_copy_assignable_v<meno::Window>);
 static_assert(!std::is_move_constructible_v<meno::Window>);

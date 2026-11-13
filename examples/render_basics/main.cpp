@@ -5,11 +5,11 @@
 //
 // 이 파일에는 SFML이 한 번도 등장하지 않는다. 그게 이 설계의 목표다.
 
-#include <meno/window/Window.hpp>
 #include <meno/core/Clock.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/window/Window.hpp>
 
 #include <array>
 #include <cmath>
@@ -74,10 +74,9 @@ void drawWorld(meno::Renderer& renderer, const meno::Texture& checker, double el
     renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, {.color = meno::colors::Gray});
 
     // 도형: 채우기 + 외곽선
-    renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
-                      {.fill = meno::Color::fromRgb(0x4C6EF5),
-                       .outline = meno::colors::White,
-                       .outlineThickness = 2.f});
+    renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}}, {.fill = meno::Color::fromRgb(0x4C6EF5),
+                                                          .outline = meno::colors::White,
+                                                          .outlineThickness = 2.f});
 
     renderer.drawCircle({-260.f, 120.f}, 45.f,
                         {.fill = meno::Color::fromRgb(0x51CF66),
@@ -129,15 +128,16 @@ int main() {
         // --- 월드: 카메라가 적용되는 영역 --------------------------------
         // size를 정하지 않았으므로 1월드유닛 = 1픽셀이다. 창을 키우면 월드가 더 넓게 보인다.
         // 카메라가 시계 방향으로 돌면 화면 속 월드는 반시계 방향으로 돈다.
-        const meno::Camera2D camera{
-            .center = {0.f, 0.f},
-            .zoom = 1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7)),
-            .rotation = 12.f * static_cast<float>(std::sin(elapsed * 0.4))};
+        const meno::Camera2D camera{.center = {0.f, 0.f},
+                                    .zoom =
+                                        1.f + 0.15f * static_cast<float>(std::sin(elapsed * 0.7)),
+                                    .rotation = 12.f * static_cast<float>(std::sin(elapsed * 0.4))};
         renderer.setCamera(camera);
         drawWorld(renderer, checker, elapsed);
 
         // --- 미니맵: 화면 우상단의 작은 뷰포트 ----------------------------
-        // 월드 1920x1080을 16:9 고정 비율로 담는다. 창의 종횡비가 달라도 Letterbox가 비율을 지키고 남는 부분은 비운다.
+        // 월드 1920x1080을 16:9 고정 비율로 담는다. 창의 종횡비가 달라도 Letterbox가 비율을 지키고
+        // 남는 부분은 비운다.
         const meno::Camera2D minimap{.center = {0.f, 0.f},
                                      .size = {1920.f, 1080.f},
                                      .viewport = {0.70f, 0.03f, 0.27f, 0.27f},
@@ -166,22 +166,22 @@ int main() {
 
         if (font) {
             const meno::TextParams title{.characterSize = 20,
-                                          .color = meno::colors::White,
-                                          .outlineThickness = 2.f,
-                                          .outlineColor = meno::colors::Black};
+                                         .color = meno::colors::White,
+                                         .outlineThickness = 2.f,
+                                         .outlineColor = meno::colors::Black};
             renderer.drawText(*font, "meno 2D 렌더 API", {16.f, 12.f}, title);
 
-            // measureTextBounds()로 글자가 실제 차지하는 영역을 계산하여, 화면 오른쪽 아래에 붙인다. (우하단 정렬)
-            // 글자 잉크의 우하단이 화면 우하단으로부터 16픽셀 안쪽으로 떨어지도록 위치를 계산한다.
-            // {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는 아래쪽이 몇 픽셀 어긋난다.
-            const meno::TextParams hint{.characterSize = 14,
-                                         .color = meno::colors::Gray};
+            // measureTextBounds()로 글자가 실제 차지하는 영역을 계산하여, 화면 오른쪽 아래에
+            // 붙인다. (우하단 정렬) 글자 잉크의 우하단이 화면 우하단으로부터 16픽셀 안쪽으로
+            // 떨어지도록 위치를 계산한다. {0, 0}이 아니기 때문에, 크기만 활용하는 mearueText()로는
+            // 아래쪽이 몇 픽셀 어긋난다.
+            const meno::TextParams hint{.characterSize = 14, .color = meno::colors::Gray};
             const char* hintText = "카메라가 자동으로 줌·회전합니다. 창 크기를 바꿔 보세요";
             const meno::Rectf hintBounds = renderer.measureTextBounds(*font, hintText, hint);
             const auto screen = static_cast<meno::Vec2f>(renderer.framebufferSize());
             const meno::Vec2f inkBottomRight{hintBounds.right(), hintBounds.bottom()};
-            renderer.drawText(*font, hintText,
-                              screen - meno::Vec2f{16.f, 16.f} - inkBottomRight, hint);
+            renderer.drawText(*font, hintText, screen - meno::Vec2f{16.f, 16.f} - inkBottomRight,
+                              hint);
         }
 
         renderer.endFrame();

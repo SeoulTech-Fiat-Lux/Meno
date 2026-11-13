@@ -1,10 +1,10 @@
+#include "check.hpp"
 #include <meno/scene/SceneManager.hpp>
 #include <meno/window/Window.hpp>
-#include "check.hpp"
 
 #include <initializer_list>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 namespace {
 std::vector<meno::GameObject::GameObjectID> drawn;
@@ -13,7 +13,7 @@ struct Lifetime : meno::Component {
     explicit Lifetime(int& count) : live(count) { ++live; }
     ~Lifetime() override { --live; }
 };
-}
+} // namespace
 
 // 실제 그래픽 구현은 링크하지 않는다. Sprite 호출 순서만 기록한다.
 namespace meno {
@@ -23,8 +23,10 @@ Window::~Window() = default;
 struct Renderer::Impl {};
 Renderer::Renderer(Window&) {}
 Renderer::~Renderer() = default;
-void Sprite::draw(Renderer&) const { drawn.push_back(parent->id()); }
+void Sprite::draw(Renderer&) const {
+    drawn.push_back(parent->id());
 }
+} // namespace meno
 
 int main() {
     meno::SceneManager manager;
@@ -124,8 +126,11 @@ int main() {
         throw std::runtime_error("update");
     });
     bool threw = false;
-    try { manager.update(0.1); }
-    catch (const std::runtime_error&) { threw = true; }
+    try {
+        manager.update(0.1);
+    } catch (const std::runtime_error&) {
+        threw = true;
+    }
     MENO_CHECK(threw);
     MENO_CHECK(live == 0);
     MENO_CHECK(scene.getGameObject(added) == nullptr);

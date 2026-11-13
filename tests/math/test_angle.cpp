@@ -15,7 +15,9 @@ namespace {
 
 using meno::test::check;
 
-bool near(float a, float b) { return std::fabs(a - b) < 1e-6f; }
+bool near(float a, float b) {
+    return std::fabs(a - b) < 1e-6f;
+}
 
 } // namespace
 

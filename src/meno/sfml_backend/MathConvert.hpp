@@ -19,23 +19,19 @@
 // 다른 .cpp에서 sf:: 타입을 직접 조립하지 않도록 하자.
 namespace meno::backend {
 
-template <typename T>
-[[nodiscard]] constexpr sf::Vector2<T> toSf(const Vec2<T>& v) noexcept {
+template <typename T> [[nodiscard]] constexpr sf::Vector2<T> toSf(const Vec2<T>& v) noexcept {
     return {v.x, v.y};
 }
 
-template <typename T>
-[[nodiscard]] constexpr Vec2<T> fromSf(const sf::Vector2<T>& v) noexcept {
+template <typename T> [[nodiscard]] constexpr Vec2<T> fromSf(const sf::Vector2<T>& v) noexcept {
     return {v.x, v.y};
 }
 
-template <typename T>
-[[nodiscard]] constexpr sf::Rect<T> toSf(const Rect<T>& r) noexcept {
+template <typename T> [[nodiscard]] constexpr sf::Rect<T> toSf(const Rect<T>& r) noexcept {
     return sf::Rect<T>{toSf(r.position), toSf(r.size)};
 }
 
-template <typename T>
-[[nodiscard]] constexpr Rect<T> fromSf(const sf::Rect<T>& r) noexcept {
+template <typename T> [[nodiscard]] constexpr Rect<T> fromSf(const sf::Rect<T>& r) noexcept {
     return Rect<T>{fromSf(r.position), fromSf(r.size)};
 }
 
@@ -48,7 +44,8 @@ template <typename T>
 }
 
 // meno의 각도는 전부 "도(degree), 시계 방향"이다.
-// SFML 3는 sf::Angle이라는 별도 타입을 쓰므로 여기서 감싸고, 큰 각도의 정밀도 손실을 막기 위해 먼저 접는다.
+// SFML 3는 sf::Angle이라는 별도 타입을 쓰므로 여기서 감싸고, 큰 각도의 정밀도 손실을 막기 위해 먼저
+// 접는다.
 [[nodiscard]] inline sf::Angle toSfAngle(float degrees) noexcept {
     return sf::degrees(wrapDegrees(degrees));
 }
@@ -61,13 +58,14 @@ template <typename T>
 [[nodiscard]] inline sf::View toSfView(const Camera2D& camera, Vec2u framebuffer) {
     sf::View view{toSf(camera.center), toSf(viewRect(camera, framebuffer).size)};
 
-    // 360으로 접은 각도를 넘긴다. 큰 각도를 그대로 넘기면 SFML이 라디안으로 바꾸는 단계에서 정밀도를 잃어
-    // 화면에 그려진 위치가 좌표 계산 결과와 몇 픽셀씩 어긋난다.
+    // 360으로 접은 각도를 넘긴다. 큰 각도를 그대로 넘기면 SFML이 라디안으로 바꾸는 단계에서
+    // 정밀도를 잃어 화면에 그려진 위치가 좌표 계산 결과와 몇 픽셀씩 어긋난다.
     view.setRotation(toSfAngle(camera.rotation));
 
     // SFML은 비율 뷰포트에 창 크기를 곱한 뒤 위치와 크기를 따로 반올림한다.
-    // 모서리 기준으로 반올림해 둔 픽셀 사각형을 다시 비율로 바꿔 넘기면, SFML이 반올림해도 정확히 같은 정수가 나온다.
-    // 창 크기가 0이면 비율로 바꿀 수 없다. 어차피 그릴 픽셀이 없으므로 기본 뷰포트를 그대로 둔다.
+    // 모서리 기준으로 반올림해 둔 픽셀 사각형을 다시 비율로 바꿔 넘기면, SFML이 반올림해도 정확히
+    // 같은 정수가 나온다. 창 크기가 0이면 비율로 바꿀 수 없다. 어차피 그릴 픽셀이 없으므로 기본
+    // 뷰포트를 그대로 둔다.
     if (framebuffer.x > 0 && framebuffer.y > 0) {
         const Rectf pixels = viewportPixels(camera, framebuffer);
         const auto screen = static_cast<Vec2f>(framebuffer);
@@ -79,4 +77,4 @@ template <typename T>
 
 } // namespace meno::backend
 
-#endif  // MENO_MATH_CONVERT_HPP
+#endif // MENO_MATH_CONVERT_HPP

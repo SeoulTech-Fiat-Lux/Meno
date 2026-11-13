@@ -10,7 +10,7 @@ struct CallbackGuard {
     explicit CallbackGuard(bool& flag) : busy(flag) { busy = true; }
     ~CallbackGuard() { busy = false; }
 };
-}
+} // namespace
 
 Scene& SceneManager::createScene() {
     const auto id = nextId_++;
@@ -31,20 +31,25 @@ Scene* SceneManager::getScene(Scene::SceneID id) noexcept {
 }
 
 bool SceneManager::changeScene(Scene::SceneID id) {
-    if (!getScene(id)) return false;
+    if (!getScene(id))
+        return false;
     pending_ = id;
-    if (!busy_) applyPending();
+    if (!busy_)
+        applyPending();
     return true;
 }
 
 void SceneManager::applyPending() {
-    if (!pending_) return;
+    if (!pending_)
+        return;
     auto* next = getScene(*pending_);
     pending_.reset();
-    if (!next || next == active_) return;
+    if (!next || next == active_)
+        return;
     CallbackGuard guard{busy_};
     // exit이 예외를 던지면 기존 Scene을 유지한다.
-    if (active_) active_->onExit();
+    if (active_)
+        active_->onExit();
     active_ = next;
     // enter가 예외를 던져도 새 Scene의 소유권과 활성 상태는 유지한다.
     active_->onEnter();
@@ -58,34 +63,41 @@ void SceneManager::discard() noexcept {
 }
 
 bool SceneManager::deleteScene(Scene::SceneID id) {
-    if (busy_ || (active_ && active_->id() == id)) return false;
-    if (pending_ == id) pending_.reset();
+    if (busy_ || (active_ && active_->id() == id))
+        return false;
+    if (pending_ == id)
+        pending_.reset();
     return scenes_.erase(id) != 0;
 }
 
 void SceneManager::update(double dt) {
-    if (busy_) return;
+    if (busy_)
+        return;
     applyPending();
     {
         CallbackGuard guard{busy_};
-        if (active_) active_->onUpdate(dt);
+        if (active_)
+            active_->onUpdate(dt);
     }
     applyPending();
 }
 
 bool SceneManager::shutdown() {
-    if (busy_) return false;
+    if (busy_)
+        return false;
     CallbackGuard guard{busy_};
     std::exception_ptr exitError;
     try {
-        if (active_) active_->onExit();
+        if (active_)
+            active_->onExit();
     } catch (...) {
         exitError = std::current_exception();
     }
     active_ = nullptr;
     pending_.reset();
     scenes_.clear();
-    if (exitError) std::rethrow_exception(exitError);
+    if (exitError)
+        std::rethrow_exception(exitError);
     return true;
 }
 

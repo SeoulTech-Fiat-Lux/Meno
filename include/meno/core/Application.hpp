@@ -50,4 +50,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_APPLICATION_HPP
+#endif // MENO_APPLICATION_HPP

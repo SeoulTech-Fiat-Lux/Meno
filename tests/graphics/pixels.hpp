@@ -5,9 +5,9 @@
 // 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼내므로, CMake에서 src/meno 경로와
 // SFML::Graphics를 직접 연결한 테스트만 include할 수 있다. 예: render_resize, render_shapes
 
-#include <meno/window/Window.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Vec2.hpp>
+#include <meno/window/Window.hpp>
 
 #include "sfml_backend/Access.hpp"
 #include "sfml_backend/MathConvert.hpp"

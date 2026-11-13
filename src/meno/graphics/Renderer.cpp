@@ -1,10 +1,10 @@
 #include <meno/graphics/Renderer.hpp>
 
 #include <meno/graphics/DrawParams.hpp>
-#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
 #include <meno/math/Angle.hpp>
+#include <meno/window/Window.hpp>
 
 #include "sfml_backend/Access.hpp"
 #include "sfml_backend/MathConvert.hpp"
@@ -37,10 +37,8 @@ namespace {
 
 // drawText와  measureText가 쓰는 sf::Text를 조립하는 유일한 지점.
 // 둘이 따로 조립하면 한쪽에만 옵션이 빠져 잰 크기와 그린 크기가 어긋난다.
-// 실제로 measureText에 외곽선이 빠져 있어서 외곽선 t짜리 텍스트가 축마다 2 * ceil(t)만큼 작게 측정되었다.
 [[nodiscard]] sf::Text makeText(const sf::Font& font, std::string_view text,
                                 const TextParams& params) {
-    // TextParams에 필드를 추가하면 여기에만 반영할 수 있도록 한다.
     // position은 그릴 때만 필요하므로 drawText가 따로 넣는다.
     sf::Text drawable{font, toSfString(text), params.characterSize};
     drawable.setFillColor(backend::toSf(params.color));
@@ -51,9 +49,7 @@ namespace {
     return drawable;
 }
 
-// 기본 도형이 공유하는 변환 설정.
-template <typename Shape>
-void applyShapeParams(Shape& shape, const ShapeParams& params) {
+template <typename Shape> void applyShapeParams(Shape& shape, const ShapeParams& params) {
     shape.setFillColor(backend::toSf(params.fill));
     shape.setOutlineColor(backend::toSf(params.outline));
     shape.setOutlineThickness(params.outlineThickness);
@@ -87,17 +83,19 @@ struct Renderer::Impl {
     // 소유하지 않는다. Window가 Renderer보다 오래 산다는 것이 계약이다.
 
     // Renderer가 살아있는 동안 target은 절대 nullptr이 아니다.
-    // Window가 이동할 수 없어 렌더 타깃 주소가 바뀌지 않고, Renderer도 이동을 막아 빈 껍데기가 생기지 않기 때문이다.
-    // 그래서 아래 멤버 함수들은 검사 없이 역참조한다.
+    // Window가 이동할 수 없어 렌더 타깃 주소가 바뀌지 않고, Renderer도 이동을 막아 빈 껍데기가
+    // 생기지 않기 때문이다. 그래서 아래 멤버 함수들은 검사 없이 역참조한다.
     sf::RenderWindow* target{nullptr};
 
     // 마지막으로 setCamera한 카메라. 비어 있으면 resetCamera() 상태(화면 좌표)다.
-    // sf::View로 바꿔 던지지 않고 원본을 기억해야, 창 크기가 바뀐 뒤에도 같은 규칙으로 다시 계산할 수 있다.
+    // sf::View로 바꿔 던지지 않고 원본을 기억해야, 창 크기가 바뀐 뒤에도 같은 규칙으로 다시 계산할
+    // 수 있다.
     std::optional<Camera2D> camera;
 
     // 지금 그리기와 좌표 계산에 쓸 카메라.
-    // 화면 좌표는 "center가 창 크기의 절반이고 size가 {0,0}인 카메라"로 표현한다. 픽셀 좌표 == 월드 좌표가 된다.
-    // SFML의 getDefaultView()는 창을 만들 때 한 번만 정해져 리사이즈를 따라가지 않으므로 쓰지 않는다.
+    // 화면 좌표는 "center가 창 크기의 절반이고 size가 {0,0}인 카메라"로 표현한다. 픽셀 좌표 == 월드
+    // 좌표가 된다. SFML의 getDefaultView()는 창을 만들 때 한 번만 정해져 리사이즈를 따라가지
+    // 않으므로 쓰지 않는다.
     [[nodiscard]] Camera2D activeCamera() const {
         if (camera) {
             return *camera;
@@ -108,9 +106,9 @@ struct Renderer::Impl {
     // 창 크기는 Window::pollEvents가 SFML 이벤트를 꺼낼 때 SFML이 갱신한다.
     [[nodiscard]] Vec2u framebuffer() const { return backend::fromSf(target->getSize()); }
 
-    // 현재 카메라를 현재 창 크기로 SFML에 적용한다.
-    // 크기가 그대로인지 비교해 건너뛰지 않는다. Core가 같은 크기로 창을 다시 만들면(sf::RenderWindow::create)
-    // SFML의 뷰가 기본값으로 돌아가는데, 크기 비교로는 이를 알아챌 수 없다. setView는 값만 바꾸므로 싸다.
+    // 크기가 그대로인지 비교해 건너뛰지 않는다. Core가 같은 크기로 창을 다시
+    // 만들면(sf::RenderWindow::create) SFML의 뷰가 기본값으로 돌아가는데, 크기 비교로는 이를 알아챌
+    // 수 없다. setView는 값만 바꾸므로 싸다.
     void applyView() { target->setView(backend::toSfView(activeCamera(), framebuffer())); }
 };
 
@@ -123,7 +121,8 @@ Renderer::~Renderer() = default;
 // --- 프레임 ---------------------------------------------------------------
 
 void Renderer::beginFrame(Color clearColor) {
-    // 직전 프레임 이후 창 크기가 바뀌었을 수 있다. 리사이즈를 따로 통지받지 않고 매 프레임 다시 적용한다.
+    // 직전 프레임 이후 창 크기가 바뀌었을 수 있다. 리사이즈를 따로 통지받지 않고 매 프레임 다시
+    // 적용한다.
     impl_->applyView();
     impl_->target->clear(backend::toSf(clearColor));
 }
@@ -141,15 +140,12 @@ void Renderer::draw(const Texture& texture, Vec2f position) {
 void Renderer::draw(const Texture& texture, const SpriteParams& params) {
     const sf::Texture* native = backend::TextureAccess::native(texture);
     if (native == nullptr) {
-        // 로드에 실패했거나 이동당한 텍스처. 조용히 건너뛴다.
         return;
     }
 
-    // source가 없으면 텍스처 전체.
     const Vec2u textureSize = texture.size();
-    Recti source = params.source.value_or(Recti{{0, 0},
-                                               {static_cast<int>(textureSize.x),
-                                                static_cast<int>(textureSize.y)}});
+    Recti source = params.source.value_or(
+        Recti{{0, 0}, {static_cast<int>(textureSize.x), static_cast<int>(textureSize.y)}});
 
     // SFML은 텍스처 사각형의 폭/높이가 음수면 뒤집어서 그린다.
     // 스케일을 음수로 주는 방식과 달리 origin 계산이 틀어지지 않는다.
@@ -184,7 +180,6 @@ void Renderer::drawRect(const Rectf& rect, const ShapeParams& params) {
 }
 
 void Renderer::drawCircle(Vec2f center, float radius, const ShapeParams& params) {
-    // 넘겨받은 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
     if (!detail::isPositiveFinite(radius)) {
         return;
     }
@@ -247,7 +242,6 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
         return;
     }
 
-    // 한 바퀴 이상 회전하며 그리는 경우.
     // 아래처럼 중심을 꼭짓점으로 넣으면 외곽선에 반지름 선이 하나 남게 된다.
     if (std::fabs(sweepDeg) >= 360.f) {
         drawCircle(center, radius, params);
@@ -266,7 +260,6 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
     // 외곽선에는 호의 점들 뒤로 중심점을 두 번 넣는다.
     // 마지막 중심점 중복은 360도에 가까운 부채꼴에서 SFML의 외곽선 조인이
     // 바늘처럼 길게 돌출되는 현상을 억제한다.
-    // (시작점만 다른 동일한 도형)
     std::array<Vec2f, kSegmentsPerTurn + 4> local{};
     const float start = toRadians(wrapDegrees(startDeg));
     const float step = toRadians(sweepDeg) / static_cast<float>(segments);
@@ -275,7 +268,6 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
         local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;
     }
 
-    // 면을 채울 때와 외곽선을 그을 때 모두 같은 변환을 사용하며, 순서는 sf::Shape와 같다.
     sf::Transformable placement;
     placement.setOrigin(backend::toSf(params.origin));
     placement.setRotation(backend::toSfAngle(params.rotation));
@@ -339,8 +331,9 @@ Rectf Renderer::measureTextBounds(const Font& font, std::string_view text,
 }
 
 // --- 카메라 ---------------------------------------------------------------
-// 계산은 math/Camera2D.hpp의 자유 함수가 한다. 그리기(toSfView)도 같은 함수를 쓰므로 둘은 항상 일치한다.
-// 자유 함수는 이 클래스의 멤버와 이름이 같아서, 멤버 안에서 그냥 부르면 멤버 자신이 불린다. 반드시 meno::를 붙인다.
+// 계산은 math/Camera2D.hpp의 자유 함수가 한다. 그리기(toSfView)도 같은 함수를 쓰므로 둘은 항상
+// 일치한다. 자유 함수는 이 클래스의 멤버와 이름이 같아서, 멤버 안에서 그냥 부르면 멤버 자신이
+// 불린다. 반드시 meno::를 붙인다.
 
 void Renderer::setCamera(const Camera2D& camera) {
     impl_->camera = camera;

@@ -60,7 +60,7 @@ Input::Tick Input::now() const noexcept {
     // update 안에서 들어온 이벤트는 현재 update에서 처리하고,
     // 밖에서 들어온 이벤트는 다음에 동작하는 update에서 처리한다.
     const std::uint64_t step = TimeAccess::stepNumber();
-    return Tick{frame_, TimeAccess::isInStep() ? step : step + 1 };
+    return Tick{frame_, TimeAccess::isInStep() ? step : step + 1};
 }
 
 bool Input::isCurrent(const Tick& tick) const noexcept {
@@ -142,7 +142,7 @@ float Input::mouseWheelDelta() const noexcept {
     return current(wheel_);
 }
 
-std::string Input::text() const{
+std::string Input::text() const {
     return current(text_);
 }
 
@@ -206,7 +206,9 @@ void Input::refreshActions(const Tick& now) noexcept {
 
 // --- 이벤트 ----------------------------------------------------
 
-void Input::beginFrame() noexcept { ++frame_; }
+void Input::beginFrame() noexcept {
+    ++frame_;
+}
 
 void Input::handleEvent(const Event& event) {
     std::visit([this](const auto& e) { on(e); }, event);
@@ -215,14 +217,14 @@ void Input::handleEvent(const Event& event) {
 void Input::on(const event::FocusLost&) {
     // 포커스가 없는 동안에는 뗀 키에 대해서 이벤트를 처리하지 않는다.
     // 눌린 채로 남아서 다음 update에 영향을 미치지 않도록 모두 떼어둔다.
-     const Tick tick = now();
-     for (ButtonState& state : keys_) {
+    const Tick tick = now();
+    for (ButtonState& state : keys_) {
         release(state, tick);
-     }
-     for (ButtonState& state: mouseButtons_) {
+    }
+    for (ButtonState& state : mouseButtons_) {
         release(state, tick);
-     }
-     refreshActions(tick);
+    }
+    refreshActions(tick);
 }
 
 void Input::on(const event::KeyPressed& event) {
@@ -262,4 +264,4 @@ void Input::on(const event::TextEntered& event) {
     }
 }
 
-}   // namespace meno
+} // namespace meno

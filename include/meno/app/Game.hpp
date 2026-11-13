@@ -2,12 +2,12 @@
 #define MENO_GAME_HPP
 
 #include <meno/core/Application.hpp>
-#include <meno/scene/SceneManager.hpp>
-#include <meno/window/Window.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Vec2.hpp>
 #include <meno/resources/ResourceManager.hpp>
+#include <meno/scene/SceneManager.hpp>
+#include <meno/window/Window.hpp>
 
 #include <string>
 

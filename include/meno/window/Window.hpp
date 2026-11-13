@@ -31,7 +31,8 @@ public:
     void close();
 
     /// OS 이벤트를 처리한다. 닫기 버튼은 창을 닫고, 입력 이벤트는 Input으로 넘긴다.
-    /// 창 크기 변경은 여기서 이벤트를 꺼낼 때 SFML이 반영한다. Renderer::beginFrame보다 먼저 부를 것.
+    /// 창 크기 변경은 여기서 이벤트를 꺼낼 때 SFML이 반영한다. Renderer::beginFrame보다 먼저 부를
+    /// 것.
     void pollEvents();
 
     /// 이 창으로 들어온 키보드·마우스 입력. pollEvents()가 갱신한다.
@@ -52,4 +53,4 @@ private:
 
 } // namespace meno
 
-#endif  // MENO_WINDOW_HPP
+#endif // MENO_WINDOW_HPP

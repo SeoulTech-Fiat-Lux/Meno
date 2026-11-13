@@ -33,12 +33,11 @@ public:
     ResourceManager& operator=(ResourceManager&&) noexcept = default;
 
     /// 이미지 파일을 로드한다. 같은 정규화 경로와 옵션은 기존 Texture를 공유한다.
-    [[nodiscard]] std::shared_ptr<const Texture>
-    loadTexture(const std::filesystem::path& path, TextureOptions options = {});
+    [[nodiscard]] std::shared_ptr<const Texture> loadTexture(const std::filesystem::path& path,
+                                                             TextureOptions options = {});
 
     /// 폰트 파일을 로드한다. 같은 정규화 경로는 기존 Font를 공유한다.
-    [[nodiscard]] std::shared_ptr<const Font>
-    loadFont(const std::filesystem::path& path);
+    [[nodiscard]] std::shared_ptr<const Font> loadFont(const std::filesystem::path& path);
 
     /// 효과음 샘플을 로드한다. 같은 정규화 경로는 기존 SoundBuffer를 공유한다.
     [[nodiscard]] std::shared_ptr<const SoundBuffer>

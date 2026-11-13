@@ -12,12 +12,12 @@
 // wasPressed 계열은 한 번 누를 때 정확히 한 번만 true다. 화면 왼쪽 위의 대시 횟수로 확인할 수 있다.
 
 #include <meno/core/Application.hpp>
-#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/input/Input.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Vec2.hpp>
+#include <meno/window/Window.hpp>
 
 #include <algorithm>
 #include <array>

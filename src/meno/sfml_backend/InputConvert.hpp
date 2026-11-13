@@ -28,5 +28,4 @@ namespace meno::backend {
 
 } // namespace meno::backend
 
-
 #endif // MENO_INPUT_CONVERT_HPP

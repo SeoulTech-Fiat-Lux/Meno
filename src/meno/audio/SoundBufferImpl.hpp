@@ -14,4 +14,4 @@ struct SoundBuffer::Impl {
 
 } // namespace meno
 
-#endif  // MENO_SOUND_BUFFER_IMPL_HPP
+#endif // MENO_SOUND_BUFFER_IMPL_HPP

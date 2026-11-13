@@ -91,9 +91,18 @@ public:
     std::function<void()> stopHandler;
 
 private:
-    void onStart() override { if (startHandler) startHandler(); }
-    void update(double) override { if (updateHandler) updateHandler(); }
-    void onStop() override { if (stopHandler) stopHandler(); }
+    void onStart() override {
+        if (startHandler)
+            startHandler();
+    }
+    void update(double) override {
+        if (updateHandler)
+            updateHandler();
+    }
+    void onStop() override {
+        if (stopHandler)
+            stopHandler();
+    }
 };
 
 void testExclusiveRun() {
@@ -103,15 +112,20 @@ void testExclusiveRun() {
     CallbackApplication outer({.fixedTimeStep = 0.01});
     CallbackApplication inner({.fixedTimeStep = 0.02});
     int innerStarts = 0;
-    inner.startHandler = [&] { ++innerStarts; inner.stop(); };
+    inner.startHandler = [&] {
+        ++innerStarts;
+        inner.stop();
+    };
     int rejected = 0;
     const auto rejectNestedRun = [&] {
         const auto elapsed = meno::Time::elapsedTime();
         const auto fixedDelta = meno::Time::fixedDeltaTime();
         for (bool injectedClock : {false, true}) {
             try {
-                if (injectedClock) inner.run(clock);
-                else inner.run();
+                if (injectedClock)
+                    inner.run(clock);
+                else
+                    inner.run();
                 MENO_CHECK(false);
             } catch (const std::logic_error&) {
                 ++rejected;
@@ -122,7 +136,10 @@ void testExclusiveRun() {
             MENO_CHECK(meno::Time::fixedDeltaTime() == fixedDelta);
         }
     };
-    outer.startHandler = [&] { rejectNestedRun(); now += 10ms; };
+    outer.startHandler = [&] {
+        rejectNestedRun();
+        now += 10ms;
+    };
     outer.updateHandler = [&] {
         rejectNestedRun();
         MENO_CHECK(near(meno::Time::elapsedTime(), 0.01));
@@ -141,18 +158,21 @@ void testExclusiveRun() {
     for (int phase = 0; phase < 3; ++phase) {
         CallbackApplication failing({.fixedTimeStep = 0.01});
         failing.startHandler = [&] {
-            if (phase == 0) throw std::runtime_error("start failed");
+            if (phase == 0)
+                throw std::runtime_error("start failed");
             now += 10ms;
         };
         failing.updateHandler = [&] {
-            if (phase == 1) throw std::runtime_error("update failed");
+            if (phase == 1)
+                throw std::runtime_error("update failed");
             failing.stop();
         };
         failing.stopHandler = [] { throw std::runtime_error("stop failed"); };
         try {
             failing.run(clock);
             MENO_CHECK(false);
-        } catch (const std::runtime_error&) {}
+        } catch (const std::runtime_error&) {
+        }
         MENO_CHECK(!failing.isRunning());
         inner.run(clock);
         MENO_CHECK(innerStarts == phase + 2);
@@ -166,14 +186,12 @@ int main() {
     using TimePoint = meno::Clock::TimePoint;
 
     // 생성 시 0초, 이후 프레임은 5ms, 12ms, 100ms가 흐른다.
-    const std::vector<TimePoint> times{TimePoint{}, TimePoint{} + 5ms,
-                                       TimePoint{} + 17ms, TimePoint{} + 117ms};
+    const std::vector<TimePoint> times{TimePoint{}, TimePoint{} + 5ms, TimePoint{} + 17ms,
+                                       TimePoint{} + 117ms};
     std::size_t nextTime = 0;
-    meno::Clock clock([&] { return times.at(nextTime++); },
-                      [](meno::Clock::Duration) {});
+    meno::Clock clock([&] { return times.at(nextTime++); }, [](meno::Clock::Duration) {});
 
-    TestApplication app({.fixedTimeStep = 0.01,
-                         .maxUpdatesPerFrame = 3});
+    TestApplication app({.fixedTimeStep = 0.01, .maxUpdatesPerFrame = 3});
     app.run(clock);
 
     MENO_CHECK(app.renderCount == 3);
@@ -186,8 +204,7 @@ int main() {
     for (std::size_t index = 0; index < app.updateDeltas.size(); ++index) {
         MENO_CHECK(near(app.updateDeltas[index], 0.01));
         MENO_CHECK(near(app.observedDeltas[index], 0.01));
-        MENO_CHECK(near(app.observedElapsedTimes[index],
-                    0.01 * static_cast<double>(index + 1)));
+        MENO_CHECK(near(app.observedElapsedTimes[index], 0.01 * static_cast<double>(index + 1)));
     }
     MENO_CHECK(near(meno::Time::deltaTime(), 0.01));
     MENO_CHECK(near(meno::Time::fixedDeltaTime(), 0.01));
@@ -196,8 +213,7 @@ int main() {
     MENO_CHECK(near(meno::Time::realElapsedTime(), 0.117));
     MENO_CHECK(!app.isRunning());
 
-    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{} + 20ms,
-                                            TimePoint{} + 40ms};
+    const std::vector<TimePoint> retryTimes{TimePoint{}, TimePoint{} + 20ms, TimePoint{} + 40ms};
     std::size_t nextRetryTime = 0;
     meno::Clock retryClock([&] { return retryTimes.at(nextRetryTime++); },
                            [](meno::Clock::Duration) {});
@@ -228,17 +244,15 @@ int main() {
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;
-    meno::Clock limitedClock(
-        [&] { return limitedNow; },
-        [&](meno::Clock::Duration duration) {
-            ++waitCount;
-            limitedNow += duration;
-        });
+    meno::Clock limitedClock([&] { return limitedNow; },
+                             [&](meno::Clock::Duration duration) {
+                                 ++waitCount;
+                                 limitedNow += duration;
+                             });
     limitedClock.setFramerateLimit(60);
 
     const double expectedFrameTime = 1.0 / 60.0;
-    const double clockTolerance =
-        std::chrono::duration<double>(meno::Clock::Duration{1}).count();
+    const double clockTolerance = std::chrono::duration<double>(meno::Clock::Duration{1}).count();
     const double limitedDelta = limitedClock.restart();
 
     MENO_CHECK(std::abs(limitedDelta - expectedFrameTime) <= clockTolerance);

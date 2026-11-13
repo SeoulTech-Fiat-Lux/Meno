@@ -17,8 +17,8 @@ struct WorldBox {
 };
 
 bool valid(const Collider& collider) {
-    return collider.parent && std::isfinite(collider.parent->transform().magnitude)
-        && collider.parent->transform().magnitude != 0.f;
+    return collider.parent && std::isfinite(collider.parent->transform().magnitude) &&
+           collider.parent->transform().magnitude != 0.f;
 }
 
 bool valid(const BoxCollider& box) {
@@ -32,8 +32,8 @@ bool valid(const CircleCollider& circle) {
 WorldBox worldBox(const BoxCollider& box) {
     const auto& transform = box.parent->transform();
     return {transform.transformPoint(box.offset + box.size * 0.5f),
-            box.size * (std::abs(transform.magnitude) * 0.5f),
-            transform.rotateVector({1.f, 0.f}), transform.rotateVector({0.f, 1.f})};
+            box.size * (std::abs(transform.magnitude) * 0.5f), transform.rotateVector({1.f, 0.f}),
+            transform.rotateVector({0.f, 1.f})};
 }
 
 float worldRadius(const CircleCollider& circle) {
@@ -48,10 +48,8 @@ bool intersects_box_circle(const BoxCollider& box, const CircleCollider& circle)
     const Vec2f delta = circle.parent->transform().transformPoint(circle.offset) - bounds.center;
     // Project into the rotated box's frame without dividing by scale.
     const Vec2f center{dot(delta, bounds.xAxis), dot(delta, bounds.yAxis)};
-    const Vec2f closest{
-        std::clamp(center.x, -bounds.halfSize.x, bounds.halfSize.x),
-        std::clamp(center.y, -bounds.halfSize.y, bounds.halfSize.y)
-    };
+    const Vec2f closest{std::clamp(center.x, -bounds.halfSize.x, bounds.halfSize.x),
+                        std::clamp(center.y, -bounds.halfSize.y, bounds.halfSize.y)};
     const float radius = worldRadius(circle);
     return (center - closest).lengthSquared() < radius * radius;
 }
@@ -65,10 +63,10 @@ bool intersects_box_box(const BoxCollider& a, const BoxCollider& b) {
     const Vec2f delta = boundsB.center - boundsA.center;
     // Separating axis theorem: test the two edge normals of each rectangle.
     for (const Vec2f axis : {boundsA.xAxis, boundsA.yAxis, boundsB.xAxis, boundsB.yAxis}) {
-        const float extentA = boundsA.halfSize.x * std::abs(dot(boundsA.xAxis, axis))
-                            + boundsA.halfSize.y * std::abs(dot(boundsA.yAxis, axis));
-        const float extentB = boundsB.halfSize.x * std::abs(dot(boundsB.xAxis, axis))
-                            + boundsB.halfSize.y * std::abs(dot(boundsB.yAxis, axis));
+        const float extentA = boundsA.halfSize.x * std::abs(dot(boundsA.xAxis, axis)) +
+                              boundsA.halfSize.y * std::abs(dot(boundsA.yAxis, axis));
+        const float extentB = boundsB.halfSize.x * std::abs(dot(boundsB.xAxis, axis)) +
+                              boundsB.halfSize.y * std::abs(dot(boundsB.yAxis, axis));
         if (!(std::abs(dot(delta, axis)) < extentA + extentB))
             return false;
     }
@@ -94,8 +92,8 @@ bool BoxCollider::contains(Vec2f worldPoint) const {
     const Vec2f delta = worldPoint - bounds.center;
     const float x = dot(delta, bounds.xAxis);
     const float y = dot(delta, bounds.yAxis);
-    return -bounds.halfSize.x <= x && x < bounds.halfSize.x
-        && -bounds.halfSize.y <= y && y < bounds.halfSize.y;
+    return -bounds.halfSize.x <= x && x < bounds.halfSize.x && -bounds.halfSize.y <= y &&
+           y < bounds.halfSize.y;
 }
 
 bool intersects(const GameObject& a, const GameObject& b) {

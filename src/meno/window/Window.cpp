@@ -1,15 +1,14 @@
-#include <meno/window/Window.hpp>
 #include <meno/input/Input.hpp>
+#include <meno/window/Window.hpp>
 
 #include "sfml_backend/Access.hpp"
-#include "sfml_backend/MathConvert.hpp"
 #include "sfml_backend/InputConvert.hpp"
+#include "sfml_backend/MathConvert.hpp"
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <optional>
-
 
 namespace meno {
 
@@ -18,13 +17,11 @@ struct Window::Impl {
     Input input;
 
     Impl(Vec2u size, std::string_view title)
-        // SFML 3의 VideoMode는 폭/높이를 따로 받지 않고 Vector2u 하나를 받는다.
         : window(sf::VideoMode{backend::toSf(size)},
                  sf::String::fromUtf8(title.begin(), title.end())) {}
 };
 
-Window::Window(Vec2u size, std::string_view title)
-    : impl_(std::make_unique<Impl>(size, title)) {}
+Window::Window(Vec2u size, std::string_view title) : impl_(std::make_unique<Impl>(size, title)) {}
 
 Window::~Window() = default;
 
@@ -38,7 +35,6 @@ void Window::close() {
 
 void Window::pollEvents() {
     impl_->input.beginFrame();
-    // SFML 3의 pollEvent는 std::optional<sf::Event>를 돌려준다.
     while (const std::optional event = impl_->window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             impl_->window.close();

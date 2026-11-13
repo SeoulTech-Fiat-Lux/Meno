@@ -34,15 +34,18 @@ bool AudioSource::hasSound() const noexcept {
 }
 
 void AudioSource::play() {
-    if (sound_) sound_->play();
+    if (sound_)
+        sound_->play();
 }
 
 void AudioSource::pause() {
-    if (sound_) sound_->pause();
+    if (sound_)
+        sound_->pause();
 }
 
 void AudioSource::stop() {
-    if (sound_) sound_->stop();
+    if (sound_)
+        sound_->stop();
 }
 
 bool AudioSource::isPlaying() const {
@@ -51,9 +54,11 @@ bool AudioSource::isPlaying() const {
 
 void AudioSource::setVolume(float volume) {
     const std::optional normalized = audio_detail::normalizeVolume(volume);
-    if (!normalized) return;
+    if (!normalized)
+        return;
     volume_ = *normalized;
-    if (sound_) sound_->setVolume(volume_);
+    if (sound_)
+        sound_->setVolume(volume_);
 }
 
 float AudioSource::volume() const noexcept {

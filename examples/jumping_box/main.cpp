@@ -32,13 +32,15 @@ meno::Texture makeTexture(bool floor) {
             meno::Color color;
             if (floor) {
                 const bool speckle = (x * 7 + y * 11) % 23 < 3;
-                color = y < 3 ? meno::Color::fromRgb(0x79C88C) :
-                    (speckle ? meno::Color::fromRgb(0x44566A) : meno::Color::fromRgb(0x334155));
+                color = y < 3 ? meno::Color::fromRgb(0x79C88C)
+                              : (speckle ? meno::Color::fromRgb(0x44566A)
+                                         : meno::Color::fromRgb(0x334155));
             } else {
                 const bool rim = x < 2 || y < 2 || x >= width - 2 || y >= height - 2;
                 const bool brace = x == y || x + y == width - 1;
-                color = rim ? meno::Color::fromRgb(0xFFD18A) :
-                    (brace ? meno::Color::fromRgb(0xEAAF62) : meno::Color::fromRgb(0xAC683D));
+                color =
+                    rim ? meno::Color::fromRgb(0xFFD18A)
+                        : (brace ? meno::Color::fromRgb(0xEAAF62) : meno::Color::fromRgb(0xAC683D));
             }
             const auto index = (y * width + x) * 4;
             pixels[index] = color.r;
@@ -48,7 +50,8 @@ meno::Texture makeTexture(bool floor) {
         }
     }
     auto texture = meno::Texture::fromPixels({width, height}, pixels.data());
-    if (!texture) throw std::runtime_error("Failed to create demo texture");
+    if (!texture)
+        throw std::runtime_error("Failed to create demo texture");
     texture->setSmooth(false);
     return std::move(*texture);
 }
@@ -76,14 +79,16 @@ private:
         floor_->transform().magnitude = scale;
         floor_->sprite().setTexture(makeTexture(true));
         floor_->addComponent<meno::BoxCollider>(meno::Vec2f{},
-            meno::Vec2f{static_cast<float>(floorWidthPixels), static_cast<float>(floorHeightPixels)});
+                                                meno::Vec2f{static_cast<float>(floorWidthPixels),
+                                                            static_cast<float>(floorHeightPixels)});
 
         crate_ = &scene.createGameObject();
         crate_->transform().pos = {floorX + 32.f, floorY - crateSize};
         crate_->transform().magnitude = scale;
         crate_->sprite().setTexture(makeTexture(false));
         // Collider도 텍스처와 같은 로컬 크기. Transform 배율은 intersects가 적용한다.
-        crate_->addComponent<meno::BoxCollider>(meno::Vec2f{},
+        crate_->addComponent<meno::BoxCollider>(
+            meno::Vec2f{},
             meno::Vec2f{static_cast<float>(cratePixels), static_cast<float>(cratePixels)});
 
         scene.setUpdateHandler([this](double dt) { moveBox(dt); });
@@ -107,7 +112,8 @@ private:
 
         if (grounded_) {
             pause_ -= dt;
-            if (pause_ > 0.0) return;
+            if (pause_ > 0.0)
+                return;
             grounded_ = false;
             verticalSpeed_ = -jumpSpeed; // 화면에서는 위쪽이 음수다.
         }
@@ -124,7 +130,6 @@ private:
             pause_ = jumpPause;
         }
     }
-
 };
 
 } // namespace

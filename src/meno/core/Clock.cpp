@@ -9,8 +9,7 @@ Clock::Clock()
     : Clock([] { return NativeClock::now(); },
             [](Duration duration) { std::this_thread::sleep_for(duration); }) {}
 
-Clock::Clock(NowFunction now, WaitFunction wait)
-    : now_(std::move(now)), wait_(std::move(wait)) {
+Clock::Clock(NowFunction now, WaitFunction wait) : now_(std::move(now)), wait_(std::move(wait)) {
     startTime_ = now_();
     lastTime_ = startTime_;
 }

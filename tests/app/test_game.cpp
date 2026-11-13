@@ -1,5 +1,5 @@
-#include <meno/core/Clock.hpp>
 #include <meno/app/Game.hpp>
+#include <meno/core/Clock.hpp>
 #include <meno/scene/Component.hpp>
 
 #include "check.hpp"
@@ -141,9 +141,8 @@ int main() {
     {
         NormalGame game(normalDestroyed, normalDependenciesAlive, exited);
         int calls = 0;
-        meno::Clock clock(
-            [&] { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 20ms); },
-            [](meno::Clock::Duration) {});
+        meno::Clock clock([&] { return meno::Clock::TimePoint{} + (calls++ == 0 ? 0ms : 20ms); },
+                          [](meno::Clock::Duration) {});
         // Application 참조로 실행해도 가상 dispatch를 통해 Game의 정리 경로를 탄다.
         meno::Application& application = game;
         application.run(clock);
@@ -194,8 +193,8 @@ int main() {
         {
             meno::Game second({.windowSize = {160u, 90u}, .title = "meno second game"});
             auto& secondScene = second.scenes().createScene();
-            secondScene.createGameObject().addComponent<LifetimeProbe>(
-                second, secondDestroyed, secondDependenciesAlive);
+            secondScene.createGameObject().addComponent<LifetimeProbe>(second, secondDestroyed,
+                                                                       secondDependenciesAlive);
             MENO_CHECK(second.scenes().changeScene(secondScene.id()));
             MENO_CHECK(&first.scenes() != &second.scenes());
             MENO_CHECK(first.scenes().activeScene() == &firstScene);
@@ -213,8 +212,8 @@ int main() {
     {
         meno::Game game({.windowSize = {160u, 90u}, .title = "meno game discard test"});
         auto& scene = game.scenes().createScene();
-        scene.createGameObject().addComponent<LifetimeProbe>(
-            game, discarded, discardDependenciesAlive);
+        scene.createGameObject().addComponent<LifetimeProbe>(game, discarded,
+                                                             discardDependenciesAlive);
         scene.setExitHandler([&] { exitCalledFromDestructor = true; });
         MENO_CHECK(game.scenes().changeScene(scene.id()));
         // run()하지 않은 Game도 소유 Scene을 폐기해야 하지만, 이 시점의

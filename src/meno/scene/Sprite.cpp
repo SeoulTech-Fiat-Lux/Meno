@@ -1,11 +1,7 @@
-//
-// Created by 최상준 on 26. 9. 7..
-//
-
 #include <meno/scene/Sprite.hpp>
 
-#include <meno/scene/GameObject.hpp>
 #include <meno/graphics/Renderer.hpp>
+#include <meno/scene/GameObject.hpp>
 
 namespace meno {
 

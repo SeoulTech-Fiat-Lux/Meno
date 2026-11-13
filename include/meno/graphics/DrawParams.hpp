@@ -79,4 +79,4 @@ struct TextParams {
 
 } // namespace meno
 
-#endif  // MENO_DRAW_PARAMS_HPP
+#endif // MENO_DRAW_PARAMS_HPP

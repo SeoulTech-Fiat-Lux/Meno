@@ -12,7 +12,8 @@ int main() {
     MENO_CHECK(!meno::intersects(a, b));
 
     a.transform().pos = {100.f, 200.f};
-    auto& boxA = a.addComponent<meno::BoxCollider>(meno::Vec2f{10.f, 20.f}, meno::Vec2f{10.f, 10.f});
+    auto& boxA =
+        a.addComponent<meno::BoxCollider>(meno::Vec2f{10.f, 20.f}, meno::Vec2f{10.f, 10.f});
     MENO_CHECK(!meno::intersects(a, b));
     auto& boxB = b.addComponent<meno::BoxCollider>(meno::Vec2f{}, meno::Vec2f{2.f, 2.f});
     b.transform().pos = {112.f, 222.f};
@@ -133,8 +134,8 @@ int main() {
     roundProbe.transform().pos = {3.f, 3.f};
     MENO_CHECK(meno::intersects(thin, roundProbe));
 
-    for (float scale : {0.f, std::numeric_limits<float>::infinity(),
-                        std::numeric_limits<float>::quiet_NaN()}) {
+    for (float scale :
+         {0.f, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN()}) {
         thin.transform().magnitude = scale;
         MENO_CHECK(!meno::intersects(thin, probe));
         MENO_CHECK(!meno::intersects(thin, roundProbe));
@@ -144,16 +145,16 @@ int main() {
     }
 
     auto& pointTarget = scene.createGameObject();
-    auto& pointBox = pointTarget.addComponent<meno::BoxCollider>(
-        meno::Vec2f{2.f, 4.f}, meno::Vec2f{8.f, 4.f});
+    auto& pointBox =
+        pointTarget.addComponent<meno::BoxCollider>(meno::Vec2f{2.f, 4.f}, meno::Vec2f{8.f, 4.f});
     pointTarget.transform().pos = {10.f, 20.f};
     MENO_CHECK(pointBox.contains({16.f, 26.f}));
     MENO_CHECK(!pointBox.contains({11.f, 26.f}));
     // Half-open bounds include the left/top edges and the top-left corner.
     for (const meno::Vec2f point : {meno::Vec2f{12.f, 26.f}, {16.f, 24.f}, {12.f, 24.f}})
         MENO_CHECK(pointBox.contains(point));
-    for (const meno::Vec2f point : {meno::Vec2f{20.f, 26.f}, {16.f, 28.f},
-                                  {20.f, 24.f}, {12.f, 28.f}, {20.f, 28.f}})
+    for (const meno::Vec2f point :
+         {meno::Vec2f{20.f, 26.f}, {16.f, 28.f}, {20.f, 24.f}, {12.f, 28.f}, {20.f, 28.f}})
         MENO_CHECK(!pointBox.contains(point));
 
     pointTarget.transform().rotation = 90.f;
@@ -176,14 +177,13 @@ int main() {
     pointBox.layer = 7;
     MENO_CHECK(pointBox.contains({3.f, 3.5f}));
 
-    for (float scale : {0.f, std::numeric_limits<float>::infinity(),
-                        std::numeric_limits<float>::quiet_NaN()}) {
+    for (float scale :
+         {0.f, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN()}) {
         pointTarget.transform().magnitude = scale;
         MENO_CHECK(!pointBox.contains({3.f, 3.5f}));
     }
     pointTarget.transform().magnitude = 1.f;
-    for (const meno::Vec2f size : {meno::Vec2f{0.f, 1.f}, {-1.f, 1.f},
-                                 {10.f, 0.f}, {10.f, -1.f}}) {
+    for (const meno::Vec2f size : {meno::Vec2f{0.f, 1.f}, {-1.f, 1.f}, {10.f, 0.f}, {10.f, -1.f}}) {
         pointBox.size = size;
         MENO_CHECK(!pointBox.contains({3.f, 3.5f}));
     }

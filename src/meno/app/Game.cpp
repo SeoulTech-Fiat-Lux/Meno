@@ -16,9 +16,7 @@ struct RunInvocationGuard {
 } // namespace
 
 Game::Game(GameConfig config)
-    : Application(config.application),
-      window_(config.windowSize, config.title),
-      renderer_(window_),
+    : Application(config.application), window_(config.windowSize, config.title), renderer_(window_),
       clearColor_(config.clearColor) {}
 
 Game::~Game() noexcept {

@@ -5,8 +5,8 @@
 #include "audio/Volume.hpp"
 
 #include <SFML/Audio/Sound.hpp>
-#include <utility>
 #include <optional>
+#include <utility>
 
 namespace meno {
 

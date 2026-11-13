@@ -14,10 +14,10 @@
 
 // 폰트는 흔한 시스템 경로에서 찾는다. 없으면 MENO_TEST_FONT로 경로를 지정한다.
 
-#include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/window/Window.hpp>
 
 #include "check.hpp"
 #include "display.hpp"
@@ -36,7 +36,8 @@ using namespace meno;
 // --- 컴파일 타임 검사 -------------------------------------------------------
 
 // Renderer는 Window를 빌려 쓰는 타입이므로 복사와 이동을 막는다.
-// 이동다한 Renderer(impl_ == nullptr)가 생길 수 없어야, 맴버 함수들이 검사 없이 역참조해도 안전하다.
+// 이동다한 Renderer(impl_ == nullptr)가 생길 수 없어야, 맴버 함수들이 검사 없이 역참조해도
+// 안전하다.
 static_assert(!std::is_copy_constructible_v<Renderer>);
 static_assert(!std::is_copy_assignable_v<Renderer>);
 static_assert(!std::is_move_constructible_v<Renderer>);
@@ -62,7 +63,9 @@ namespace {
 using meno::test::check;
 using meno::test::env;
 
-bool near(float a, float b, float tolerance = 1e-3f) { return std::fabs(a - b) < tolerance; }
+bool near(float a, float b, float tolerance = 1e-3f) {
+    return std::fabs(a - b) < tolerance;
+}
 bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return near(a.x, b.x, tolerance) && near(a.y, b.y, tolerance);
 }
@@ -76,10 +79,10 @@ bool containsInclusive(const Rectf& rect, Vec2f point, float tolerance = 0.5f) {
 
 std::optional<Font> loadTestFont() {
     const std::array<std::string_view, 5> candidates{
-        env("MENO_TEST_FONT"),  // 환경 변수로 지정한 폰트
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",   // Ubuntu (fonts-dejavu-core)
+        env("MENO_TEST_FONT"),                             // 환경 변수로 지정한 폰트
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", // Ubuntu (fonts-dejavu-core)
         "C:/Windows/Fonts/arial.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",  // macOS
+        "/System/Library/Fonts/Supplemental/Arial.ttf", // macOS
         "/Library/Fonts/Arial.ttf",
     };
 
@@ -141,9 +144,11 @@ void checkText(const Renderer& renderer, const Font& font) {
     // SFML은 외곽선 t가 있으면 바운드를 축마다 ceil(t)씩 양쪽으로 넓힌다.
     // 수정 전에는 측정용 sf::Text에 외곽선이 빠져 있어서 b == a였다.
     check(near(b.size, a.size + Vec2f{4.f, 4.f}), "외곽선 2를 주면 잰 크기가 축마다 4 커진다");
-    check(near(b.position, a.position - Vec2f{2.f, 2.f}), "외곽선 2를 주면 바운드 원점이 2씩 당겨진다");
+    check(near(b.position, a.position - Vec2f{2.f, 2.f}),
+          "외곽선 2를 주면 바운드 원점이 2씩 당겨진다");
 
-    check(renderer.measureText(font, text, outlined) == b.size, "measureText == measureTextBounds().size");
+    check(renderer.measureText(font, text, outlined) == b.size,
+          "measureText == measureTextBounds().size");
 
     // 바운드 원점은 {0,0}이 아니다(글자 위 여백). measureText만으로 정렬하면 이만큼 틀어진다.
     check(a.position.y > 0.f, "바운드 원점에 윗여백이 있다 (measureTextBounds가 필요한 이유)");
@@ -153,7 +158,8 @@ void checkText(const Renderer& renderer, const Font& font) {
     transformed.origin = {50.f, 10.f};
     transformed.rotation = 30.f;
     const Rectf c = renderer.measureTextBounds(font, text, transformed);
-    check(c.position == b.position && c.size == b.size, "origin/rotation은 측정 결과에 영향을 주지 않는다");
+    check(c.position == b.position && c.size == b.size,
+          "origin/rotation은 측정 결과에 영향을 주지 않는다");
 
     check(renderer.measureText(font, "", plain) == Vec2f{0.f, 0.f}, "빈 문자열의 크기는 {0,0}");
 }
@@ -180,15 +186,18 @@ void checkCamera(Renderer& renderer) {
     renderer.setCamera({.rotation = 45.f});
     const Rectf tilted = renderer.visibleWorldBounds();
     bool allCornersInside = true;
-    for (const Vec2f corner : {Vec2f{0.f, 0.f}, Vec2f{screen.x, 0.f}, Vec2f{0.f, screen.y}, screen}) {
-        allCornersInside = allCornersInside && containsInclusive(tilted, renderer.screenToWorld(corner));
+    for (const Vec2f corner :
+         {Vec2f{0.f, 0.f}, Vec2f{screen.x, 0.f}, Vec2f{0.f, screen.y}, screen}) {
+        allCornersInside =
+            allCornersInside && containsInclusive(tilted, renderer.screenToWorld(corner));
     }
-    check(allCornersInside, "45도 회전: 화면 모서리의 월드 좌표가 모두 visibleWorldBounds 안에 있다");
+    check(allCornersInside,
+          "45도 회전: 화면 모서리의 월드 좌표가 모두 visibleWorldBounds 안에 있다");
 
     renderer.resetCamera();
 }
 
-}   // namespace
+} // namespace
 
 int main() {
     if (meno::test::skipWithoutDisplay()) {

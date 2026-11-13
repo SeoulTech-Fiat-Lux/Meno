@@ -32,16 +32,16 @@ void frame(Input& input, std::initializer_list<meno::Event> events) {
 // 가상시계: 생성 시각은 0이고 이후 restart()마다 frameIntervals를 차례로 더해서 돌려준다.
 // 준비한 간격보다 프레임이 더 돌 경우, at()이 예외를 던진다.
 meno::Clock simulatedClock(std::vector<std::chrono::milliseconds> frameIntervals) {
-    return meno::Clock([intervals = std::move(frameIntervals), next = std::size_t{0},
-                        now = meno::Clock::TimePoint{}]()
-                        mutable {
-                            if (next > 0) {
-                                now += intervals.at(next - 1);
-                            }
-                            ++next;
-                            return now;
-                        },
-                        [](meno::Clock::Duration) {});
+    return meno::Clock(
+        [intervals = std::move(frameIntervals), next = std::size_t{0},
+         now = meno::Clock::TimePoint{}]() mutable {
+            if (next > 0) {
+                now += intervals.at(next - 1);
+            }
+            ++next;
+            return now;
+        },
+        [](meno::Clock::Duration) {});
 }
 
 // --- update 밖: 틱 = 프레임 ---------------------------------------
@@ -164,7 +164,8 @@ void testFocusLost() {
     MENO_CHECK(!input.isDown(MouseButton::Right));
     MENO_CHECK(input.wasReleased(MouseButton::Right));
 
-    // 누른 채로 Focus를 잃었다가 다시 돌아올 때, 동일한 키의 KeyPressed가 오면 새로 누른 것으로 간주한다.
+    // 누른 채로 Focus를 잃었다가 다시 돌아올 때, 동일한 키의 KeyPressed가 오면 새로 누른 것으로
+    // 간주한다.
     frame(input, {ev::KeyPressed{Key::W}});
     MENO_CHECK(input.wasPressed(Key::W));
 }
@@ -256,7 +257,8 @@ public:
     using Script = std::vector<std::vector<meno::Event>>;
 
     explicit ScriptedApplication(Script script, Script updateScript = {})
-        : Application({.fixedTimeStep = 0.01}), script_(std::move(script)), updateScript_(std::move(updateScript)) {}
+        : Application({.fixedTimeStep = 0.01}), script_(std::move(script)),
+          updateScript_(std::move(updateScript)) {}
 
     Input input;
     std::vector<Observation> updates;
@@ -287,7 +289,7 @@ private:
     void render(double) override {
         renders.push_back(observe());
         if (++frame_ == script_.size()) {
-                stop();
+            stop();
         }
     }
 
@@ -391,6 +393,7 @@ public:
         : Application({.fixedTimeStep = 0.01}), input_(input) {}
 
     int presses = 0;
+
 private:
     void update(double) override {
         if (input_.wasPressed(Key::A)) {
@@ -404,7 +407,7 @@ private:
 };
 
 void testRunRestart() {
-    //run 밖에서 들어온 KeyPressed는 다음 run의 첫 update가 확인한다.
+    // run 밖에서 들어온 KeyPressed는 다음 run의 첫 update가 확인한다.
     Input input;
     frame(input, {ev::KeyPressed{Key::A}});
     PressCounter first(input);
@@ -435,7 +438,8 @@ void testStepFlagClearedAfterException() {
     }
 
     // update가 예외로 끝날 때 "update 내부" 표시 역시 지운다.
-    // 남아 있을 경우 아래 질의를 update를 기준으로 판정하기 때문에 false를 반환하는 오류가 생기기 때문이다.
+    // 남아 있을 경우 아래 질의를 update를 기준으로 판정하기 때문에 false를 반환하는 오류가 생기기
+    // 때문이다.
     Input input;
     frame(input, {ev::KeyPressed{Key::A}});
     MENO_CHECK(input.wasPressed(Key::A));

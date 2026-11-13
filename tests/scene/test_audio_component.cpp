@@ -14,7 +14,7 @@ namespace {
 int liveSounds = 0;
 int playingSounds = 0;
 float appliedVolume = 1.0F;
-}
+} // namespace
 
 namespace meno {
 struct Sound::Impl {
@@ -23,7 +23,8 @@ struct Sound::Impl {
     Impl() { ++liveSounds; }
     ~Impl() {
         --liveSounds;
-        if (playing) --playingSounds;
+        if (playing)
+            --playingSounds;
     }
 };
 Sound::Sound() : impl_(std::make_unique<Impl>()) {}
@@ -31,7 +32,8 @@ Sound::~Sound() = default;
 Sound::Sound(Sound&&) noexcept = default;
 Sound& Sound::operator=(Sound&&) noexcept = default;
 std::optional<Sound> Sound::loadFromFile(const std::filesystem::path& path) {
-    if (path == "missing.wav") return std::nullopt;
+    if (path == "missing.wav")
+        return std::nullopt;
     return Sound{};
 }
 void Sound::play() {
@@ -40,7 +42,9 @@ void Sound::play() {
         ++playingSounds;
     }
 }
-void Sound::pause() { stop(); }
+void Sound::pause() {
+    stop();
+}
 void Sound::stop() {
     if (impl_ && impl_->playing) {
         impl_->playing = false;
@@ -48,10 +52,15 @@ void Sound::stop() {
     }
 }
 void Sound::setVolume(float volume) {
-    if (impl_) appliedVolume = impl_->volume = volume;
+    if (impl_)
+        appliedVolume = impl_->volume = volume;
 }
-float Sound::volume() const { return impl_ ? impl_->volume : 0.0F; }
-bool Sound::isPlaying() const { return impl_ && impl_->playing; }
+float Sound::volume() const {
+    return impl_ ? impl_->volume : 0.0F;
+}
+bool Sound::isPlaying() const {
+    return impl_ && impl_->playing;
+}
 } // namespace meno
 
 static_assert(std::is_base_of_v<meno::Component, meno::AudioSource>);

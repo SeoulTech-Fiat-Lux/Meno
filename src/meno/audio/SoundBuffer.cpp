@@ -12,8 +12,7 @@ SoundBuffer::SoundBuffer(SoundBuffer&&) noexcept = default;
 
 SoundBuffer& SoundBuffer::operator=(SoundBuffer&&) noexcept = default;
 
-std::optional<SoundBuffer>
-SoundBuffer::loadFromFile(const std::filesystem::path& path) {
+std::optional<SoundBuffer> SoundBuffer::loadFromFile(const std::filesystem::path& path) {
     SoundBuffer result;
     if (!result.impl_->buffer.loadFromFile(path)) {
         return std::nullopt;

@@ -18,10 +18,9 @@ struct State {
     State& operator=(const State&) = delete;
 };
 
-static_assert(std::is_same_v<
-    decltype(std::declval<meno::Scene&>().getState<State>()), State*>);
-static_assert(std::is_same_v<
-    decltype(std::declval<const meno::Scene&>().getState<State>()), const State*>);
+static_assert(std::is_same_v<decltype(std::declval<meno::Scene&>().getState<State>()), State*>);
+static_assert(
+    std::is_same_v<decltype(std::declval<const meno::Scene&>().getState<State>()), const State*>);
 
 void testRegistration(meno::SceneManager& manager) {
     int originalLive = 0;

@@ -2,8 +2,8 @@
 #define MENO_SCENE_MANAGER_HPP
 
 #include <meno/scene/Scene.hpp>
-#include <optional>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 namespace meno {
@@ -25,13 +25,11 @@ private:
     Scene* active_{nullptr};
     std::optional<Scene::SceneID> pending_;
     bool busy_{false};
-
-// private 맴버 함수 필드
     void applyPending();
     // Game의 마지막 소멸 방어선. 파생 Game이 이미 소멸한 시점이므로
     // 사용자 onExit 콜백은 호출하지 않고 소유한 Scene만 폐기한다.
     void discard() noexcept;
-    
+
 public:
     SceneManager() = default;
     ~SceneManager() = default;
@@ -55,7 +53,8 @@ public:
     [[nodiscard]] bool deleteScene(Scene::SceneID id);
     void update(double dt);
     void draw(Renderer& renderer) {
-        if (active_) active_->drawScene(renderer);
+        if (active_)
+            active_->drawScene(renderer);
     }
     /// 창/오디오 시스템 종료 전에 호출한다. 콜백 안에서는 false를 반환한다.
     /// Scene을 모두 해제하지만 매니저는 유지되며 다시 사용할 수 있다.
@@ -64,4 +63,4 @@ public:
 };
 
 } // namespace meno
-#endif  // MENO_SCENE_MANAGER_HPP
+#endif // MENO_SCENE_MANAGER_HPP

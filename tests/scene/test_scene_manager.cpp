@@ -1,5 +1,5 @@
-#include <meno/scene/SceneManager.hpp>
 #include "check.hpp"
+#include <meno/scene/SceneManager.hpp>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -18,7 +18,7 @@ struct Lifetime final : meno::Component {
     explicit Lifetime(int& live) : count(live) { ++count; }
     ~Lifetime() override { --count; }
 };
-}
+} // namespace
 
 int main() {
     meno::SceneManager manager;
@@ -65,8 +65,11 @@ int main() {
     MENO_CHECK(manager.getScene(firstId) == nullptr);
     MENO_CHECK(live == 1);
     second.setUpdateHandler([](double) { throw std::runtime_error("test"); });
-    try { manager.update(0.1f); MENO_CHECK(false); }
-    catch (const std::runtime_error&) {}
+    try {
+        manager.update(0.1f);
+        MENO_CHECK(false);
+    } catch (const std::runtime_error&) {
+    }
     MENO_CHECK(manager.shutdown());
     MENO_CHECK(events == "AUuaBb");
     MENO_CHECK(live == 0);
@@ -83,13 +86,19 @@ int main() {
     manager.update(0.1f);
     MENO_CHECK(manager.activeScene() == &fourth);
     fourth.setExitHandler([] { throw std::runtime_error("exit"); });
-    try { (void)manager.changeScene(third.id()); MENO_CHECK(false); }
-    catch (const std::runtime_error&) {}
+    try {
+        (void)manager.changeScene(third.id());
+        MENO_CHECK(false);
+    } catch (const std::runtime_error&) {
+    }
     MENO_CHECK(manager.activeScene() == &fourth);
     fourth.setExitHandler({});
     third.setEnterHandler([] { throw std::runtime_error("enter"); });
-    try { (void)manager.changeScene(third.id()); MENO_CHECK(false); }
-    catch (const std::runtime_error&) {}
+    try {
+        (void)manager.changeScene(third.id());
+        MENO_CHECK(false);
+    } catch (const std::runtime_error&) {
+    }
     MENO_CHECK(manager.activeScene() == &third);
     MENO_CHECK(manager.shutdown());
     auto& cleanupScene = manager.createScene();
@@ -109,8 +118,9 @@ int main() {
         throw std::runtime_error("shutdown exit");
     });
     bool shutdownThrew = false;
-    try { (void)manager.shutdown(); }
-    catch (const std::runtime_error& error) {
+    try {
+        (void)manager.shutdown();
+    } catch (const std::runtime_error& error) {
         shutdownThrew = true;
         MENO_CHECK(std::string(error.what()) == "shutdown exit");
     }

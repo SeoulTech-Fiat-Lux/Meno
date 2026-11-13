@@ -1,12 +1,12 @@
 #include <meno/scene/Component.hpp>
-#include <meno/scene/Sprite.hpp>
 #include <meno/scene/GameObject.hpp>
 #include <meno/scene/SceneManager.hpp>
+#include <meno/scene/Sprite.hpp>
 
 #include "check.hpp"
 
-#include <type_traits>
 #include <cmath>
+#include <type_traits>
 
 namespace {
 
@@ -23,9 +23,7 @@ struct Name final : meno::Component {
 };
 
 template <typename T>
-concept CanAddComponent = requires(meno::GameObject& object) {
-    object.template addComponent<T>();
-};
+concept CanAddComponent = requires(meno::GameObject& object) { object.template addComponent<T>(); };
 
 } // namespace
 

@@ -37,7 +37,6 @@ void Application::run(Clock& clock) {
     struct RunGuard {
         bool& running;
 
-        // 예외 처리: update 상태를 벗어날 때 "update 안에 있다"는 표시를 남기지 않도록 한다.
         ~RunGuard() noexcept {
             running = false;
             Time::endStep();
@@ -79,8 +78,12 @@ void Application::run(Clock& clock) {
     onStop();
 }
 
-void Application::stop() noexcept { running_ = false; }
-bool Application::isRunning() const noexcept { return running_; }
+void Application::stop() noexcept {
+    running_ = false;
+}
+bool Application::isRunning() const noexcept {
+    return running_;
+}
 void Application::onStart() {}
 void Application::processEvents() {}
 void Application::update(double) {}
