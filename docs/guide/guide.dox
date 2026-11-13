@@ -1,0 +1,24 @@
+// 사이트의 "사용자 설명서" 쪽과 사이드바 목차. 장은 docs/guide/의 Markdown 파일이며, \subpage의
+// 이름은 Doxygen이 파일 경로로 만든다(docs/guide/01-setup.md -> md_docs_2guide_201-setup).
+// 장을 더하면 Doxyfile의 INPUT과 이 목록에 같은 순서로 넣는다.
+
+/**
+\page guide 사용자 설명서
+
+meno로 게임을 만드는 방법을 주제별로 설명합니다. 클래스와 함수의 세부 규칙은
+<a href="topics.html">모듈</a>별 API 레퍼런스에 있으며, 이 설명서에서는 그것들을 엮어 게임을
+만드는 과정을 다룹니다.
+
+대부분의 장은 그대로 빌드할 수 있는 완성 코드로 시작해 개념, 주의할 점, 관련 예제와 API 순서로
+이어집니다.
+
+\section guide_part1 1부. 시작하기
+
+순서대로 읽기를 권합니다. 1부를 마치면 게임 루프와 그리기, 입력만으로 퐁 같은 게임을 처음부터
+끝까지 만들 수 있습니다.
+
+- \subpage md_docs_2guide_201-setup
+- \subpage md_docs_2guide_202-first-game
+- \subpage md_docs_2guide_203-drawing
+- \subpage md_docs_2guide_204-input
+*/
