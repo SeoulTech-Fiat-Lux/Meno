@@ -150,7 +150,7 @@ renderer.beginFrame(meno::Color::fromRgb(0x14181F)); // 배경색으로 지운�
 
 renderer.drawRect({{40.f, 40.f}, {120.f, 16.f}}, {.fill = meno::colors::White});
 renderer.drawCircle(ball.position, 8.f, {.fill = meno::Color::fromRgb(0xE5533D)});
-renderer.drawLine(from, to, meno::Color::fromRgb(0x4FC3F7), 2.f); // 두께 2px
+renderer.drawLine(from, to, {.color = meno::Color::fromRgb(0x4FC3F7), .thickness = 2.f}); // 두께 2px
 
 // 다각형. 점은 position 기준 로컬 좌표이고, rotation은 position을 축으로 돈다.
 renderer.drawPolygon(ship.position, {{14.f, 0.f}, {-10.f, -8.f}, {-10.f, 8.f}},

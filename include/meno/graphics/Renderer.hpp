@@ -75,7 +75,9 @@ public:
 
     // radius가 양의 실수가 아니라면(0, 음수, NaN, 무한대 제외)면 그리지 않는다.
     void drawCircle(Vec2f center, float radius, const ShapeParams& params = {});
-    void drawLine(Vec2f from, Vec2f to, Color color = colors::White, float thickness = 1.f);
+    // 두께 있는 선. from에서 시작해 to에서 끝나며, 두께는 선 양쪽으로 반씩 퍼진다.
+    // 길이나 두께가 양의 유한수가 아니면(0, 음수, NaN, 무한대) 그리지 않는다.
+    void drawLine(Vec2f from, Vec2f to, const LineParams& params = {});
 
     // 다각형 그리기 함수. points(position을 원점으로 한 로컬 좌표)를 순서대로 이은 뒤에 마지막 점을
     // 첫 점에 연결한다. params.origin은 position에 놓일 로컬 점이자 회전 중심이다. 기본값 {0,

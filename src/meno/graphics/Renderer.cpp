@@ -1,3 +1,4 @@
+#include "meno/graphics/DrawParams.hpp"
 #include <meno/graphics/Renderer.hpp>
 
 #include <meno/window/Window.hpp>
@@ -200,18 +201,19 @@ void Renderer::drawCircle(Vec2f center, float radius, const ShapeParams& params)
     impl_->target->draw(shape);
 }
 
-void Renderer::drawLine(Vec2f from, Vec2f to, Color color, float thickness) {
+void Renderer::drawLine(Vec2f from, Vec2f to, const LineParams& params) {
     const Vec2f delta = to - from;
     const float length = delta.length();
-    if (length <= 0.f) {
+    // 길이가 0이거나 끝점에 NaN·무한대가 있으면 length도 양의 유한수가 아니다.
+    if (!detail::isPositiveFinite(length) || !detail::isPositiveFinite(params.thickness)) {
         return;
     }
 
     // 두께 있는 선은 회전시킨 사각형으로 그린다. VertexArray의 Lines는
     // 두께를 지원하지 않아서 thickness 인자가 무시되기 때문이다.
-    sf::RectangleShape shape{sf::Vector2f{length, thickness}};
-    shape.setFillColor(backend::toSf(color));
-    shape.setOrigin(sf::Vector2f{0.f, thickness / 2.f});
+    sf::RectangleShape shape{sf::Vector2f{length, params.thickness}};
+    shape.setFillColor(backend::toSf(params.color));
+    shape.setOrigin(sf::Vector2f{0.f, params.thickness / 2.f});
     shape.setPosition(backend::toSf(from));
     shape.setRotation(sf::radians(std::atan2(delta.y, delta.x)));
 

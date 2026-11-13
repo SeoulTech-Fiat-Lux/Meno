@@ -55,6 +55,14 @@ struct ShapeParams {
     float rotation{0.f};
 };
 
+/// 선 그리기 옵션.
+struct LineParams {
+    Color color{colors::White};
+
+    /// 픽셀 단위 두께. 선을 가운데에 두고 양쪽으로 반씩 퍼진다. 양의 유한수가 아니면 그리지 않는다.
+    float thickness{1.f};
+};
+
 /// 텍스트 그리기 옵션.
 struct TextParams {
     /// 픽셀 단위 글자 크기.

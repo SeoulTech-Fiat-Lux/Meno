@@ -152,7 +152,7 @@ void checkCircle(Window& window, Renderer& renderer) {
 void checkLine(Window& window, Renderer& renderer) {
     // 두께는 선을 가운데에 두고 양쪽으로 반씩 퍼진다. y 90의 가로선, 두께 6이면 y 87~93을 칠한다.
     sf::Image image = drawAndCapture(
-        window, renderer, [&] { renderer.drawLine({100.f, 90.f}, {220.f, 90.f}, kInk, 6.f); });
+        window, renderer, [&] { renderer.drawLine({100.f, 90.f}, {220.f, 90.f}, {.color = kInk, .thickness = 6.f}); });
     check(isColor(image, {160.f, 88.f}, kInk) && isColor(image, {160.f, 92.f}, kInk) &&
               isColor(image, {160.f, 85.f}, kClear) && isColor(image, {160.f, 95.f}, kClear),
           "drawLine: 두께가 선 양쪽으로 반씩 퍼진다");
@@ -161,15 +161,27 @@ void checkLine(Window& window, Renderer& renderer) {
 
     // 방향은 atan2로 구해 사각형을 돌린다. 아래에서 위로 긋는 세로선도 from에서 to로 뻗어야 한다.
     image = drawAndCapture(window, renderer,
-                           [&] { renderer.drawLine({160.f, 140.f}, {160.f, 40.f}, kInk, 4.f); });
+                           [&] { renderer.drawLine({160.f, 140.f}, {160.f, 40.f}, {.color = kInk, .thickness = 4.f}); });
     check(isColor(image, {160.f, 90.f}, kInk) && isColor(image, {165.f, 90.f}, kClear) &&
               isColor(image, {160.f, 37.f}, kClear) && isColor(image, {160.f, 143.f}, kClear),
           "drawLine: 세로선도 from에서 to로 뻗는다");
 
     // 길이 0인 선은 두께가 있어도 그리지 않는다.
-    image =
-        drawAndCapture(window, renderer, [&] { renderer.drawLine(kCenter, kCenter, kInk, 10.f); });
+    image = drawAndCapture(window, renderer, [&] { renderer.drawLine(kCenter, kCenter, {.color = kInk, .thickness = 10.f}); });
     check(isColor(image, kCenter, kClear), "drawLine: 길이 0은 그리지 않는다");
+
+    // 두께나 길이가 양의 유한수가 아니면 그리지 않는다. drawCircle의 반지름과 같은 규칙이다.
+    // 음수 두께는 검사하지 않으면 뒤집힌 사각형으로 실제로 칠해진다.
+    image = drawAndCapture(window, renderer, [&] {
+        for (const float thickness : {0.f, -4.f, std::nanf(""), INFINITY}) {
+            renderer.drawLine({100.f, 90.f}, {220.f, 90.f}, {.color = kInk, .thickness = thickness});
+        }
+        renderer.drawLine({100.f, 90.f}, {std::nanf(""), 90.f}, {.color = kInk, .thickness = 6.f});
+        renderer.drawLine({100.f, 90.f}, {INFINITY, 90.f}, {.color = kInk, .thickness = 6.f});
+    });
+    check(isColor(image, {160.f, 88.f}, kClear) && isColor(image, {160.f, 92.f}, kClear) &&
+              isColor(image, {100.f, 90.f}, kClear),
+          "drawLine: 두께가 0·음수·NaN·무한대이거나 끝점이 NaN·무한대면 그리지 않는다");
 }
 
 // --- 다각형 -----------------------------------------------------------------

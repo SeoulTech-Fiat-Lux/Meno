@@ -51,6 +51,11 @@ static_assert(!std::is_copy_constructible_v<Font>);
 static_assert(std::is_nothrow_move_constructible_v<Font>);
 static_assert(std::is_nothrow_move_assignable_v<Font>);
 
+// LineParams의 기본값과 필드 순서. 지정 초기화가 컴파일되지 않으면 순서가 바뀐 것이다.
+static_assert(LineParams{}.thickness == 1.f);
+static_assert(LineParams{}.color == colors::White);
+static_assert(LineParams{.color = colors::Red, .thickness = 2.f}.thickness == 2.f);
+
 // --- 런타임 검사 ------------------------------------------------------------
 
 namespace {

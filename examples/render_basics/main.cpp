@@ -70,8 +70,8 @@ std::optional<meno::Font> findSystemFont() {
 /// 월드에 놓인 것들을 그린다. 메인 카메라와 미니맵이 같은 월드를 서로 다른 카메라로 비춘다.
 void drawWorld(meno::Renderer& renderer, const meno::Texture& checker, double elapsed) {
     // 기준선. 원점이 어디인지 보여준다.
-    renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, meno::colors::Gray, 1.f);
-    renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, meno::colors::Gray, 1.f);
+    renderer.drawLine({-400.f, 0.f}, {400.f, 0.f}, {.color = meno::colors::Gray});
+    renderer.drawLine({0.f, -220.f}, {0.f, 220.f}, {.color = meno::colors::Gray});
 
     // 도형: 채우기 + 외곽선
     renderer.drawRect({{-320.f, -160.f}, {120.f, 80.f}},
