@@ -56,10 +56,11 @@ int main() {
 - `scenes()`: 해당 `Game`이 직접 소유한 `SceneManager`에 대한 참조
 
 `SceneManager`는 독립적으로 생성할 수 있으며 각 인스턴스가 자신의 Scene을 소유한다.
-`Game`은 기존과 같이 동시에 하나만 허용한다. 첫 번째 `Game`이 소멸하기 전에
-다른 `Game`을 생성하면 `std::logic_error`를 던진다.
+여러 `Game`을 생성할 수 있으며, 한 `Game`을 소멸해도 다른 `Game`의 Scene은 유지된다.
 
-종료 시 Scene을 가장 먼저 비운 뒤 `ResourceManager`, `Renderer`, `Window` 순서로
+`~Game()`은 멤버 소멸 전에 `discard()`로 Scene을 명시적으로 비우며 `onExit`은 호출하지 않는다.
+`SceneManager`는 마지막 멤버로 선언해 멤버 소멸 순서에서도 가장 먼저 정리한다.
+Scene을 비운 뒤 `ResourceManager`, `Renderer`, `Window` 순서로
 정리한다. 정상 종료의 Scene exit handler가 던진 예외는 `run()` 호출자에게 전달한다.
 `onStart`, update 또는 render가 예외를 던지면 `Game::run()`이 파생 클래스의 멤버가
 파괴되기 전에 Scene을 정리하고 원래 예외를 다시 던진다. `Application&` 또는

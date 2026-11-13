@@ -185,16 +185,27 @@ int main() {
         MENO_CHECK(exitReentrant.clockOverloadRejected);
     }
 
-    bool duplicateRejected = false;
     {
         meno::Game first({.windowSize = {160u, 90u}, .title = "meno first game"});
-        try {
+        auto& firstScene = first.scenes().createScene();
+        MENO_CHECK(first.scenes().changeScene(firstScene.id()));
+        bool secondDestroyed = false;
+        bool secondDependenciesAlive = false;
+        {
             meno::Game second({.windowSize = {160u, 90u}, .title = "meno second game"});
-        } catch (const std::logic_error&) {
-            duplicateRejected = true;
+            auto& secondScene = second.scenes().createScene();
+            secondScene.createGameObject().addComponent<LifetimeProbe>(
+                second, secondDestroyed, secondDependenciesAlive);
+            MENO_CHECK(second.scenes().changeScene(secondScene.id()));
+            MENO_CHECK(&first.scenes() != &second.scenes());
+            MENO_CHECK(first.scenes().activeScene() == &firstScene);
+            MENO_CHECK(second.scenes().activeScene() == &secondScene);
         }
+        MENO_CHECK(secondDestroyed);
+        MENO_CHECK(secondDependenciesAlive);
+        MENO_CHECK(first.scenes().activeScene() == &firstScene);
+        MENO_CHECK(first.scenes().getScene(firstScene.id()) == &firstScene);
     }
-    MENO_CHECK(duplicateRejected);
 
     bool discarded = false;
     bool discardDependenciesAlive = false;
