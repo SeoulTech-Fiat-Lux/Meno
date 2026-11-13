@@ -81,11 +81,11 @@ public:
     /// 예약된 전환을 반영하고, 활성 Scene의 update 핸들러를 부릅니다. Game을 쓰면 Game이 fixed
     /// update마다 부릅니다. Scene의 핸들러 안에서 부르면 아무것도 하지 않습니다.
     void update(double dt);
-    /// 활성 Scene을 그립니다. Game을 쓰면 Game이 부릅니다.
-    void draw(Renderer& renderer) {
-        if (active_)
-            active_->drawScene(renderer);
-    }
+    /// 활성 Scene을 그립니다(Scene::drawScene()). Game을 쓰면 Game이 부릅니다.
+    ///
+    /// 그리는 동안(draw 핸들러 안 포함)은 Scene의 핸들러 안과 같이 취급합니다. changeScene()은
+    /// 다음 update()가 시작될 때 반영되고, deleteScene()과 shutdown()은 false를 돌려줍니다.
+    void draw(Renderer& renderer);
     /// 활성 Scene의 exit 핸들러를 부르고 모든 Scene을 지웁니다. 창이나 오디오가 정리되기 전에
     /// 부릅니다.
     ///

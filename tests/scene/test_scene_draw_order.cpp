@@ -3,6 +3,7 @@
 #include <meno/scene/SceneManager.hpp>
 #include <meno/window/Window.hpp>
 
+#include <algorithm>
 #include <initializer_list>
 #include <stdexcept>
 #include <vector>
@@ -158,6 +159,48 @@ int main() {
     next.setEnterHandler([&] { checkOrder({beforeExit}); });
     manager.update(0.1);
     MENO_CHECK(manager.activeScene() == &next);
+
+    // draw 핸들러는 GameObject를 모두 그린 뒤 한 번 불린다. GameObject ID는 1부터라 0을 표시로 쓴다.
+    constexpr meno::GameObject::GameObjectID kDrawHandler = 0;
+    scene.setUpdateHandler({});
+    scene.setExitHandler({});
+    next.setEnterHandler({});
+    const auto onNext = next.createGameObject().id();
+    bool switchRequested = false;
+    next.setDrawHandler([&](meno::Renderer& target) {
+        MENO_CHECK(&target == &renderer);
+        drawn.push_back(kDrawHandler);
+        // 그리는 동안의 전환은 다음 update로 미뤄지고, Scene 삭제와 종료는 거절된다.
+        switchRequested = manager.changeScene(scene.id());
+        MENO_CHECK(manager.activeScene() == &next);
+        MENO_CHECK(!manager.deleteScene(scene.id()));
+        MENO_CHECK(!manager.shutdown());
+    });
+    drawn.clear();
+    manager.draw(renderer);
+    MENO_CHECK((drawn == std::vector<meno::GameObject::GameObjectID>{onNext, kDrawHandler}));
+    MENO_CHECK(switchRequested);
+    MENO_CHECK(manager.activeScene() == &next);
+    manager.update(0.1);
+    MENO_CHECK(manager.activeScene() == &scene);
+    drawn.clear();
+    manager.draw(renderer);
+    MENO_CHECK(std::ranges::find(drawn, kDrawHandler) ==
+               drawn.end()); // 비활성 Scene은 그리지 않는다
+
+    // draw 핸들러의 예외는 전파되고, 그 뒤에는 다시 핸들러 밖으로 취급한다.
+    scene.setDrawHandler([](meno::Renderer&) { throw std::runtime_error("draw"); });
+    bool drawThrew = false;
+    try {
+        manager.draw(renderer);
+    } catch (const std::runtime_error&) {
+        drawThrew = true;
+    }
+    MENO_CHECK(drawThrew);
+    scene.setDrawHandler({});
+    next.setDrawHandler({});
+    MENO_CHECK(manager.changeScene(next.id()));
+    MENO_CHECK(manager.activeScene() == &next); // 그리기가 끝났으므로 바로 전환된다
 
     MENO_CHECK(manager.shutdown());
     return meno::test::report();

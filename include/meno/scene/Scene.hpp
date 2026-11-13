@@ -19,8 +19,9 @@ class SceneManager;
 /// GameObject를 담는 장면입니다. 타이틀, 게임, 게임 오버처럼 화면 단위로 하나씩 만듭니다.
 ///
 /// SceneManager::createScene()으로만 만들며, 한 번에 하나의 Scene만 활성입니다. 활성 Scene은
-/// 핸들러 세 개로 동작을 정합니다. enter 핸들러는 활성화될 때, update 핸들러는 fixed update마다,
-/// exit 핸들러는 비활성화될 때 불립니다. 그릴 때는 GameObject를 레이어 순서로 그립니다.
+/// 핸들러 네 개로 동작을 정합니다. enter 핸들러는 활성화될 때, update 핸들러는 fixed update마다,
+/// draw 핸들러는 그릴 때, exit 핸들러는 비활성화될 때 불립니다. 그릴 때는 GameObject를 레이어
+/// 순서로 그린 뒤 draw 핸들러를 부르므로, 점수 같은 텍스트나 도형은 draw 핸들러에서 그립니다.
 ///
 /// 주의할 점:
 /// - update 핸들러 안에서 만든 GameObject는 바로 쓸 수 있지만, 그 update가 끝난 뒤부터 그려집니다.
@@ -66,10 +67,12 @@ private:
     using EnterHandler = std::function<void()>;
     using UpdateHandler = std::function<void(double)>;
     using ExitHandler = std::function<void()>;
+    using DrawHandler = std::function<void(Renderer&)>;
 
     EnterHandler enterHandler_;
     UpdateHandler updateHandler_;
     ExitHandler exitHandler_;
+    DrawHandler drawHandler_;
 
     using StateDeleter = void (*)(void*);
     std::unique_ptr<void, StateDeleter> state_{nullptr, +[](void*) {}};
@@ -100,6 +103,22 @@ public:
     ///
     /// 핸들러가 예외를 던지면 전환이 취소되어 이 Scene이 활성 상태로 남습니다.
     void setExitHandler(ExitHandler handler) { exitHandler_ = std::move(handler); }
+
+    /// 이 Scene을 그릴 때 GameObject를 모두 그린 뒤 부를 함수를 정합니다. 점수 같은 텍스트나
+    /// 도형을 인자로 받은 Renderer로 그립니다.
+    ///
+    /// 그린 순서대로 위에 올라가므로 여기서 그린 것은 GameObject보다 위에 보입니다. Game을 쓰면
+    /// 핸들러 안에서 바꾼 카메라는 핸들러가 끝난 뒤 원래대로 돌아오므로, 화면 고정 UI는
+    /// resetCamera() 뒤에 그리면 됩니다. 게임 상태는 update 핸들러에서 바꾸고 여기서는 그리기만
+    /// 합니다. SceneManager::draw()로 그리는 동안에는 Scene 전환이 다음 update()로 미뤄집니다.
+    ///
+    /// \code{.cpp}
+    /// play.setDrawHandler([&](meno::Renderer& renderer) {
+    ///     renderer.resetCamera(); // 화면 좌표로 그립니다.
+    ///     renderer.drawText(*font, "점수: " + std::to_string(score), {16.f, 16.f});
+    /// });
+    /// \endcode
+    void setDrawHandler(DrawHandler handler) { drawHandler_ = std::move(handler); }
 
 private:
     // SceneManager의 재진입 가드 안에서만 핸들러를 실행한다.
@@ -141,8 +160,8 @@ public:
     /// 없는 ID면 false입니다.
     [[nodiscard]] bool setLayer(GameObject::GameObjectID id, int layer) noexcept;
 
-    /// GameObject를 작은 레이어부터, 같은 레이어는 만든 순서(ID 순)대로 그립니다. 각 GameObject의
-    /// Sprite만 그립니다. Game을 쓰면 Game이 부릅니다.
+    /// GameObject를 작은 레이어부터, 같은 레이어는 만든 순서(ID 순)대로 그리고, 마지막에 draw
+    /// 핸들러를 부릅니다. GameObject는 Sprite만 그립니다. Game을 쓰면 Game이 부릅니다.
     void drawScene(Renderer& renderer) const;
 
     /// 이 Scene의 상태 객체를 등록합니다. 점수처럼 Scene마다 들고 있을 데이터를 넣습니다.

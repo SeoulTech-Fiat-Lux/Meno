@@ -38,6 +38,10 @@ void Scene::drawScene(Renderer& renderer) const {
 
     for (const auto* object : drawOrder_)
         object->draw(renderer);
+
+    // 그리기 목록을 다 돈 뒤에 부르므로, 핸들러가 객체를 지워도 순회 중인 목록은 바뀌지 않는다.
+    if (drawHandler_)
+        drawHandler_(renderer);
 }
 
 GameObject* Scene::getGameObject(GameObject::GameObjectID id) noexcept {

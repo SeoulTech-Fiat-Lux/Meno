@@ -30,20 +30,29 @@ struct GameConfig {
 /// 창, 렌더러, 리소스, 장면 루프를 한곳에 묶은 게임입니다. 보통의 게임은 이 클래스로 만듭니다.
 ///
 /// 만들면 바로 창이 뜨고, run()을 부르면 창을 닫을 때까지 루프를 돕니다. 프레임마다 입력을
-/// 처리하고(창이 닫히면 멈춤), 활성 Scene의 update 핸들러를 부르고, 활성 Scene을 그립니다. 이
+/// 처리하고(창이 닫히면 멈춤), 활성 Scene의 update 핸들러를 부르고, 활성 Scene을 그립니다
+/// (GameObject의 Sprite, 그다음 draw 핸들러). 이
 /// 흐름은 재정의할 수 없으며, 상속한다면 onStart()에서 Scene을 구성합니다. 각 Game은 자기
 /// SceneManager를 소유합니다.
 ///
 /// 주의할 점:
-/// - Game은 활성 Scene에 있는 GameObject의 Sprite만 그립니다. 점수 같은 텍스트나 도형을 그릴 곳이
-///   없으므로, 그런 그리기가 필요하면 Application을 직접 상속해 render()에서 Renderer로 그립니다.
+/// - 점수 같은 텍스트나 도형은 Scene::setDrawHandler()로 정한 draw 핸들러에서 그립니다. 핸들러
+///   안에서 바꾼 카메라는 핸들러가 끝나면 원래대로 돌아오므로, 월드 카메라는 update 핸들러나
+///   onStart()에서 renderer().setCamera()로 정합니다.
 /// - 한 번에 하나의 Application(Game 포함)만 실행할 수 있습니다.
 ///
 /// \code{.cpp}
 /// meno::Game game{{.windowSize = {640, 480}, .title = "Pong"}};
+/// const auto font = game.resources().loadFont("assets/fonts/game.ttf");
+/// int score = 0;
 /// meno::Scene& play = game.scenes().createScene();
 /// play.setUpdateHandler([&](double fixedDeltaTime) {
 ///     // 게임 상태를 fixedDeltaTime(초)만큼 진행합니다.
+/// });
+/// play.setDrawHandler([&](meno::Renderer& renderer) {
+///     if (font) {
+///         renderer.drawText(*font, "점수: " + std::to_string(score), {16.f, 16.f});
+///     }
 /// });
 /// (void)game.scenes().changeScene(play.id());
 /// game.run(); // 창을 닫으면 돌아옵니다.
@@ -81,7 +90,8 @@ public:
     [[nodiscard]] const Window& window() const noexcept { return window_; }
     /// \}
 
-    /// 창에 그리는 Renderer입니다. Game에서는 주로 카메라를 정할 때(setCamera) 씁니다.
+    /// 창에 그리는 Renderer입니다. Game에서는 주로 카메라를 정할 때(setCamera) 씁니다. 그리기는
+    /// Scene의 draw 핸들러가 받는 Renderer로 합니다.
     /// \{
     [[nodiscard]] Renderer& renderer() noexcept { return renderer_; }
     [[nodiscard]] const Renderer& renderer() const noexcept { return renderer_; }
