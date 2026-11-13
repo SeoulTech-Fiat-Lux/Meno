@@ -50,8 +50,9 @@ bool AudioSource::isPlaying() const {
 }
 
 void AudioSource::setVolume(float volume) {
-    if (!audio_detail::isValidVolume(volume)) return;
-    volume_ = audio_detail::clampVolume(volume);
+    const std::optional normalized = audio_detail::normalizeVolume(volume);
+    if (!normalized) return;
+    volume_ = *normalized;
     if (sound_) sound_->setVolume(volume_);
 }
 

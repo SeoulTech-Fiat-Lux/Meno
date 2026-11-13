@@ -6,6 +6,7 @@
 
 #include <SFML/Audio/Sound.hpp>
 #include <utility>
+#include <optional>
 
 namespace meno {
 
@@ -62,11 +63,13 @@ void Sound::stop() {
 
 void Sound::setVolume(float volume) {
     // 잘못된 계산에서 전달된 NaN으로 현재 음량 상태가 오염되지 않게 한다.
-    if (impl_ != nullptr && audio_detail::isValidVolume(volume)) {
-        impl_->volume = audio_detail::clampVolume(volume);
-        if (impl_->sound != nullptr) {
-            impl_->sound->setVolume(audio_detail::toBackendVolume(impl_->volume));
-        }
+    const std::optional normalized = audio_detail::normalizeVolume(volume);
+    if (impl_ == nullptr || !normalized) {
+        return;
+    }
+    impl_->volume = *normalized;
+    if (impl_->sound != nullptr) {
+        impl_->sound->setVolume(audio_detail::toBackendVolume(impl_->volume));
     }
 }
 

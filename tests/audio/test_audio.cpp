@@ -82,14 +82,14 @@ int main() {
 
     // 오디오 객체를 만들지 않아 장치가 없는 CI에서도 실행할 수 있다.
     constexpr float nan = std::numeric_limits<float>::quiet_NaN();
-    MENO_CHECK(!meno::audio_detail::isValidVolume(nan));
-    MENO_CHECK(meno::audio_detail::toBackendVolume(nan) == 0.0F);
+    MENO_CHECK(!meno::audio_detail::normalizeVolume(nan).has_value());
+    MENO_CHECK(meno::audio_detail::normalizeVolume(-0.5F) == 0.0F);
+    MENO_CHECK(meno::audio_detail::normalizeVolume(0.25F) == 0.25F);
+    MENO_CHECK(meno::audio_detail::normalizeVolume(1.5F) == 1.0F);
 
-    MENO_CHECK(meno::audio_detail::toBackendVolume(-0.5F) == 0.0F);
     MENO_CHECK(meno::audio_detail::toBackendVolume(0.0F) == 0.0F);
     MENO_CHECK(meno::audio_detail::toBackendVolume(0.25F) == 25.0F);
     MENO_CHECK(meno::audio_detail::toBackendVolume(1.0F) == 100.0F);
-    MENO_CHECK(meno::audio_detail::toBackendVolume(1.5F) == 100.0F);
 
     // Sound·Music·AudioSource는 같은 볼륨 규칙을 따른다. 0~1로 제한하고, NaN은 무시해 기존 값을 유지한다.
     meno::Music volumeMusic;
