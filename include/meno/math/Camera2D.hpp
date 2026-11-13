@@ -10,69 +10,89 @@
 #include <cstdint>
 
 namespace meno {
-/// 카메라가 담는 월드 영역과 뷰포트의 종횡비가 다를 때, 둘을 어떻게 맞출지 정한다.
+/// 카메라가 담는 월드 영역과 뷰포트의 종횡비가 다를 때, 둘을 어떻게 맞출지 정합니다.
 enum class CameraFit : std::uint8_t {
-    /// SFML의 기본 동작과 동일하게, 카메라가 담는 월드 영역을 뷰포트에 맞춘다.
-    /// 이때 카메라가 담는 월드 영역의 종횡비가 뷰포트와 다르면, 그림이 늘어나거나 찌그러진다.
-    /// 띠 없이 뷰포트를 꽉 채워야 할 때 명시한다. (.fit = CameraFit::Stretch)
+    // SFML의 기본 동작(sf::View)과 같다.
+    /// 카메라가 담는 월드 영역을 뷰포트에 그대로 맞춥니다.
+    ///
+    /// 종횡비가 뷰포트와 다르면 그림이 늘어나거나 찌그러집니다.
+    /// 띠 없이 뷰포트를 꽉 채워야 할 때 지정합니다. (.fit = CameraFit::Stretch)
     Stretch,
 
-    /// 종횡비를 유지하면서 뷰포트 안에 카메라가 담는 월드 영역을 최대한 맞춘다. Camera2D의
-    /// 기본값이다.
-    /// 남는 영역은 beginFrame의 clearColor로 채워진다.
-    /// size가 {0, 0}이면, 맞춰야 할 종횡비가 없으므로 Stretch와 동일하게 작동한다.
-    /// 띠 위의 마우스 좌표를 screenToWorld에 넣으면 보이는 영역 밖의 월드 좌표가 나온다.
-    /// 걸러야 하면 viewportPixels(camera, framebuffer).contains(mouse)로 먼저 확인한다.
+    /// 종횡비를 유지하면서 카메라가 담는 월드 영역을 뷰포트 안에 최대한 크게 맞춥니다.
+    /// Camera2D의 기본값입니다.
+    ///
+    /// 남는 영역(띠)은 Renderer::beginFrame()의 clearColor로 채워집니다.
+    /// size가 {0, 0}이면 맞출 종횡비가 없으므로 Stretch와 똑같이 동작합니다.
+    ///
+    /// 띠 위의 마우스 좌표를 screenToWorld에 넣으면 보이는 영역 밖의 월드 좌표가 나옵니다.
+    /// 걸러야 하면 viewportPixels(camera, framebuffer).contains(Vec2f(mouse))로 먼저 확인합니다.
     Letterbox,
 };
 
-/// 화면 상에 월드의 어느 영역을 얼만큼 비출지 기술하는 2D 카메라.
-/// SFML을 담지 않는 순수 데이터라 pimpl이 필요 없다.
-/// 값으로 자유롭게 복사하고 게임 쪽에서 들고 있다가, Renderer::setCamera로 넘기면 된다.
-/// 지정 초기화는 선언 순서를 지켜야 하므로, 필드 순서를 바꾸면 사용자 코드가 깨진다.
+// SFML을 담지 않는 순수 데이터라 pimpl이 필요 없다.
+// 지정 초기화는 선언 순서를 따라야 하므로, 필드 순서를 바꾸면 사용자 코드가 깨진다.
+/// 월드의 어느 영역을 창의 어디에 얼마나 크게 비출지 정하는 2D 카메라입니다.
+///
+/// 값 타입입니다. Renderer::setCamera()는 복사본을 저장하므로, 카메라를 바꾼 뒤에는
+/// setCamera()를 다시 불러야 화면에 반영됩니다. 지정 초기화는 필드 순서(center, size, zoom,
+/// rotation, viewport, fit)대로 써야 합니다.
+///
+/// \code{.cpp}
+/// meno::Camera2D camera{.center = {160.f, 90.f}, .size = {320.f, 180.f}};
+/// camera.center = playerPosition; // 플레이어를 따라갑니다.
+/// renderer.setCamera(camera);
+/// // 월드를 그립니다.
+/// renderer.resetCamera();
+/// // UI를 그립니다.
+/// \endcode
+///
+/// \see Renderer::setCamera, viewportPixels, worldToScreen, screenToWorld
 struct Camera2D {
-    /// 화면(뷰포트) 중앙에 올 월드의 좌표.
+    /// 화면(뷰포트) 중앙에 올 월드 좌표입니다.
     Vec2f center{0.f, 0.f};
 
-    /// 화면에 담을 월드 영역의 크기. "설계 해상도"를 정하는 값이다.
-    /// Camera2D::size == Vec2f{0.f, 0.f} -> 월드 유닛 == 1픽셀
-    /// 크기를 정하지 않으면 뷰포트의 픽셀 크기를 그대로 가져다 쓰기 때문에, 월드 유닛의 크기가
-    /// 1픽셀의 크기와 같아진다.
+    /// 화면에 담을 월드 영역의 크기("설계 해상도")입니다.
+    ///
+    /// 기본값 {0, 0}처럼 양의 유한수가 아닌 축이 하나라도 있으면 뷰포트의 픽셀 크기를 그대로
+    /// 씁니다. 이때 1월드유닛은 1픽셀과 같습니다.
     Vec2f size{0.f, 0.f};
 
-    /// 화면의 배율(magnification). size 위에 곱해지는 "동적 확대"다.
-    /// 1보다 크면 확대(보이는 영역이 좁아짐), 작으면 축소. 보이는 영역 = size / zoom.
-    /// size는 게임 내내 고정하고, 연출(줌 인/아웃)은 zoom으로 하면 둘이 섞이지 않는다.
-    /// 0 이하이거나 NaN이면 1로 본다.
+    /// 화면 배율입니다. 보이는 영역은 size / zoom입니다.
+    ///
+    /// 1보다 크면 확대(보이는 영역이 좁아짐), 작으면 축소입니다. size는 고정하고 줌 연출은
+    /// zoom으로 하면 둘이 섞이지 않습니다. 양의 유한수가 아니면(0 이하, NaN, 무한대) 1로 봅니다.
     float zoom{1.f};
 
-    /// 카메라의 회전 각도(degree). 시계 방향이 양수이며, 범위 제한은 없다. (360을 넘거나 음수여도
-    /// 된다.) 카메라가 시계 방향으로 돌면, 화면에 비친 월드는 반대로 "반시계 방향"으로 돈다. 같은
-    /// +45를 줘도 스프라이트(SpriteParams::rotation)는 시계 방향으로 돌아가니 혼동하지 말 것.
+    /// 카메라의 회전 각도(도). 시계 방향이 양수이며 범위 제한은 없습니다.
+    ///
+    /// 카메라가 시계 방향으로 돌면 화면에 비친 월드는 반시계 방향으로 돕니다. 같은 +45라도
+    /// 스프라이트(SpriteParams::rotation)는 시계 방향으로 돌아가니 혼동하지 않도록 주의합니다.
     ///
     /// 화면 위쪽이 가리키는 월드 방향:
     ///
-    ///     rotation ==   0 -> 월드 -y (회전 없음. y축은 아래로 증가하므로 위쪽은 -y)
+    ///     rotation ==   0 -> 월드 -y (회전 없음. y가 아래로 커지므로 위쪽은 -y)
     ///     rotation ==  90 -> 월드 +x
     ///     rotation == 180 -> 월드 +y
     ///     rotation == -90 -> 월드 -x (== 270)
     float rotation{0.f};
 
-    /// 창에서 이 카메라가 그릴 영역. 창 전체를 1로 보는 비율 좌표다.
-    /// 기본값 {0, 0, 1, 1}은 창 전체. 화면 분할, 미니맵 등에 쓴다.
+    /// 창에서 이 카메라가 그릴 영역. 창 전체를 1로 보는 비율 좌표입니다.
+    ///
+    /// 기본값 {0, 0, 1, 1}은 창 전체입니다. 화면 분할, 미니맵 등에 씁니다.
+    /// 실제 픽셀 영역은 viewportPixels()로 구합니다.
     ///
     /// \code{.cpp}
     /// .viewport = {0.f, 0.f, 0.5f, 1.f}      // 왼쪽 절반
     /// .viewport = {0.75f, 0.f, 0.25f, 0.25f} // 우상단 미니맵
     /// \endcode
-    ///
-    /// 실제 픽셀은 네 모서리를 각각 가장 가까운 정수로 반올림해서 정한다.
     Rectf viewport{{0.f, 0.f}, {1.f, 1.f}};
 
-    /// size와 viewport의 종횡비가 다를 때의 처리.
-    /// 기본은 Letterbox. size를 정했다는 것은 "이 해상도로 설계했다"는 뜻이므로, 따로 지시하지
-    /// 않아도 비율을 지킨다. 찌그러지더라도 뷰포트를 꽉 채우려면 Stretch를 명시한다. (SFML의
-    /// sf::View와 같은 동작)
+    // size를 정했다는 것은 "이 해상도로 설계했다"는 뜻이므로, 따로 지시하지 않아도
+    // 비율을 지키도록 Letterbox를 기본값으로 둔다.
+    /// size와 viewport의 종횡비가 다를 때의 처리입니다. 기본은 Letterbox입니다.
+    ///
+    /// \see CameraFit
     CameraFit fit{CameraFit::Letterbox};
 };
 
@@ -84,16 +104,14 @@ namespace detail {
 
 } // namespace detail
 
-/// 카메라가 실제로 그리는 창 안의 픽셀 영역. 창 좌상단이 {0, 0}이다.
-/// viewport 비율에 창 크기를 곱한 뒤, CameraFit::Letterbox면 종횡비에 맞게 줄여 가운데에 놓는다.
+/// 카메라가 실제로 그리는 창 안의 픽셀 영역. 창 좌상단이 {0, 0}입니다.
 ///
-/// 마지막으로 네 모서리를 각각 정수로 반올림하므로 결과는 항상 정수 값이다.
-/// SFML처럼 위치와 크기를 따로 반올림하면, 창을 3등분한 화면 사이에 1픽셀 틈이 생긴다.
-/// 모서리를 반올림하면 맞닿은 두 뷰포트가 같은 경계를 공유하므로 틈도 겹침도 없다.
+/// viewport 비율에 창 크기를 곱하고, CameraFit::Letterbox면 종횡비에 맞게 줄여 가운데에 놓습니다.
+/// 결과는 정수 픽셀 경계에 맞춰지며, 맞닿은 두 뷰포트 사이에는 틈도 겹침도 없습니다.
+/// viewport에 NaN이나 무한대가 있거나 크기가 음수면 크기가 0인 사각형을 돌려주므로 아무것도
+/// 그려지지 않습니다.
 ///
-/// viewport에 NaN이나 무한대가 있거나 크기가 음수면 빈 사각형이 되어 아무것도 그려지지 않는다.
-///
-/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘긴다.
+/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘깁니다.
 [[nodiscard]] inline Rectf viewportPixels(const Camera2D& camera, Vec2u framebuffer) {
     const Rectf& ratio = camera.viewport;
     const double screenWidth = framebuffer.x;
@@ -124,6 +142,9 @@ namespace detail {
         bottom = top + fittedHeight;
     }
 
+    // 네 모서리를 각각 반올림한다. SFML처럼 위치와 크기를 따로 반올림하면, 창을 3등분한 화면
+    // 사이에 1픽셀 틈이 생긴다. 모서리를 반올림하면 맞닿은 두 뷰포트가 같은 경계를 공유하므로
+    // 틈도 겹침도 없다.
     const double roundedLeft = std::round(left);
     const double roundedTop = std::round(top);
     const double roundedRight = std::max(std::round(right), roundedLeft);
@@ -133,13 +154,12 @@ namespace detail {
                  static_cast<float>(roundedBottom - roundedTop)};
 }
 
-/// 회전을 적용하기 전, 카메라가 담는 월드 사각형. center를 중심으로 하고 크기는 size / zoom이다.
-/// size가 {0, 0}이면 viewportPixels의 크기를 쓴다. (1픽셀 = 1월드유닛)
+/// 회전을 적용하기 전, 카메라가 담는 월드 사각형입니다.
 ///
-/// 결과의 크기는 항상 양수다. 뷰포트가 비어 크기가 0이 될 때는 1로 두어 0으로 나누지 않게 한다.
-/// 뷰포트가 비어 있으면 어차피 아무것도 그려지지 않는다.
+/// center를 중심으로 하고 크기는 size / zoom입니다. size가 {0, 0}이면 viewportPixels()의 크기를
+/// 씁니다. 결과의 크기는 항상 양수입니다.
 ///
-/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘긴다.
+/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘깁니다.
 [[nodiscard]] inline Rectf viewRect(const Camera2D& camera, Vec2u framebuffer) {
     Vec2f size = camera.size;
     if (!detail::isPositiveFinite(size.x) || !detail::isPositiveFinite(size.y)) {
@@ -148,6 +168,8 @@ namespace detail {
 
     const float zoom = detail::isPositiveFinite(camera.zoom) ? camera.zoom : 1.f;
     size /= zoom;
+    // 뷰포트가 비어 크기가 0이 될 때는 1로 두어 0으로 나누지 않게 한다.
+    // 뷰포트가 비어 있으면 어차피 아무것도 그려지지 않는다.
     if (!detail::isPositiveFinite(size.x)) {
         size.x = 1.f;
     }
@@ -157,17 +179,15 @@ namespace detail {
     return Rectf{camera.center - size / 2.f, size};
 }
 
-/// 카메라에 보이는 월드 영역. 화면 밖 오브젝트를 건너뛸(컬링) 때 쓴다.
+/// 카메라에 보이는 월드 영역. 화면 밖 오브젝트를 건너뛸(컬링) 때 씁니다.
 ///
-/// 카메라가 회전해 있으면 보이는 영역은 기울어진 사각형이 된다.
-/// 이때 그것을 감싸는 축 정렬 사각형을 돌려준다. (회전된 사각형의 외접 사각형)
-/// 실제보다 조금 넓을 수는 있어도 좁지는 않으므로, 컬링에 써도 보이는 오브젝트를 놓치지 않는다.
+/// 카메라가 회전해 있으면 기울어진 보이는 영역을 감싸는 축 정렬 사각형을 돌려줍니다. 실제보다
+/// 조금 넓을 수는 있어도 좁지는 않으므로, 컬링에 써도 보이는 오브젝트를 놓치지 않습니다.
 ///
-/// 폭 w, 높이 h를 θ만큼 돌리면 외접 사각형은 (w|cosθ| + h|sinθ|, w|sinθ| + h|cosθ|)이다.
-/// e.g. 45도면 두 축 모두 (w + h) / √2. 정사각형일 때만 정확히 √2배가 된다.
-///
-/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘긴다.
+/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘깁니다.
 [[nodiscard]] inline Rectf visibleWorldBounds(const Camera2D& camera, Vec2u framebuffer) {
+    // 폭 w, 높이 h를 θ만큼 돌리면 외접 사각형은 (w|cosθ| + h|sinθ|, w|sinθ| + h|cosθ|)이다.
+    // 예: 45도면 두 축 모두 (w + h) / √2이고, 정사각형일 때만 정확히 √2배가 된다.
     const Vec2f size = viewRect(camera, framebuffer).size;
     const float radians = toRadians(wrapDegrees(camera.rotation));
     const float cosAbs = std::abs(std::cos(radians));
@@ -176,10 +196,12 @@ namespace detail {
     return Rectf{camera.center - extent / 2.f, extent};
 }
 
-/// 월드 좌표 -> 창 픽셀 좌표(창 좌상단 기준). 정수로 자르지 않은 실수를 돌려준다.
-/// 뷰포트가 창의 일부라면 결과도 그 뷰포트 안으로 들어간다.
+/// 월드 좌표 -> 창 픽셀 좌표(창 좌상단 기준).
 ///
-/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘긴다.
+/// 정수로 자르지 않은 실수를 돌려줍니다. 뷰포트가 창의 일부라면 결과도 그 뷰포트 안으로
+/// 들어갑니다.
+///
+/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘깁니다.
 [[nodiscard]] inline Vec2f worldToScreen(const Camera2D& camera, Vec2u framebuffer,
                                          Vec2f worldPoint) {
     const Rectf pixels = viewportPixels(camera, framebuffer);
@@ -195,12 +217,13 @@ namespace detail {
                  pixels.top() + (local.y / size.y + 0.5f) * pixels.size.y};
 }
 
-/// 창 픽셀 좌표 -> 월드 좌표. worldToScreen의 역함수다. 마우스 위치로 월드의 물체를 고를 때 쓴다.
-/// 뷰포트 밖의 픽셀을 넣어도 같은 규칙을 연장해서 계산한다.
+/// 창 픽셀 좌표 -> 월드 좌표.
 ///
-/// 뷰포트가 비어 있으면 역변환이 없으므로 center를 돌려준다.
+/// worldToScreen의 역함수입니다. 마우스 위치로 월드의 물체를 고를 때 씁니다.
+/// 뷰포트 밖의 픽셀을 넣어도 같은 규칙을 연장해서 계산합니다.
+/// 뷰포트가 비어 있으면 역변환이 없으므로 center를 돌려줍니다.
 ///
-/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘긴다.
+/// \param framebuffer 창(렌더 타깃)의 픽셀 크기. 보통 Renderer::framebufferSize()를 넘깁니다.
 [[nodiscard]] inline Vec2f screenToWorld(const Camera2D& camera, Vec2u framebuffer,
                                          Vec2f screenPoint) {
     const Rectf pixels = viewportPixels(camera, framebuffer);
