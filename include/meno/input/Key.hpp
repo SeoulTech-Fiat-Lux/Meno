@@ -6,8 +6,15 @@
 
 namespace meno {
 
-/// 키캡에 적힌 글자 즉, 자판 배열을 따르는 키보드 키.
-/// ex. AZERTY 자판에서 Key::A는 QWERTY 자판에서 Key::Q에 해당한다.
+/// 키보드 키입니다. 키캡에 적힌 글자, 즉 자판 배열을 따릅니다.
+///
+/// 예를 들어 AZERTY 자판에서는 QWERTY의 Q 자리에 있는 키를 누르면 Key::A가 들어옵니다.
+/// 이름이 헷갈리는 키: Num0~Num9는 자판 위쪽 줄의 숫자, Numpad0~Numpad9는 숫자 패드입니다.
+/// LSystem·RSystem은 Windows 키(macOS는 Command), Grave는 숫자 1 왼쪽의 키, Hyphen은 - 키,
+/// Equal은 = 키입니다.
+///
+/// 여기에 없는 키는 Key::Unknown으로 들어옵니다. Input은 Unknown을 추적하지 않으므로
+/// isDown(Key::Unknown)은 항상 false입니다.
 enum class Key : std::uint8_t {
     Unknown,
     // clang-format off
@@ -31,7 +38,7 @@ enum class Key : std::uint8_t {
     // clang-format on
 };
 
-/// Unknown을 포함한 Key 열거형의 값 개수. 키별 상태 배열을 만들 때 그 크기로 활용한다.
+/// Key 값의 개수(Unknown 포함)입니다. 키별 상태 배열의 크기로 씁니다.
 inline constexpr std::size_t keyCount = static_cast<std::size_t>(Key::Pause) + 1;
 
 } // namespace meno
