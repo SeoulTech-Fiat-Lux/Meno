@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(meno
-        VERSION 0.1.0
+        VERSION 0.2.0
         DESCRIPTION "SFML 기반 2D 게임 개발 라이브러리"
         LANGUAGES CXX
 )
