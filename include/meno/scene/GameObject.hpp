@@ -2,8 +2,8 @@
 // Created by 최상준 on 26. 8. 6..
 //
 
-#ifndef MENO_GAMEOBJECT_HPP
-#define MENO_GAMEOBJECT_HPP
+#ifndef MENO_GAME_OBJECT_HPP
+#define MENO_GAME_OBJECT_HPP
 
 #include <meno/math/Vec2.hpp>
 #include <meno/scene/Component.hpp>
@@ -152,4 +152,4 @@ public:
 
 } // namespace meno
 
-#endif // MENO_GAMEOBJECT_HPP
+#endif  // MENO_GAME_OBJECT_HPP

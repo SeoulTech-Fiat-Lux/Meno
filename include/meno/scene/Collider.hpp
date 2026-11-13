@@ -1,5 +1,5 @@
-#ifndef MENO_COLLIDER_H
-#define MENO_COLLIDER_H
+#ifndef MENO_COLLIDER_HPP
+#define MENO_COLLIDER_HPP
 
 #include <meno/math/Vec2.hpp>
 #include <meno/scene/Component.hpp>
@@ -63,4 +63,4 @@ struct CircleCollider final : public Collider {
 bool intersects(const GameObject& a, const GameObject& b);
 
 } // namespace meno
-#endif
+#endif  // MENO_COLLIDER_HPP

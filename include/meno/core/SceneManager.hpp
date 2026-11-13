@@ -1,5 +1,5 @@
-#ifndef MENO_SCENEMANAGER_HPP
-#define MENO_SCENEMANAGER_HPP
+#ifndef MENO_SCENE_MANAGER_HPP
+#define MENO_SCENE_MANAGER_HPP
 
 #include <meno/scene/Scene.hpp>
 #include <optional>
@@ -63,4 +63,4 @@ public:
 };
 
 } // namespace meno
-#endif
+#endif  // MENO_SCENE_MANAGER_HPP

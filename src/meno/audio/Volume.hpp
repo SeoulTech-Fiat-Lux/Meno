@@ -1,5 +1,5 @@
-#ifndef MENO_AUDIO_VOLUME_HPP
-#define MENO_AUDIO_VOLUME_HPP
+#ifndef MENO_VOLUME_HPP
+#define MENO_VOLUME_HPP
 
 #include <algorithm>
 
@@ -24,4 +24,4 @@ namespace meno::audio_detail {
 
 } // namespace meno::audio_detail
 
-#endif // MENO_AUDIO_VOLUME_HPP
+#endif  // MENO_VOLUME_HPP

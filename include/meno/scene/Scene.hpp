@@ -1,5 +1,5 @@
-#ifndef MENO_SCENE
-#define MENO_SCENE
+#ifndef MENO_SCENE_HPP
+#define MENO_SCENE_HPP
 
 #include <meno/scene/GameObject.hpp>
 
@@ -182,4 +182,4 @@ public:
 
 } // namespace meno
 
-#endif //MENO_SCENE
+#endif  // MENO_SCENE_HPP

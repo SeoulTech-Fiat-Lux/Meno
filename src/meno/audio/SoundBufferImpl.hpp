@@ -1,5 +1,5 @@
-#ifndef MENO_AUDIO_SOUND_BUFFER_IMPL_HPP
-#define MENO_AUDIO_SOUND_BUFFER_IMPL_HPP
+#ifndef MENO_SOUND_BUFFER_IMPL_HPP
+#define MENO_SOUND_BUFFER_IMPL_HPP
 
 #include <meno/audio/SoundBuffer.hpp>
 
@@ -14,4 +14,4 @@ struct SoundBuffer::Impl {
 
 } // namespace meno
 
-#endif // MENO_AUDIO_SOUND_BUFFER_IMPL_HPP
+#endif  // MENO_SOUND_BUFFER_IMPL_HPP
