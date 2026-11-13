@@ -109,6 +109,7 @@ public:
     /// 예를 들어 Space와 W를 묶은 동작에서 Space를 누른 채 W를 더 눌러도 true가 되지 않습니다.
     [[nodiscard]] bool wasActionPressed(std::string_view action) const;
     /// 동작에 묶인 키와 버튼이 모두 떼어진 틱에만 true입니다. 등록하지 않은 이름이면 false입니다.
+    /// 창이 포커스를 잃어 떼어진 것으로 처리된 경우도 들어갑니다.
     [[nodiscard]] bool wasActionReleased(std::string_view action) const;
 
     /// 새 프레임을 시작합니다. 이벤트를 넣기 전에 프레임마다 한 번 부릅니다.
