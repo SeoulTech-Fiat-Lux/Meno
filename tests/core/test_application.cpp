@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <functional>
 #include <stdexcept>
 #include <vector>
 
@@ -82,6 +83,82 @@ private:
     }
 };
 
+class CallbackApplication final : public meno::Application {
+public:
+    using Application::Application;
+    std::function<void()> startHandler;
+    std::function<void()> updateHandler;
+    std::function<void()> stopHandler;
+
+private:
+    void onStart() override { if (startHandler) startHandler(); }
+    void update(double) override { if (updateHandler) updateHandler(); }
+    void onStop() override { if (stopHandler) stopHandler(); }
+};
+
+void testExclusiveRun() {
+    using namespace std::chrono_literals;
+    meno::Clock::TimePoint now{};
+    meno::Clock clock([&] { return now; }, [](meno::Clock::Duration) {});
+    CallbackApplication outer({.fixedTimeStep = 0.01});
+    CallbackApplication inner({.fixedTimeStep = 0.02});
+    int innerStarts = 0;
+    inner.startHandler = [&] { ++innerStarts; inner.stop(); };
+    int rejected = 0;
+    const auto rejectNestedRun = [&] {
+        const auto elapsed = meno::Time::elapsedTime();
+        const auto fixedDelta = meno::Time::fixedDeltaTime();
+        for (bool injectedClock : {false, true}) {
+            try {
+                if (injectedClock) inner.run(clock);
+                else inner.run();
+                MENO_CHECK(false);
+            } catch (const std::logic_error&) {
+                ++rejected;
+            }
+            MENO_CHECK(!inner.isRunning());
+            MENO_CHECK(innerStarts == 0);
+            MENO_CHECK(meno::Time::elapsedTime() == elapsed);
+            MENO_CHECK(meno::Time::fixedDeltaTime() == fixedDelta);
+        }
+    };
+    outer.startHandler = [&] { rejectNestedRun(); now += 10ms; };
+    outer.updateHandler = [&] {
+        rejectNestedRun();
+        MENO_CHECK(near(meno::Time::elapsedTime(), 0.01));
+        outer.stop();
+    };
+    outer.stopHandler = [&] {
+        MENO_CHECK(!outer.isRunning());
+        rejectNestedRun();
+    };
+    outer.run(clock);
+    MENO_CHECK(rejected == 6);
+    inner.run(clock);
+    MENO_CHECK(innerStarts == 1);
+
+    // 시작/업데이트/종료 콜백의 예외 모두 전역 실행 플래그를 해제해야 한다.
+    for (int phase = 0; phase < 3; ++phase) {
+        CallbackApplication failing({.fixedTimeStep = 0.01});
+        failing.startHandler = [&] {
+            if (phase == 0) throw std::runtime_error("start failed");
+            now += 10ms;
+        };
+        failing.updateHandler = [&] {
+            if (phase == 1) throw std::runtime_error("update failed");
+            failing.stop();
+        };
+        failing.stopHandler = [] { throw std::runtime_error("stop failed"); };
+        try {
+            failing.run(clock);
+            MENO_CHECK(false);
+        } catch (const std::runtime_error&) {}
+        MENO_CHECK(!failing.isRunning());
+        inner.run(clock);
+        MENO_CHECK(innerStarts == phase + 2);
+    }
+}
+
 } // namespace
 
 int main() {
@@ -146,6 +223,8 @@ int main() {
     reentrantApp.run();
     MENO_CHECK(reentrantApp.rejectedReentry);
     MENO_CHECK(!reentrantApp.isRunning());
+
+    testExclusiveRun();
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;

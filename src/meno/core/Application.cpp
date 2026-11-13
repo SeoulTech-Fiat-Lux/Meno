@@ -7,6 +7,12 @@
 #include <stdexcept>
 
 namespace meno {
+namespace {
+
+// Time은 전역 상태이므로 단일 스레드에서 Application 루프의 중첩 실행을 막는다.
+bool applicationRunActive = false;
+
+} // namespace
 
 Application::Application(ApplicationConfig config) : config_(config) {
     if (config_.fixedTimeStep <= 0.0 || config_.maxUpdatesPerFrame == 0) {
@@ -22,10 +28,11 @@ void Application::run() {
 }
 
 void Application::run(Clock& clock) {
-    if (running_) {
-        throw std::logic_error("Application is already running");
+    if (applicationRunActive) {
+        throw std::logic_error("An Application is already running");
     }
 
+    applicationRunActive = true;
     running_ = true;
     struct RunGuard {
         bool& running;
@@ -34,6 +41,7 @@ void Application::run(Clock& clock) {
         ~RunGuard() noexcept {
             running = false;
             Time::endStep();
+            applicationRunActive = false;
         }
     } guard{running_};
 

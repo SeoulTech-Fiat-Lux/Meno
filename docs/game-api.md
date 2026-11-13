@@ -57,6 +57,9 @@ int main() {
 
 `SceneManager`는 독립적으로 생성할 수 있으며 각 인스턴스가 자신의 Scene을 소유한다.
 여러 `Game`을 생성할 수 있으며, 한 `Game`을 소멸해도 다른 `Game`의 Scene은 유지된다.
+단, 전역 `Time` 상태를 보호하기 위해 `Application` 루프는 한 번에 하나만 실행할 수 있다.
+다른 루프의 콜백에서 `run()`을 호출하면 `std::logic_error`를 던지며,
+이 제한은 `onStop`이 끝날 때까지 유지된다.
 
 `~Game()`은 멤버 소멸 전에 `discard()`로 Scene을 명시적으로 비우며 `onExit`은 호출하지 않는다.
 `SceneManager`는 마지막 멤버로 선언해 멤버 소멸 순서에서도 가장 먼저 정리한다.
