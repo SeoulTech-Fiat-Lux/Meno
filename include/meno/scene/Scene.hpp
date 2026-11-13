@@ -10,6 +10,9 @@
 #include <functional>
 #include <stdexcept>
 #include <typeinfo>
+#include <utility>
+#include <cstdint>
+
 
 namespace meno {
 

@@ -3,6 +3,8 @@
 
 #include <meno/scene/Scene.hpp>
 #include <optional>
+#include <memory>
+#include <unordered_map>
 
 namespace meno {
 
