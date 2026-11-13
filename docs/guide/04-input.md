@@ -232,4 +232,4 @@ int main() {
   [Rect](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_rect.html),
   [Vec2](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_vec2.html)
 
-이전 장: [3장. 그리기](03-drawing.md)
+이전 장: [3장. 그리기](03-drawing.md) · 다음 장: [5장. GameObject와 컴포넌트](05-gameobjects.md)

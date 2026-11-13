@@ -147,8 +147,8 @@ int main() {
 }
 ```
 
-Scene마다 따로 둘 상태는 `Scene::setState()`로 Scene에 맡길 수도 있습니다. 이 방법은 여러 Scene을
-오가는 게임을 다룰 때 설명합니다.
+Scene마다 따로 둘 상태는 `Scene::setState()`로 Scene에 맡길 수도 있습니다. 이 방법은
+[7장](07-scenes.md)에서 설명합니다.
 
 ## 게임 끝내기
 

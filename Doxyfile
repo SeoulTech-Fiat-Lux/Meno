@@ -19,6 +19,10 @@ INPUT                  = docs/mainpage.md \
                          docs/guide/02-first-game.md \
                          docs/guide/03-drawing.md \
                          docs/guide/04-input.md \
+                         docs/guide/05-gameobjects.md \
+                         docs/guide/06-collision.md \
+                         docs/guide/07-scenes.md \
+                         docs/guide/08-audio.md \
                          docs/groups.dox \
                          include/meno
 USE_MDFILE_AS_MAINPAGE = docs/mainpage.md
@@ -62,7 +66,7 @@ HTML_EXTRA_STYLESHEET  = docs/theme/doxygen-awesome-css/doxygen-awesome.css \
                          docs/theme/meno.css
 HTML_EXTRA_FILES       = docs/theme/logo/meno-logo-on-dark.svg
 PROJECT_ICON           = docs/theme/logo/meno-favicon.svg
-# Doxygen 1.15의 기본 배치에서 바꾼 곳: 번역되지 않은 "Topics" 탭의 이름과 안내 문장, 그리고
-# "관련 페이지" 탭 대신 사용자 설명서로 바로 가는 탭.
+# Doxygen 1.15의 기본 배치에서 바꾼 곳: 번역되지 않은 "Topics" 탭과 "관련 페이지" 탭의 이름과
+# 안내 문장. "관련 페이지" 탭을 숨기면 사이드바에서 설명서 목차도 사라지므로 이름만 바꾼다.
 # Doxygen 버전을 올리면 `doxygen -l`로 새 기본 배치를 받아 같은 곳만 다시 고친다.
 LAYOUT_FILE            = docs/DoxygenLayout.xml
