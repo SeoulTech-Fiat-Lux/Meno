@@ -4,8 +4,6 @@
 
 #include <SFML/Audio/Music.hpp>
 
-#include <utility>
-
 namespace meno {
 
 struct Music::Impl {

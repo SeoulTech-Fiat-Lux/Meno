@@ -23,15 +23,15 @@ namespace {
 /// 8x8 체커보드 RGBA 텍스처를 만든다. 에셋 없이 스프라이트를 시험하기 위한 것.
 meno::Texture makeCheckerTexture() {
     constexpr unsigned int kSize = 8;
-    std::vector<std::uint8_t> pixels(kSize * kSize * 4);
+    std::vector<std::uint8_t> pixels(std::size_t{kSize} * kSize * 4);
 
     for (unsigned int y = 0; y < kSize; ++y) {
         for (unsigned int x = 0; x < kSize; ++x) {
             const bool light = ((x / 2) + (y / 2)) % 2 == 0;
-            const std::size_t index = (y * kSize + x) * 4;
+            const std::size_t index = (std::size_t{y} * kSize + x) * 4;
             pixels[index + 0] = light ? 240 : 70;
             pixels[index + 1] = light ? 200 : 60;
-            pixels[index + 2] = light ? 120 : 120;
+            pixels[index + 2] = 120; // 파랑은 밝은 칸과 어두운 칸이 같다
             pixels[index + 3] = 255;
         }
     }

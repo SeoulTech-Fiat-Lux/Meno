@@ -58,6 +58,12 @@ MusicLoopGetter volatile   musicLoopGetter    = &meno::Music::isLooping;
 } // namespace
 
 int main() {
+    // 구현 심볼의 주소를 실제로 읽어, 최적화가 참조를 지우지 못하게 한다.
+    MENO_CHECK(soundLoadFunction != nullptr && bufferLoadFunction != nullptr &&
+               musicOpenFunction != nullptr && soundPlayFunction != nullptr &&
+               musicPlayFunction != nullptr && musicLoopSetter != nullptr &&
+               musicLoopGetter != nullptr);
+
     meno::Sound empty{std::shared_ptr<const meno::SoundBuffer>{}};
     empty.play();
     MENO_CHECK(!empty.isPlaying());
