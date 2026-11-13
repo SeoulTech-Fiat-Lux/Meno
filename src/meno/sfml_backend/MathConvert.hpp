@@ -1,6 +1,7 @@
 #ifndef MENO_MATH_CONVERT_HPP
 #define MENO_MATH_CONVERT_HPP
 
+#include <meno/math/Angle.hpp>
 #include <meno/math/Camera2D.hpp>
 #include <meno/math/Color.hpp>
 #include <meno/math/Rect.hpp>
@@ -62,7 +63,7 @@ template <typename T>
 
     // 360으로 접은 각도를 넘긴다. 큰 각도를 그대로 넘기면 SFML이 라디안으로 바꾸는 단계에서 정밀도를 잃어
     // 화면에 그려진 위치가 좌표 계산 결과와 몇 픽셀씩 어긋난다.
-    view.setRotation(toSfAngle(detail::wrapDegrees(camera.rotation)));
+    view.setRotation(toSfAngle(wrapDegrees(camera.rotation)));
 
     // SFML은 비율 뷰포트에 창 크기를 곱한 뒤 위치와 크기를 따로 반올림한다.
     // 모서리 기준으로 반올림해 둔 픽셀 사각형을 다시 비율로 바꿔 넘기면, SFML이 반올림해도 정확히 같은 정수가 나온다.

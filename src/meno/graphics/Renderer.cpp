@@ -3,6 +3,7 @@
 #include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
+#include <meno/math/Angle.hpp>
 
 #include "sfml_backend/Access.hpp"
 #include "sfml_backend/MathConvert.hpp"
@@ -271,8 +272,8 @@ void Renderer::drawSector(Vec2f center, float radius, float startDeg, float swee
     // 바늘처럼 길게 돌출되는 현상을 억제한다.
     // (시작점만 다른 동일한 도형)
     std::array<Vec2f, kSegmentsPerTurn + 4> local{};
-    const float start = detail::toRadians(detail::wrapDegrees(startDeg));
-    const float step = detail::toRadians(sweepDeg) / static_cast<float>(segments);
+    const float start = toRadians(wrapDegrees(startDeg));
+    const float step = toRadians(sweepDeg) / static_cast<float>(segments);
     for (std::size_t i = 0; i <= segments; ++i) {
         const float angle = start + step * static_cast<float>(i);
         local[i + 1] = Vec2f{std::cos(angle), std::sin(angle)} * radius;

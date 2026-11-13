@@ -14,6 +14,7 @@
 /// tools/check_headers.py가 이 규칙을 검사한다.
 
 // --- 값 타입 ---------------------------------------------------------------
+#include <meno/math/Angle.hpp>  // IWYU pragma: export
 #include <meno/math/Camera2D.hpp>  // IWYU pragma: export
 #include <meno/math/Color.hpp>  // IWYU pragma: export
 #include <meno/math/Rect.hpp>  // IWYU pragma: export
