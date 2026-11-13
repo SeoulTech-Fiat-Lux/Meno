@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup math
+/// \{
+
 /// 도(degree)를 라디안으로 바꿉니다.
 ///
 /// meno의 각도는 전부 "도(degree), 시계 방향"입니다. 라디안은 std::sin 같은 삼각함수에 넣을
@@ -26,6 +29,8 @@ namespace meno {
     // -1e-6 + 360처럼 반올림되어 360이 된 경우와, -0(-720 등)을 모두 0으로 맞춘다.
     return (wrapped < 360.f && wrapped != 0.f) ? wrapped : 0.f;
 }
+
+/// \}
 
 } // namespace meno
 

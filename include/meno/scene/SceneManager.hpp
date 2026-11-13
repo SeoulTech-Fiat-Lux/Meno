@@ -8,6 +8,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 class Game;
 
 /// Scene을 만들고, 그중 하나를 활성 Scene으로 돌립니다.
@@ -94,6 +97,8 @@ public:
     /// 던집니다.
     [[nodiscard]] bool shutdown();
 };
+
+/// \}
 
 } // namespace meno
 #endif // MENO_SCENE_MANAGER_HPP

@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 class GameObject;
 
 /// 충돌 판정에 쓰는 콜라이더의 기반 구조체입니다. GameObject에는 BoxCollider나 CircleCollider를
@@ -67,6 +70,8 @@ struct CircleCollider final : public Collider {
 /// Collider를 상속한 다른 타입은 보지 않습니다. 경계만 맞닿은 경우는 겹치지 않는 것으로 봅니다.
 /// 크기나 반지름이 0 이하이거나, 부모의 배율이 0이거나 유한하지 않은 콜라이더는 겹치지 않습니다.
 bool intersects(const GameObject& a, const GameObject& b);
+
+/// \}
 
 } // namespace meno
 #endif // MENO_COLLIDER_HPP

@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup math
+/// \{
+
 /// 길이와 방향을 계산할 때 쓰는 실수 타입입니다. 정수 타입은 float, 실수 타입은 그대로입니다.
 template <typename T>
 using RealOf = std::conditional_t<std::is_floating_point_v<T>, T, float>;
@@ -143,6 +146,8 @@ constexpr T dot(const Vec2<T>& lhs, const Vec2<T>& rhs) {
 using Vec2f = Vec2<float>;        ///< 월드 좌표, 속도, 크기 등 대부분의 값
 using Vec2i = Vec2<int>;          ///< 마우스 위치처럼 정수 픽셀 좌표
 using Vec2u = Vec2<unsigned int>; ///< 창 크기처럼 음수가 없는 크기
+
+/// \}
 
 } // namespace meno
 

@@ -13,6 +13,9 @@
 
 namespace meno {
 
+/// \addtogroup app
+/// \{
+
 /// Game이 만들 창과 게임 루프의 설정입니다.
 ///
 /// 필드는 선언 순서(application, windowSize, title, clearColor)대로 지정해야 합니다.
@@ -125,6 +128,8 @@ private:
     // 멤버 소멸 순서에서도 가장 먼저 정리되도록 마지막에 선언한다.
     SceneManager scenes_;
 };
+
+/// \}
 
 } // namespace meno
 

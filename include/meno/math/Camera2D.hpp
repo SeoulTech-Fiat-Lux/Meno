@@ -10,6 +10,10 @@
 #include <cstdint>
 
 namespace meno {
+
+/// \addtogroup math
+/// \{
+
 /// 카메라가 담는 월드 영역과 뷰포트의 종횡비가 다를 때, 둘을 어떻게 맞출지 정합니다.
 enum class CameraFit : std::uint8_t {
     // SFML의 기본 동작(sf::View)과 같다.
@@ -241,6 +245,8 @@ namespace detail {
     return camera.center +
            Vec2f{cosine * local.x - sine * local.y, sine * local.x + cosine * local.y};
 }
+
+/// \}
 
 } // namespace meno
 

@@ -5,6 +5,9 @@
 
 namespace meno {
 
+/// \addtogroup core
+/// \{
+
 class Application;
 namespace detail {
 struct TimeAccess;
@@ -64,6 +67,8 @@ private:
     // 현재 update 안에 있는지 여부.
     static bool inStep_;
 };
+
+/// \}
 
 } // namespace meno
 

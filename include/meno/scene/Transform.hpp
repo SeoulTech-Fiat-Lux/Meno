@@ -7,6 +7,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 /// GameObject의 위치, 배율, 회전입니다. 모든 GameObject가 기본으로 가집니다.
 ///
 /// GameObject의 로컬 원점(좌상단)이 position에 놓이고, 배율과 회전은 그 점을 중심으로
@@ -36,6 +39,8 @@ struct Transform : public Component {
         return position + rotateVector(point * scale);
     }
 };
+
+/// \}
 
 } // namespace meno
 

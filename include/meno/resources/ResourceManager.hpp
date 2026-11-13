@@ -8,6 +8,9 @@
 
 namespace meno {
 
+/// \addtogroup resources
+/// \{
+
 class Font;
 class SoundBuffer;
 class Texture;
@@ -82,6 +85,8 @@ private:
     std::unordered_map<std::u8string, std::shared_ptr<const Font>> fonts_;
     std::unordered_map<std::u8string, std::shared_ptr<const SoundBuffer>> soundBuffers_;
 };
+
+/// \}
 
 } // namespace meno
 

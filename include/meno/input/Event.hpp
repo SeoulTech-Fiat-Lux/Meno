@@ -9,6 +9,9 @@
 
 namespace meno {
 
+/// \addtogroup input
+/// \{
+
 // SFML 없이 표현한 입력 이벤트다. Window가 SFML 이벤트를 Input에 넘길 때 이 형태로 바꾼다.
 /// Input에 넣는 입력 이벤트입니다.
 ///
@@ -21,6 +24,9 @@ namespace meno {
 /// input.handleEvent(meno::event::KeyPressed{meno::Key::Space});
 /// \endcode
 namespace event {
+
+/// \addtogroup input
+/// \{
 
 /// 창이 포커스를 잃었습니다. Input은 눌려 있던 키와 마우스 버튼을 모두 떼어진 것으로 처리합니다.
 struct FocusLost {};
@@ -68,12 +74,16 @@ struct TextEntered {
     char32_t unicode = 0; ///< 입력된 문자의 UTF-32 코드
 };
 
+/// \}
+
 } // namespace event
 
 /// Input::handleEvent()가 받는 이벤트 하나입니다. event 네임스페이스의 타입 중 하나를 담습니다.
 using Event = std::variant<event::FocusLost, event::KeyPressed, event::KeyReleased,
                            event::MouseButtonPressed, event::MouseButtonReleased, event::MouseMoved,
                            event::MouseWheelScrolled, event::TextEntered>;
+
+/// \}
 
 } // namespace meno
 #endif // MENO_EVENT_HPP

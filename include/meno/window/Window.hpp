@@ -8,6 +8,9 @@
 
 namespace meno {
 
+/// \addtogroup window
+/// \{
+
 class Input;
 namespace backend {
 struct WindowAccess;
@@ -75,6 +78,8 @@ private:
 
     friend struct backend::WindowAccess;
 };
+
+/// \}
 
 } // namespace meno
 

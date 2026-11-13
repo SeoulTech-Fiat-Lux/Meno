@@ -10,6 +10,9 @@
 
 namespace meno {
 
+/// \addtogroup graphics
+/// \{
+
 namespace backend {
 struct TextureAccess;
 }
@@ -75,6 +78,8 @@ private:
 
     friend struct backend::TextureAccess;
 };
+
+/// \}
 
 } // namespace meno
 

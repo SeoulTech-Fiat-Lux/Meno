@@ -10,6 +10,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 class Renderer;
 class Texture;
 
@@ -69,6 +72,8 @@ public:
     /// 부릅니다.
     void draw(Renderer& renderer) const;
 };
+
+/// \}
 
 } // namespace meno
 

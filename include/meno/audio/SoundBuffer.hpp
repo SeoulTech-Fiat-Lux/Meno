@@ -7,6 +7,9 @@
 
 namespace meno {
 
+/// \addtogroup audio
+/// \{
+
 class Sound;
 
 /// 메모리에 올린 효과음 데이터입니다. Sound가 이 데이터를 재생합니다.
@@ -40,6 +43,8 @@ private:
 
     friend class Sound;
 };
+
+/// \}
 
 } // namespace meno
 

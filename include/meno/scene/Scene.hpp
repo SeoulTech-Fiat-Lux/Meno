@@ -14,6 +14,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 class SceneManager;
 
 /// GameObject를 담는 장면입니다. 타이틀, 게임, 게임 오버처럼 화면 단위로 하나씩 만듭니다.
@@ -201,6 +204,8 @@ public:
     }
     /// \}
 };
+
+/// \}
 
 } // namespace meno
 

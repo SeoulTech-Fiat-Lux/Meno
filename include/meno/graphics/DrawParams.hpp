@@ -9,6 +9,9 @@
 
 namespace meno {
 
+/// \addtogroup graphics
+/// \{
+
 // 이 파일의 Params 구조체는 모두 지정 초기화로 쓰므로, 필드 순서를 바꾸면 사용자 코드가 깨진다.
 // 순서 변경은 API 변경으로 취급할 것.
 /// Renderer::draw()로 텍스처를 그릴 때의 옵션입니다.
@@ -104,6 +107,8 @@ struct TextParams {
     /// 외곽선 색입니다.
     Color outlineColor{colors::Black};
 };
+
+/// \}
 
 } // namespace meno
 

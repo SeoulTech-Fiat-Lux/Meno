@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup core
+/// \{
+
 /// 실제 시간을 재는 시계입니다. 프레임 사이 시간을 재고, 프레임 제한이 있으면 그만큼 기다립니다.
 ///
 /// 보통은 Application::run()이 만들어 쓰므로 직접 만들 일이 없습니다. 테스트에서는 NowFunction과
@@ -60,6 +63,8 @@ private:
     TimePoint lastTime_;
     Duration minimumFrameDuration_{};
 };
+
+/// \}
 
 } // namespace meno
 

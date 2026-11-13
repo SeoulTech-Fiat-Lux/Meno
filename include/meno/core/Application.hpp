@@ -5,6 +5,9 @@
 
 namespace meno {
 
+/// \addtogroup core
+/// \{
+
 class Clock;
 
 /// Application 루프의 시간 설정입니다.
@@ -106,6 +109,8 @@ private:
     ApplicationConfig config_;
     bool running_ = false;
 };
+
+/// \}
 
 } // namespace meno
 

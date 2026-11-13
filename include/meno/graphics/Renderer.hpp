@@ -15,6 +15,9 @@
 
 namespace meno {
 
+/// \addtogroup graphics
+/// \{
+
 class Font;
 class Texture;
 class Window;
@@ -186,6 +189,8 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
+
+/// \}
 
 } // namespace meno
 

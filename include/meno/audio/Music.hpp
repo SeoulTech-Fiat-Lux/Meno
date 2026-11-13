@@ -7,6 +7,9 @@
 
 namespace meno {
 
+/// \addtogroup audio
+/// \{
+
 /// 파일에서 조금씩 읽어 재생하는 긴 배경음악입니다. 짧은 효과음은 Sound를 씁니다.
 ///
 /// 복사할 수 없고 이동할 수 있습니다. 파일 열기 실패는 예외가 아니라 빈 optional로 알립니다.
@@ -75,6 +78,8 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
+
+/// \}
 
 } // namespace meno
 

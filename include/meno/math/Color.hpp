@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup math
+/// \{
+
 /// 8비트 RGBA 색입니다.
 ///
 /// 기본값은 불투명 흰색입니다. tint로 쓰면 원본 색에 곱해지므로, 흰색은 원본을 그대로 둡니다.
@@ -77,6 +80,9 @@ struct Color {
 /// 자주 쓰는 색입니다.
 namespace colors {
 
+/// \addtogroup math
+/// \{
+
 inline constexpr Color White{255, 255, 255};    ///< 흰색
 inline constexpr Color Black{0, 0, 0};          ///< 검은색
 inline constexpr Color Red{255, 0, 0};          ///< 빨간색
@@ -88,7 +94,11 @@ inline constexpr Color Cyan{0, 255, 255};       ///< 청록색
 inline constexpr Color Gray{128, 128, 128};     ///< 회색
 inline constexpr Color Transparent{0, 0, 0, 0}; ///< 완전히 투명한 색
 
+/// \}
+
 } // namespace colors
+
+/// \}
 
 } // namespace meno
 

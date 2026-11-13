@@ -7,6 +7,9 @@
 
 namespace meno {
 
+/// \addtogroup audio
+/// \{
+
 class SoundBuffer;
 
 /// 메모리에 올려 둔 짧은 효과음입니다. 긴 배경음악은 Music을 씁니다.
@@ -76,6 +79,8 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
+
+/// \}
 
 } // namespace meno
 

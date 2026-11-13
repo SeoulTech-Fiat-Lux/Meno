@@ -7,6 +7,9 @@
 
 namespace meno {
 
+/// \addtogroup graphics
+/// \{
+
 namespace backend {
 struct FontAccess;
 }
@@ -51,6 +54,8 @@ private:
 
     friend struct backend::FontAccess;
 };
+
+/// \}
 
 } // namespace meno
 

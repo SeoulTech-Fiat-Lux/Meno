@@ -9,6 +9,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 /// GameObject에 붙여 효과음 하나를 재생하는 컴포넌트입니다.
 ///
 /// Sound 하나를 소유하므로, 음원을 바꾸거나 지우거나 GameObject가 사라지면 재생 중이던 소리도
@@ -69,6 +72,8 @@ private:
     std::optional<Sound> sound_;
     float volume_{1.0F};
 };
+
+/// \}
 
 } // namespace meno
 

@@ -17,6 +17,9 @@
 
 namespace meno {
 
+/// \addtogroup input
+/// \{
+
 /// 키보드와 마우스의 입력 상태입니다.
 ///
 /// 보통은 Window가 Input 하나를 갖고 있고 Window::pollEvents()가 채우므로, window.input()으로
@@ -211,6 +214,8 @@ private:
     std::map<std::string, Action, std::less<>> actions_;
     std::uint64_t frame_ = 0;
 };
+
+/// \}
 
 } // namespace meno
 

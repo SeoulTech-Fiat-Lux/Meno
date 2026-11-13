@@ -6,6 +6,9 @@
 
 namespace meno {
 
+/// \addtogroup input
+/// \{
+
 /// 키보드 키입니다. 키캡에 적힌 글자, 즉 자판 배열을 따릅니다.
 ///
 /// 예를 들어 AZERTY 자판에서는 QWERTY의 Q 자리에 있는 키를 누르면 Key::A가 들어옵니다.
@@ -40,6 +43,8 @@ enum class Key : std::uint8_t {
 
 /// Key 값의 개수(Unknown 포함)입니다. 키별 상태 배열의 크기로 씁니다.
 inline constexpr std::size_t keyCount = static_cast<std::size_t>(Key::Pause) + 1;
+
+/// \}
 
 } // namespace meno
 

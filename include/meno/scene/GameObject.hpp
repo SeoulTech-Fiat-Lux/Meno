@@ -16,6 +16,9 @@
 
 namespace meno {
 
+/// \addtogroup scene
+/// \{
+
 class Scene;
 
 /// Scene에 놓이는 게임 객체입니다. 위치(Transform)와 그림(Sprite)을 기본으로 가집니다.
@@ -130,6 +133,8 @@ public:
     }
     /// \}
 };
+
+/// \}
 
 } // namespace meno
 

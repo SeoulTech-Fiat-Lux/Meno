@@ -8,6 +8,9 @@
 
 namespace meno {
 
+/// \addtogroup math
+/// \{
+
 // AABB 타입을 따로 만들면 렌더와 충돌 판정 사이에 변환 코드가 계속 생기므로 하나로 둔다.
 // 멤버 구성이 SFML 3의 sf::Rect(position/size)와 같아서 백엔드 변환도 1:1이다.
 /// 축 정렬 사각형(AABB)입니다. 렌더와 충돌 판정이 함께 씁니다.
@@ -79,6 +82,8 @@ struct Rect {
 
 using Rectf = Rect<float>; ///< 월드 좌표의 영역 대부분
 using Recti = Rect<int>;   ///< 텍스처의 일부를 고르는 정수 픽셀 영역
+
+/// \}
 
 } // namespace meno
 

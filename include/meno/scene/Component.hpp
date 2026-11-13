@@ -2,6 +2,10 @@
 #define MENO_COMPONENT_HPP
 
 namespace meno {
+
+/// \addtogroup scene
+/// \{
+
 class GameObject;
 
 /// 모든 컴포넌트의 기반 구조체입니다. 상속해서 새 컴포넌트를 만들고 GameObject::addComponent()로
@@ -52,5 +56,8 @@ public:
 
     virtual ~Component() = default;
 };
+
+/// \}
+
 } // namespace meno
 #endif // MENO_COMPONENT_HPP
