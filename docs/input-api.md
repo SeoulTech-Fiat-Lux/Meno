@@ -27,9 +27,8 @@ OS ─ sf::Event ─▶ Window::pollEvents ─▶ backend::fromSf ─▶ meno::E
   1. 두 프레임 사이에 눌렀다 뗀 키를 놓친다.
   2. 창 포커스와 상관없이 OS 전역 키 상태를 읽는다(다른 창에 타자 쳐도 캐릭터가 움직인다).
   3. 테스트에서 흉내 낼 수 없다.
-- `Input`은 `Window::Impl` 안에 있다. Window를 이동 생성해도 `Input`의 주소가 바뀌지 않으므로
-  미리 받아 둔 `Input&`가 계속 유효하다. 이동당한 Window의 `input()`은 `std::logic_error`를 던진다.
-  (`Renderer`가 이동당한 Window를 받으면 `std::invalid_argument`를 던지는 것과 같은 취지다.)
+- `Input`은 `Window::Impl` 안에 있다. `Window`는 복사도 이동도 할 수 없으므로,
+  미리 받아 둔 `Input&`는 창이 살아 있는 동안 계속 유효하다.
 
 ## 2. 틱: "이번에 눌렸다"의 기준
 
@@ -132,4 +131,4 @@ if (input.wasActionPressed("jump")) { ... }
 |---|---|---|---|
 | `tests/input/test_input.cpp` | 키·마우스·휠·텍스트·포커스·액션, update 기준 판정(스크립트된 Clock으로 0·1·3회 update) | 없음 | 없음 |
 | `tests/input/test_input_convert.cpp` | SFML 키 101개가 서로 다른 meno 키로 빠짐없이 바뀌는지, 이벤트 변환 | 링크 | 없음 |
-| `tests/window/test_window_input.cpp` | Window 이동 후에도 같은 `Input`, 이동당한 Window의 예외 | 링크 | 필요 (`MENO_DISPLAY_TESTS=1`) |
+| `tests/window/test_window_input.cpp` | `input()`이 창 수명 동안 같은 `Input`을 돌려준다, Window 복사·이동 금지 | 링크 | 필요 (`MENO_DISPLAY_TESTS=1`) |

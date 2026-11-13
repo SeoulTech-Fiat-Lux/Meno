@@ -8,8 +8,8 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
-#include <stdexcept>
-#include <utility>
+#include <optional>
+
 
 namespace meno {
 
@@ -28,27 +28,15 @@ Window::Window(Vec2u size, std::string_view title)
 
 Window::~Window() = default;
 
-Window::Window(Window&&) noexcept = default;
-
-Window& Window::operator=(Window&&) noexcept = default;
-
-// 이동당한 빈 껍데기(impl_ == nullptr)에서는 아무런 동작도 하지 않는다.
-// isOpen()과 WindowAccess::native()가 이미 따르던 규칙을 나머지에도 맞추었다.
 bool Window::isOpen() const {
-    return impl_ != nullptr && impl_->window.isOpen();
+    return impl_->window.isOpen();
 }
 
 void Window::close() {
-    if (impl_ == nullptr) {
-        return;
-    }
     impl_->window.close();
 }
 
 void Window::pollEvents() {
-    if (impl_ == nullptr) {
-        return;
-    }
     impl_->input.beginFrame();
     // SFML 3의 pollEvent는 std::optional<sf::Event>를 돌려준다.
     while (const std::optional event = impl_->window.pollEvent()) {
@@ -61,23 +49,14 @@ void Window::pollEvents() {
 }
 
 Input& Window::input() {
-    if (impl_ == nullptr) {
-        throw std::logic_error("Window::input called on a moved-from Window");
-    }
     return impl_->input;
 }
 
 const Input& Window::input() const {
-    if (impl_ == nullptr) {
-        throw std::logic_error("Window::input called on a moved-from Window");
-    }
     return impl_->input;
 }
 
 Vec2u Window::size() const {
-    if (impl_ == nullptr) {
-        return {};
-    }
     return backend::fromSf(impl_->window.getSize());
 }
 
@@ -86,9 +65,6 @@ namespace backend {
 sf::RenderWindow* WindowAccess::native(const Window& window) noexcept {
     // unique_ptr의 const는 얕다. const Window&여도 *impl_는 non-const Impl&이므로
     // const_cast 없이 그릴 수 있는 RenderWindow를 꺼낼 수 있다.
-    if (window.impl_ == nullptr) {
-        return nullptr;
-    }
     return &window.impl_->window;
 }
 

@@ -27,7 +27,8 @@ struct FontAccess {
 };
 
 struct WindowAccess {
-    [[nodiscard]] static sf::RenderWindow* native(const Window& window) noexcept;
+    /// Window는 이동할 수 없으므로 항상 유효한 렌더 타깃을 돌려준다.
+    [[nodiscard]] static sf::RenderWindow& native(const Window& window) noexcept;
 };
 
 } // namespace meno::backend

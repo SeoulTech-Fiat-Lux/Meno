@@ -94,23 +94,6 @@ std::optional<Font> loadTestFont() {
 // --- 이동당한 객체 -----------------------------------------------------------
 
 void checkMovedFrom(Renderer& renderer) {
-    // 이동당한 Window로는 Renderer를 만들 수 없다. 받아 두면 첫 draw에서 널 역참조가 난다.
-    Window source{{64u, 64u}, "moved-from"};
-    const Window owner = std::move(source);
-
-    bool threw = false;
-    try {
-        const Renderer invalid{source};
-    } catch (const std::invalid_argument&) {
-        threw = true;
-    }
-    check(threw, "이동당한 Window로 Renderer를 만들면 std::invalid_argument");
-
-    // 이동당한 Window 자체도 크래시 없이 닫힌 창처럼 행동한다.
-    check(!source.isOpen() && source.size() == Vec2u{0u, 0u}, "이동당한 Window는 닫힌 창처럼 보인다");
-    source.pollEvents();
-    source.close();
-
     // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다(docs/render-api.md §4).
     // 수정 전에는 size()에서 널 역참조로 죽었다. 예제가 checker.size()를 부르므로 실제 경로다.
     Texture texture;

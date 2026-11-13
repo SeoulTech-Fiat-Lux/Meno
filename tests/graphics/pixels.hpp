@@ -20,7 +20,7 @@ namespace meno::test {
 
 // 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 불러야 한다.
 [[nodiscard]] inline sf::Image capture(Window& window) {
-    sf::RenderWindow& native = *backend::WindowAccess::native(window);
+    sf::RenderWindow& native = backend::WindowAccess::native(window);
     sf::Texture texture{native.getSize()};
     texture.update(native);
     return texture.copyToImage();

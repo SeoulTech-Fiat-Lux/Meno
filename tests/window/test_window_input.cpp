@@ -4,21 +4,13 @@
 #include "check.hpp"
 #include "display.hpp"
 
-#include <stdexcept>
-#include <utility>
+#include <type_traits>
 
-namespace {
-
-template <typename F> bool throwsLogicError(F&& call) {
-    try {
-        call();
-    } catch (const std::logic_error&) {
-        return true;
-    }
-    return false;
-}
-
-} // namespace
+// Window는 복사도 이동도 할 수 없다. Renderer가 붙잡은 렌더 타깃과 input()의 참조가 끝까지 유효한 근거다.
+static_assert(!std::is_copy_constructible_v<meno::Window>);
+static_assert(!std::is_copy_assignable_v<meno::Window>);
+static_assert(!std::is_move_constructible_v<meno::Window>);
+static_assert(!std::is_move_assignable_v<meno::Window>);
 
 int main() {
     if (meno::test::skipWithoutDisplay()) {
@@ -34,17 +26,14 @@ int main() {
     MENO_CHECK(!input.isDown(meno::Key::Space));
     MENO_CHECK(!input.isActionDown("jump"));
 
-    // Input은 Impl 안에 있으므로 이동 생성한 Window가 같은 Input을 그대로 갖는다.
-    meno::Window moved{std::move(window)};
-    MENO_CHECK(&moved.input() == &input);
-    moved.input().handleEvent(meno::event::KeyPressed{meno::Key::Space});
-    MENO_CHECK(input.isActionDown("jump"));
+    // input()은 부를 때마다 같은 Input을 돌려준다. const 쪽도 같다.
+    MENO_CHECK(&window.input() == &input);
+    const meno::Window& constWindow = window;
+    MENO_CHECK(&constWindow.input() == &input);
 
-    // 이동당한 Window에는 Input이 없다.
-    MENO_CHECK(throwsLogicError([&] { (void)window.input(); }));
-    const meno::Window& movedFrom = window;
-    MENO_CHECK(throwsLogicError([&] { (void)movedFrom.input(); }));
-    window.pollEvents(); // 이동당한 Window의 pollEvents는 아무것도 하지 않는다.
+    // Window를 거쳐 넣은 이벤트가 미리 받아 둔 참조에도 보인다.
+    window.input().handleEvent(meno::event::KeyPressed{meno::Key::Space});
+    MENO_CHECK(input.isActionDown("jump"));
 
     return meno::test::report();
 }

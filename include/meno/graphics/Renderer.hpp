@@ -35,14 +35,11 @@ class Window;
 class Renderer {
 public:
     // window는 Renderer보다 오래 살아야 한다. 소유하지 않는다.
-
-    // 생성 시점에 window의 렌터 타깃을 붙잡는다.
-    // 이후 window에 다른 Window를 이동 대입하면 붙잡은 타깃이 파괴되고, Renderer도 잇따라 새로 만들어야 한다.
-    // 렌더 타깃이 없는 Window(이동당한 빈 껍데기)를 넘기면 std::invalid_argument를 던진다.
+    // 생성 시점에 window의 렌더 타깃을 붙잡는다. Window는 이동할 수 없으므로 붙잡은 타깃은 끝까지 유효하다.
     explicit Renderer(Window& window);
     ~Renderer();
 
-    // 위에 따라, Renderer의 복사와 이동 모두 금지한다.
+    // Renderer도 복사와 이동을 모두 금지한다.
     // Window를 빌려 쓰는 타입이라 옮길 이유가 거의 없고,
     // 이동을 열어두면 이동당한 쪽(impl_ == nullptr)을 모든 함수가 굳이 검사해야 한다.
     // 복사와 이동을 막아두면 "살아있는 Renderer는 항상 유효한 렌더 타깃을 갖는다"는 불변식이 자료형으로 보장된다.

@@ -49,7 +49,7 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
 // 창 크기를 바꾸고, SFML이 Resized 이벤트를 받아 크기를 갱신할 때까지 pollEvents를 돌린다.
 // SFML은 pollEvent 안에서 getSize()를 새 값으로 바꾼다. Renderer가 별도의 통지 없이 리사이즈를 따라가는 근거다.
 bool resize(Window& window, Renderer& renderer, Vec2u size) {
-    backend::WindowAccess::native(window)->setSize(backend::toSf(size));
+    backend::WindowAccess::native(window).setSize(backend::toSf(size));
     for (int i = 0; i < 200 && window.size() != size; ++i) {
         window.pollEvents();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));

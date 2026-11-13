@@ -24,7 +24,6 @@
 #include <cmath>
 #include <cstddef>
 #include <optional>
-#include <stdexcept>
 
 namespace meno {
 namespace {
@@ -86,9 +85,9 @@ private:
 struct Renderer::Impl {
     // 소유하지 않는다. Window가 Renderer보다 오래 산다는 것이 계약이다.
 
-    // Renderer가 살아있는 동안, impl_과 target은 절대 nullptr이 아니다.
-    // 생성자가 nullptr을 거부하며, 동시에 이동을 막아 Renderer의 빈 껍데기는 생기지 않기 때문이다.
-    // 그래서 아래 맴버 함수들은 검사 없이 역참조한다. (impl_이 nullptr이면 target도 nullptr이므로, 둘 중 하나만 검사해도 된다.)
+    // Renderer가 살아있는 동안 target은 절대 nullptr이 아니다.
+    // Window가 이동할 수 없어 렌더 타깃 주소가 바뀌지 않고, Renderer도 이동을 막아 빈 껍데기가 생기지 않기 때문이다.
+    // 그래서 아래 멤버 함수들은 검사 없이 역참조한다.
     sf::RenderWindow* target{nullptr};
 
     // 마지막으로 setCamera한 카메라. 비어 있으면 resetCamera() 상태(화면 좌표)다.
@@ -115,12 +114,7 @@ struct Renderer::Impl {
 };
 
 Renderer::Renderer(Window& window) : impl_(std::make_unique<Impl>()) {
-    impl_->target = backend::WindowAccess::native(window);
-    if (impl_->target == nullptr) {
-        // 이동당한 Window를 넘겼거나, Window가 이미 소멸되어 렌더 타깃이 없는 경우.
-        // 여기에서 막지 않으면 첫 draw에서 nullptr 역참조가 일어나고, 그때는 어디서 잘못된 건지 알기 어렵다.
-        throw std::invalid_argument{"Renderer: window has no render target"};
-    }
+    impl_->target = &backend::WindowAccess::native(window);
 }
 
 Renderer::~Renderer() = default;
