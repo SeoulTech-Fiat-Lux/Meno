@@ -101,8 +101,8 @@ std::optional<Font> loadTestFont() {
 // --- 이동당한 객체 -----------------------------------------------------------
 
 void checkMovedFrom(Renderer& renderer) {
-    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다(docs/render-api.md §4).
-    // 수정 전에는 size()에서 널 역참조로 죽었다. 예제가 checker.size()를 부르므로 실제 경로다.
+    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다.
+    // 예제가 checker.size()를 부르는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이 {0, 0}이어야 한다.
     Texture texture;
     Texture keepTexture = std::move(texture);
     check(texture.size() == Vec2u{0u, 0u}, "이동당한 Texture의 size()는 {0,0}");
@@ -142,7 +142,7 @@ void checkText(const Renderer& renderer, const Font& font) {
     check(a.size.x > 0.f && a.size.y > 0.f, "글자가 있으면 크기가 0보다 크다");
 
     // SFML은 외곽선 t가 있으면 바운드를 축마다 ceil(t)씩 양쪽으로 넓힌다.
-    // 수정 전에는 측정용 sf::Text에 외곽선이 빠져 있어서 b == a였다.
+    // 측정용 sf::Text에도 외곽선이 들어가야 잰 크기와 그린 크기가 같다.
     check(near(b.size, a.size + Vec2f{4.f, 4.f}), "외곽선 2를 주면 잰 크기가 축마다 4 커진다");
     check(near(b.position, a.position - Vec2f{2.f, 2.f}),
           "외곽선 2를 주면 바운드 원점이 2씩 당겨진다");
@@ -181,8 +181,8 @@ void checkCamera(Renderer& renderer) {
     check(near(quarter.size, Vec2f{screen.y, screen.x}, 0.01f), "90도 회전: 폭과 높이가 바뀐다");
 
     // 45도: 화면 네 모서리에 비치는 월드 좌표가 모두 영역 안에 있어야 한다.
-    // 수정 전에는 회전을 무시한 사각형이 나와 모서리가 영역 밖으로 빠졌다
-    // (= 그 결과로 컬링하면 화면 모서리에 보이는 오브젝트가 사라진다).
+    // 회전을 무시한 사각형을 돌려주면 모서리가 영역 밖으로 빠지고,
+    // 그 결과로 컬링하면 화면 모서리에 보이는 오브젝트가 사라진다.
     renderer.setCamera({.rotation = 45.f});
     const Rectf tilted = renderer.visibleWorldBounds();
     bool allCornersInside = true;

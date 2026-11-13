@@ -89,9 +89,9 @@ void checkScreenCoordinates(Window& window, Renderer& renderer) {
     check(isColor(image, 610, 330, kInk),
           "리사이즈 후 화면 좌표: 우하단에 그린 사각형이 그 픽셀에 있다");
     check(near(renderer.screenToWorld({639.f, 359.f}), Vec2f{639.f, 359.f}),
-          "리사이즈 후 화면 좌표: 픽셀 좌표 == 월드 좌표 (수정 전에는 {319.5, 179.5})");
+          "리사이즈 후 화면 좌표: 픽셀 좌표 == 월드 좌표");
     check(near(renderer.screenToWorld({-0.5f, 0.5f}), Vec2f{-0.5f, 0.5f}),
-          "screenToWorld는 정수로 자르지 않는다 (수정 전에는 -0.5 -> 0)");
+          "screenToWorld는 정수로 자르지 않는다");
 }
 
 // --- 리사이즈 전에 설정한 카메라도 새 크기로 다시 적용된다 -----------------

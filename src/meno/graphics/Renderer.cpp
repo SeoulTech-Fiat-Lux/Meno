@@ -35,7 +35,7 @@ namespace {
     return sf::String::fromUtf8(text.begin(), text.end());
 }
 
-// drawText와  measureText가 쓰는 sf::Text를 조립하는 유일한 지점.
+// drawText와 measureText가 쓰는 sf::Text를 조립하는 유일한 지점.
 // 둘이 따로 조립하면 한쪽에만 옵션이 빠져 잰 크기와 그린 크기가 어긋난다.
 [[nodiscard]] sf::Text makeText(const sf::Font& font, std::string_view text,
                                 const TextParams& params) {

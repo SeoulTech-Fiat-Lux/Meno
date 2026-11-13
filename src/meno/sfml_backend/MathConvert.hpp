@@ -13,10 +13,7 @@
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 
-// 내부 전용 헤더. meno 타입 ↔ SFML 타입 변환을 한곳에 모아둔다.
-//
-// 변환이 여기 한 파일에만 있어야 백엔드를 갈아끼울 때 손볼 곳이 명확해진다.
-// 다른 .cpp에서 sf:: 타입을 직접 조립하지 않도록 하자.
+// 내부 전용 헤더. meno 수학 타입(Vec2, Rect, Color, 각도, 카메라) ↔ SFML 타입 변환을 한곳에 모아둔다.
 namespace meno::backend {
 
 template <typename T> [[nodiscard]] constexpr sf::Vector2<T> toSf(const Vec2<T>& v) noexcept {

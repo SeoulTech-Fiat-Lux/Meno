@@ -37,7 +37,7 @@ struct SpriteParams {
 
     /// 텍스처의 일부만 그릴 때 지정한다(스프라이트 시트, 애니메이션 프레임).
     /// 비어 있으면 텍스처 전체.
-    std::optional<Recti> source{};
+    std::optional<Recti> source{}; // NOLINT(readability-redundant-member-init)
 
     bool flipX{false};
     bool flipY{false};

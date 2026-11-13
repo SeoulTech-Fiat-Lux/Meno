@@ -8,11 +8,12 @@
 
 namespace meno {
 
-/// 축 정렬 사각형.
-template <typename T> struct Rect {
-    /// 좌상단 모서리의 좌표를 나타내는 2D 벡터.
-    Vec2<T> position{};
-    /// 사각형의 너비와 높이를 나타내는 2D 벡터.
+/// 축 정렬 사각형. 렌더와 충돌 판정이 함께 쓴다.
+/// AABB 타입을 따로 만들면 둘 사이에 변환 코드가 계속 생긴다.
+/// 멤버 구성이 SFML 3의 sf::Rect(position/size)와 같아서 백엔드 변환도 1:1이다.
+template <typename T>
+struct Rect {
+    Vec2<T> position{}; ///< 좌상단
     Vec2<T> size{};
 
     constexpr Rect() = default;
@@ -28,17 +29,19 @@ template <typename T> struct Rect {
         return {position.x + size.x / T{2}, position.y + size.y / T{2}};
     }
 
-    /// 왼쪽/위 경계는 포함하고 오른쪽/아래 경계는 제외한다.
+    /// 왼쪽·위 경계는 포함하고 오른쪽·아래 경계는 제외한다.
+    /// 맞닿은 두 사각형이 경계의 한 점을 동시에 갖지 않게 하기 위해서다.
     [[nodiscard]] constexpr bool contains(Vec2<T> point) const {
         return point.x >= left() && point.x < right() && point.y >= top() && point.y < bottom();
     }
 
+    /// 경계만 맞닿은 경우는 겹치지 않는 것으로 본다.
     [[nodiscard]] constexpr bool intersects(const Rect& other) const {
         return left() < other.right() && other.left() < right() && top() < other.bottom() &&
                other.top() < bottom();
     }
 
-    /// 겹치는 영역을 반환한다. 겹치지 않으면 std::nullopt.
+    /// 겹치는 영역. 겹치지 않으면 std::nullopt.
     [[nodiscard]] constexpr std::optional<Rect> findIntersection(const Rect& other) const {
         if (!intersects(other)) {
             return std::nullopt;

@@ -111,9 +111,7 @@ add_subdirectory(window)
 # ---------------------------------------------------------------------------
 # 등록 누락 검사
 # ---------------------------------------------------------------------------
-# test_*.cpp를 만들고 meno_add_test 등록을 빠뜨리면 CI에서 조용히 빠진다.
-# 머지 충돌을 해결하다 등록 줄이 사라져도 마찬가지다(PR #19에서 실제로 있었던 일).
-# 그래서 configure 단계에서 파일 목록과 등록 목록을 비교해 바로 실패시킨다.
+# configure 단계에서 파일 목록과 등록 목록을 비교해 바로 실패시킨다.
 file(GLOB_RECURSE meno_test_sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp)
 get_property(meno_registered_tests GLOBAL PROPERTY MENO_REGISTERED_TESTS)
 foreach(source IN LISTS meno_test_sources)

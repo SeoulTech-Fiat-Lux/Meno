@@ -18,7 +18,7 @@
 namespace meno {
 
 /// 키보드와 마우스의 입력 상태를 관리한다.
-/// 보통은 Window가 input 하나를 갖고 있고, window.pollEvent()가 채운다.
+/// 보통은 Window가 input 하나를 갖고 있고, window.pollEvents()가 채운다.
 
 /// ex. if (window.input().wasPressed(meno::Key::Space)) { jump(); }
 
