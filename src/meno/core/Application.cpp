@@ -4,6 +4,7 @@
 #include <meno/core/Time.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <stdexcept>
 
 namespace meno {
@@ -15,8 +16,10 @@ bool applicationRunActive = false;
 } // namespace
 
 Application::Application(ApplicationConfig config) : config_(config) {
-    if (config_.fixedTimeStep <= 0.0 || config_.maxUpdatesPerFrame == 0) {
-        throw std::invalid_argument("Application timing values must be positive");
+    // NaN은 <= 0.0 비교를 통과하므로 양의 유한수인지를 직접 확인한다.
+    const bool validStep = std::isfinite(config_.fixedTimeStep) && config_.fixedTimeStep > 0.0;
+    if (!validStep || config_.maxUpdatesPerFrame == 0) {
+        throw std::invalid_argument("Application timing values must be positive and finite");
     }
 }
 
@@ -78,7 +81,11 @@ void Application::run(Clock& clock) {
         }
 
         if (running_) {
-            render(accumulator / config_.fixedTimeStep);
+            // update 상한에 걸린 프레임에서는 반올림 오차로 남은 시간이 fixedTimeStep 이상일 수
+            // 있다. 문서가 약속한 [0, 1) 범위를 지키도록 1 바로 아래로 자른다.
+            const double alpha =
+                std::clamp(accumulator / config_.fixedTimeStep, 0.0, std::nextafter(1.0, 0.0));
+            render(alpha);
         }
     }
 

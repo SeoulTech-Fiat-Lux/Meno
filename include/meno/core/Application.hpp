@@ -9,7 +9,8 @@ class Clock;
 
 /// Application 루프의 시간 설정입니다.
 struct ApplicationConfig {
-    /// fixed update 한 번의 시간 간격(초). 0 이하면 Application 생성자가 예외를 던집니다.
+    /// fixed update 한 번의 시간 간격(초). 양의 유한수가 아니면(0 이하, NaN, 무한대)
+    /// Application 생성자가 예외를 던집니다.
     double fixedTimeStep = 1.0 / 60.0;
     /// 한 프레임에 부르는 update()의 최대 횟수. 0이면 Application 생성자가 예외를 던집니다.
     ///

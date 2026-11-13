@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -206,6 +207,60 @@ void testSlowStartIsExcluded() {
     MENO_CHECK(meno::Time::realElapsedTime() < 0.02); // 로딩 1초가 빠졌다
 }
 
+// 0 이하뿐 아니라 NaN과 무한대도 거부해야 한다. 통과시키면 update()가 영영 불리지 않는다.
+void testRejectsInvalidTiming() {
+    const auto rejects = [](meno::ApplicationConfig config) {
+        try {
+            CallbackApplication app(config);
+            return false;
+        } catch (const std::invalid_argument&) {
+            return true;
+        }
+    };
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const double inf = std::numeric_limits<double>::infinity();
+    MENO_CHECK(rejects({.fixedTimeStep = 0.0}));
+    MENO_CHECK(rejects({.fixedTimeStep = -0.01}));
+    MENO_CHECK(rejects({.fixedTimeStep = nan}));
+    MENO_CHECK(rejects({.fixedTimeStep = inf}));
+    MENO_CHECK(rejects({.maxUpdatesPerFrame = 0}));
+    MENO_CHECK(!rejects({.fixedTimeStep = 0.01}));
+}
+
+// 상한에 걸린 프레임에서는 반올림 오차로 남은 시간이 fixedTimeStep 이상일 수 있다.
+// 16ms 프레임 25번 뒤 1초 프레임이 오면 보정 전에는 alpha가 1.0000000000000013이 된다.
+class AlphaApplication final : public meno::Application {
+public:
+    explicit AlphaApplication(meno::Clock::TimePoint& now)
+        : Application({.fixedTimeStep = 0.1, .maxUpdatesPerFrame = 8}), now_(now) {}
+    std::vector<double> alphas;
+
+private:
+    void render(double interpolationAlpha) override {
+        using namespace std::chrono_literals;
+        alphas.push_back(interpolationAlpha);
+        if (alphas.size() <= 25)
+            now_ += 16ms;
+        else if (alphas.size() == 26)
+            now_ += 1s;
+        else
+            stop();
+    }
+    meno::Clock::TimePoint& now_;
+};
+
+void testInterpolationAlphaStaysBelowOne() {
+    meno::Clock::TimePoint now{};
+    meno::Clock clock([&] { return now; }, [](meno::Clock::Duration) {});
+    AlphaApplication app(now);
+    app.run(clock);
+    MENO_CHECK(app.alphas.size() == 27);
+    bool inRange = true;
+    for (const double alpha : app.alphas)
+        inRange = inRange && alpha >= 0.0 && alpha < 1.0;
+    MENO_CHECK(inRange);
+}
+
 } // namespace
 
 int main() {
@@ -270,6 +325,8 @@ int main() {
 
     testExclusiveRun();
     testSlowStartIsExcluded();
+    testRejectsInvalidTiming();
+    testInterpolationAlphaStaysBelowOne();
 
     TimePoint limitedNow{};
     std::size_t waitCount = 0;
