@@ -62,10 +62,10 @@ Vec2u Window::size() const {
 
 namespace backend {
 
-sf::RenderWindow* WindowAccess::native(const Window& window) noexcept {
+sf::RenderWindow& WindowAccess::native(const Window& window) noexcept {
     // unique_ptr의 const는 얕다. const Window&여도 *impl_는 non-const Impl&이므로
     // const_cast 없이 그릴 수 있는 RenderWindow를 꺼낼 수 있다.
-    return &window.impl_->window;
+    return window.impl_->window;
 }
 
 } // namespace backend
