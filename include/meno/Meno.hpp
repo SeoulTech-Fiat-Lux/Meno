@@ -55,4 +55,7 @@
 
 #include <meno/app/Game.hpp> // IWYU pragma: export
 
+/// \namespace meno
+/// meno의 모든 공개 API가 들어 있는 네임스페이스입니다. 보통은 이 헤더 하나만 include합니다.
+
 #endif // MENO_HPP
