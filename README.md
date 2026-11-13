@@ -1,9 +1,12 @@
+<!-- 로고는 GitHub 테마 설정을 따라 하나만 보인다(#gh-light-mode-only, #gh-dark-mode-only).
+     <picture>는 OS 설정만 따르므로, GitHub만 다크일 때 검은 글자 로고가 나와 글자가
+     보이지 않는다. -->
 <p align="center">
-  <a href="https://seoultech-fiat-lux.github.io/Meno/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/theme/logo/meno-logo-on-dark.svg">
-      <img src="docs/theme/logo/meno-logo-on-light.svg" alt="meno" width="360">
-    </picture>
+  <a href="https://seoultech-fiat-lux.github.io/Meno/#gh-light-mode-only">
+    <img src="docs/theme/logo/meno-logo-on-light.svg" alt="meno" width="360">
+  </a>
+  <a href="https://seoultech-fiat-lux.github.io/Meno/#gh-dark-mode-only">
+    <img src="docs/theme/logo/meno-logo-on-dark.svg" alt="meno" width="360">
   </a>
 </p>
 
