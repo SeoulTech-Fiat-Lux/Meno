@@ -48,6 +48,7 @@ private:
     }
 
 public:
+    ~GameObject() = default;
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&&) noexcept = delete;
 

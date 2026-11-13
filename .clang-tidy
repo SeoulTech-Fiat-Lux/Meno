@@ -8,6 +8,7 @@ Checks: >
   misc-redundant-expression,
   misc-unused-using-decls,
   modernize-*,
+  -modernize-use-designated-initializers,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   performance-*,

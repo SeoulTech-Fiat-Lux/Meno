@@ -5,8 +5,6 @@
 
 #include <SFML/Graphics/Image.hpp>
 
-#include <utility>
-
 namespace meno {
 
 struct Texture::Impl {

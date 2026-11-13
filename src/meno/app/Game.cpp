@@ -10,12 +10,14 @@ struct RunInvocationGuard {
     bool& active;
 
     explicit RunInvocationGuard(bool& flag) : active(flag) { active = true; }
+    RunInvocationGuard(const RunInvocationGuard&) = delete;
+    RunInvocationGuard& operator=(const RunInvocationGuard&) = delete;
     ~RunInvocationGuard() { active = false; }
 };
 
 } // namespace
 
-Game::Game(GameConfig config)
+Game::Game(const GameConfig& config)
     : Application(config.application), window_(config.windowSize, config.title), renderer_(window_),
       clearColor_(config.clearColor) {}
 
@@ -46,7 +48,7 @@ void Game::run(Clock& clock) {
         // 정리 중 발생한 예외 대신 원래 실행 예외를 다시 던진다.
         try {
             (void)scenes_.shutdown();
-        } catch (...) {
+        } catch (...) { // NOLINT(bugprone-empty-catch)
         }
         throw;
     }

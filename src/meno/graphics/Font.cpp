@@ -2,8 +2,6 @@
 
 #include "sfml_backend/Access.hpp"
 
-#include <utility>
-
 namespace meno {
 
 struct Font::Impl {

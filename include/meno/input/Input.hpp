@@ -162,7 +162,7 @@ private:
 
     std::array<ButtonState, keyCount> keys_{};
     std::array<ButtonState, mouseButtonCount> mouseButtons_{};
-    Vec2i mousePosition_{};
+    Vec2i mousePosition_;
     Accumulator<float> wheel_;
     Accumulator<std::string> text_;
     std::map<std::string, Action, std::less<>> actions_;

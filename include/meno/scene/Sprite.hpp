@@ -24,7 +24,7 @@ public:
     /// 텍스처 내부의 기준점. 기본값은 좌상단이며 부모의 원점은 바꾸지 않는다.
     Vec2f origin{0.f, 0.f};
     Color tint{colors::White};
-    std::optional<Recti> source{};
+    std::optional<Recti> source;
     bool flipX{false};
     bool flipY{false};
 

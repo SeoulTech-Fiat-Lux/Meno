@@ -32,7 +32,8 @@ public:
     void setLooping(bool looping);
     [[nodiscard]] bool isLooping() const;
 
-    /// 볼륨을 0(무음)~1(최대) 범위로 설정한다. 범위를 벗어난 값은 제한되고, NaN은 무시해 기존 값을 유지한다.
+    /// 볼륨을 0(무음)~1(최대) 범위로 설정한다. 범위를 벗어난 값은 제한되고,
+    /// NaN은 무시해 기존 값을 유지한다.
     void setVolume(float volume);
     [[nodiscard]] float volume() const;
     [[nodiscard]] bool isPlaying() const;

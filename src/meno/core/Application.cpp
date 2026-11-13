@@ -37,6 +37,10 @@ void Application::run(Clock& clock) {
     struct RunGuard {
         bool& running;
 
+        explicit RunGuard(bool& flag) : running(flag) {}
+        RunGuard(const RunGuard&) = delete;
+        RunGuard& operator=(const RunGuard&) = delete;
+
         ~RunGuard() noexcept {
             running = false;
             Time::endStep();

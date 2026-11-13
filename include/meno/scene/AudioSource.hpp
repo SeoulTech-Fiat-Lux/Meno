@@ -16,6 +16,7 @@ class AudioSource final : public Component {
 public:
     AudioSource() = default;
     explicit AudioSource(Sound&& sound);
+    ~AudioSource() override = default;
 
     AudioSource(const AudioSource&) = delete;
     AudioSource& operator=(const AudioSource&) = delete;

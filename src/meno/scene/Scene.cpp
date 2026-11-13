@@ -1,6 +1,5 @@
 #include <meno/scene/GameObject.hpp>
 #include <meno/scene/Scene.hpp>
-#include <meno/scene/SceneManager.hpp>
 #include <algorithm>
 #include <exception>
 
@@ -29,12 +28,11 @@ void Scene::drawScene(Renderer& renderer) const {
         for (const auto& [id, object] : objects_)
             drawOrder_.push_back(object.get());
 
-        std::sort(drawOrder_.begin(), drawOrder_.end(),
-                  [](const GameObject* a, const GameObject* b) {
-                      if (a->layer() != b->layer())
-                          return a->layer() < b->layer();
-                      return a->id() < b->id();
-                  });
+        std::ranges::sort(drawOrder_, [](const GameObject* a, const GameObject* b) {
+            if (a->layer() != b->layer())
+                return a->layer() < b->layer();
+            return a->id() < b->id();
+        });
         drawOrderDirty_ = false;
     }
 

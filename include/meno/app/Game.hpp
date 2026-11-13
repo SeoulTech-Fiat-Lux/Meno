@@ -28,7 +28,7 @@ struct GameConfig {
 /// 각 Game은 독립적인 SceneManager를 직접 소유한다.
 class Game : public Application {
 public:
-    explicit Game(GameConfig config = {});
+    explicit Game(const GameConfig& config = {});
     ~Game() noexcept override;
 
     Game(const Game&) = delete;

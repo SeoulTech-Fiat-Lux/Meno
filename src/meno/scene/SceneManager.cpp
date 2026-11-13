@@ -8,6 +8,8 @@ namespace {
 struct CallbackGuard {
     bool& busy;
     explicit CallbackGuard(bool& flag) : busy(flag) { busy = true; }
+    CallbackGuard(const CallbackGuard&) = delete;
+    CallbackGuard& operator=(const CallbackGuard&) = delete;
     ~CallbackGuard() { busy = false; }
 };
 } // namespace

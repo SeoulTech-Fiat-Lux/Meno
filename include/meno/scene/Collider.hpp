@@ -11,7 +11,7 @@ class GameObject;
 /// 모든 콜라이더의 기본 구조체.
 struct Collider : public Component {
     /// 부모 좌상단 기준 로컬 위치. 사각형은 좌상단, 원은 중심을 지정한다.
-    Vec2f offset{};
+    Vec2f offset;
 
     Collider() = default;
     explicit Collider(const Vec2f& offset) : offset(offset) {}
@@ -19,7 +19,7 @@ struct Collider : public Component {
 
 /// 사각형 콜라이더.
 struct BoxCollider final : public Collider {
-    Vec2f size{};
+    Vec2f size;
 
     BoxCollider() = default;
     BoxCollider(const Vec2f& offset, const Vec2f& size) : Collider(offset), size(size) {}
