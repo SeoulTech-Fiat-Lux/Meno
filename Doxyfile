@@ -1,0 +1,35 @@
+# meno API 레퍼런스 설정
+# 공개 헤더 주석 점검용 최소 설정이다. 테마, 설명서 페이지, 배포는 Task 2에서 더한다.
+# 기준 버전: Doxygen 1.9.8 (CI의 Ubuntu 24.04). 여기 없는 항목은 Doxygen 기본값을 쓴다.
+#
+#   mkdir -p build-docs && doxygen Doxyfile 2> build-docs/warnings.txt
+
+PROJECT_NAME           = meno
+OUTPUT_DIRECTORY       = build-docs
+OUTPUT_LANGUAGE        = Korean
+
+INPUT                  = include/meno
+FILE_PATTERNS          = *.hpp
+RECURSIVE              = YES
+# 문서에 <meno/graphics/Renderer.hpp>처럼 사용자가 실제로 쓰는 include 경로로 보이게 한다.
+STRIP_FROM_PATH        = include
+STRIP_FROM_INC_PATH    = include
+
+# 공개 API만 싣는다. private 멤버와 meno::detail은 구현 세부라 뺀다.
+EXTRACT_PRIVATE        = NO
+EXCLUDE_SYMBOLS        = meno::detail
+
+# 주석 규칙: 첫 문장이 요약이 되고, ///@{ ... ///@} 묶음의 설명은 묶인 멤버 모두에 붙는다.
+JAVADOC_AUTOBRIEF      = YES
+DISTRIBUTE_GROUP_DOC   = YES
+
+# 경고: 문서 없는 공개 멤버와 틀린 태그(\param 이름 오타 등)를 잡는다.
+# \param은 필요한 것만 쓰므로, 일부만 적었다고 경고하지 않는다.
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_IF_INCOMPLETE_DOC = NO
+WARN_NO_PARAMDOC       = NO
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
