@@ -109,6 +109,8 @@ int main() {
     MENO_CHECK(allAre(0.456F));
     setAll(1.5F);
     MENO_CHECK(allAre(1.0F));
+    setAll(std::numeric_limits<float>::infinity());
+    MENO_CHECK(allAre(1.0F));
     setAll(-0.5F);
     MENO_CHECK(allAre(0.0F));
 
