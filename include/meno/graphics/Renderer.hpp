@@ -27,10 +27,11 @@ class Window;
 ///
 /// 한 프레임의 형태:
 ///
-///     renderer.beginFrame(colors::Black);
-///     renderer.draw(playerTexture, {.position = {100.f, 50.f}});
-///     renderer.endFrame();
-///
+/// \code{.cpp}
+/// renderer.beginFrame(colors::Black);
+/// renderer.draw(playerTexture, {.position = {100.f, 50.f}});
+/// renderer.endFrame();
+/// \endcode
 class Renderer {
 public:
     /// window는 Renderer보다 오래 살아야 한다. 소유하지 않는다.
@@ -93,7 +94,7 @@ public:
                   const TextParams& params = {});
 
     /// 그리지 않고 차지할 크기만 잰다. 같은 params로 drawText한 결과와 크기가 같다.
-
+    ///
     /// 주의: 글자의 실제 잉크는 drawText의 position에서 바로 시작하지 않는다.
     /// 윗부분 여백(글리프 베어링)과 외곽선만큼 어긋나 있어서, 크기만으로 정렬하면 몇 픽셀 틀어진다.
     /// 픽셀 단위로 세심히 맞추고 싶을 경우, 아래의 measureTextBounds를 쓰자.
@@ -102,12 +103,15 @@ public:
 
     /// drawText(font, text, {0, 0}, params)로 그렸을 때, 실제 잉크가 차지하는 영역을 Rectf로
     /// 반환한다. params의 origin과 rotation을 적용하기 전의 로컬 좌표이다.
-
+    ///
     /// position이 {0, 0}이 아니라는 점이 measureText와 다르다. 가운데 정렬을 예로 들면:
-    ///     TextParams params{.characterSize = 32};
-    ///     params.origin = renderer.measureTextBounds(font, text, params).center();
-    ///     renderer.drawText(font, text, screenCenter, params);   // 회전해도 제자리
-
+    ///
+    /// \code{.cpp}
+    /// TextParams params{.characterSize = 32};
+    /// params.origin = renderer.measureTextBounds(font, text, params).center();
+    /// renderer.drawText(font, text, screenCenter, params); // 회전해도 제자리
+    /// \endcode
+    ///
     /// 로드되지 않거나 이동된 폰트라면 빈 사각형을 돌려준다.
     [[nodiscard]] Rectf measureTextBounds(const Font& font, std::string_view text,
                                           const TextParams& params = {}) const;
@@ -126,11 +130,13 @@ public:
 
     /// 월드 좌표 <-> 창 픽셀 좌표. 정수로 자르지 않은 실수를 돌려준다.
     /// 마우스 위치로 월드의 물체를 고를 때는 screenToWorld를 쓴다.
+    /// \{
     [[nodiscard]] Vec2f worldToScreen(Vec2f worldPoint) const;
     [[nodiscard]] Vec2f screenToWorld(Vec2f screenPoint) const;
+    /// \}
 
     /// 현재 카메라로 보이는 월드 영역. 화면 밖 오브젝트를 건너뛸 때 쓴다.
-
+    ///
     /// 카메라가 회전해 있으면 보이는 영역은 기울어진 사각형이 된다.
     /// 이때 그것을 감싸는 축 정렬 사각형을 돌려준다. (회전된 사각형의 외접 사각형)
     /// 실제보다 조금 넓을 수는 있어도 좁지는 않으므로,

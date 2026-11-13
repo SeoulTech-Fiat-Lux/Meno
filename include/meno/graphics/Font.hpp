@@ -12,9 +12,9 @@ struct FontAccess;
 }
 
 /// 텍스트 렌더링용 폰트. Texture와 같은 소유권 규칙을 따른다.
-
+///
 /// 이동된 Font로 drawText를 호출하면 아무것도 그리지 않고, 크기를 측정하면 {0, 0}을 반환한다.
-
+///
 /// 한글을 그리려면 한글 글리프를 가진 폰트를 넣어야 한다.
 /// (Windows 기본 경로 예: C:/Windows/Fonts/malgun.ttf)
 class Font {

@@ -1,11 +1,14 @@
 #ifndef MENO_HPP
 #define MENO_HPP
 
+/// \file
 /// meno 통합 헤더.
 ///
 /// 사용자는 이 한 줄로 공개 API 전체에 접근한다:
 ///
-///     #include <meno/Meno.hpp>
+/// \code{.cpp}
+/// #include <meno/Meno.hpp>
+/// \endcode
 ///
 /// 개별 헤더를 직접 include해도 된다. 컴파일 시간을 아끼려면 그쪽이 낫다.
 ///

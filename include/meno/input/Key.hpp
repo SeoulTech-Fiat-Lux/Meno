@@ -8,7 +8,6 @@ namespace meno {
 
 /// 키캡에 적힌 글자 즉, 자판 배열을 따르는 키보드 키.
 /// ex. AZERTY 자판에서 Key::A는 QWERTY 자판에서 Key::Q에 해당한다.
-
 enum class Key : std::uint8_t {
     Unknown,
     // clang-format off

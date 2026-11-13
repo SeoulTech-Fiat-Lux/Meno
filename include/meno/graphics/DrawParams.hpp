@@ -14,7 +14,9 @@ namespace meno {
 /// 전부 기본값이 있어서 필요한 것만 지정하면 된다. C++20 지정 초기화와
 /// 함께 쓰는 것을 전제로 설계했다:
 ///
-///     renderer.draw(tex, {.position = {100, 50}, .rotation = 45.f});
+/// \code{.cpp}
+/// renderer.draw(tex, {.position = {100, 50}, .rotation = 45.f});
+/// \endcode
 ///
 /// 지정 초기화는 선언 순서를 지켜야 하므로, 필드 순서를 바꾸면 사용자
 /// 코드가 깨진다. 순서 변경은 API 변경으로 취급할 것.

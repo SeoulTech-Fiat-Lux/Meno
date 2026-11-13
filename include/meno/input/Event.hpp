@@ -13,9 +13,11 @@ namespace meno {
 /// Window가 SFML 이벤트를 Input에 넘길 때, 이 형태로 변환한다.
 /// 테스트나 입력 재생과 같이, 창 없이 Input을 구동할 때는 직접 만들어서 Input::handleEvent()에
 /// 넘긴다.
-
-/// ex. input.handleEvent(meno::event::KeyPressed{meno::Key::Space});
-
+///
+/// \code{.cpp}
+/// input.handleEvent(meno::event::KeyPressed{meno::Key::Space});
+/// \endcode
+///
 /// 현재 모든 좌표의 기준은 창의 좌상단 픽셀이다.
 namespace event {
 

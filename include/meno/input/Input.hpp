@@ -19,9 +19,11 @@ namespace meno {
 
 /// 키보드와 마우스의 입력 상태를 관리한다.
 /// 보통은 Window가 input 하나를 갖고 있고, window.pollEvents()가 채운다.
-
-/// ex. if (window.input().wasPressed(meno::Key::Space)) { jump(); }
-
+///
+/// \code{.cpp}
+/// if (window.input().wasPressed(meno::Key::Space)) { jump(); }
+/// \endcode
+///
 /// wasPressed(), wasReleased()와 휠 및 텍스트는 "이번 틱"에 발생한 일만 반환한다. 틱은 호출된 곳에
 /// 따라 달라지며, 아래와 같이 정의한다. Application::update 내부: 해당 fixed update 한 번. 한
 /// 프레임에 update()가 0번 돌든 여러 번 돌든 관계 없이, 한 번 누른 키는 그 뒤에 처음 도는
@@ -29,16 +31,23 @@ namespace meno {
 /// 다음 pollEvents까지.
 class Input {
 public:
-    /// 지금 키가 눌린 상태인가
+    /// 지금 키나 마우스 버튼이 눌린 상태인가.
+    /// \{
     [[nodiscard]] bool isDown(Key key) const noexcept;
-    /// 이번 틱에 키가 눌렸는가 (같은 틱 안에 눌렀다 떼도 true로 처리한다.)
-    [[nodiscard]] bool wasPressed(Key key) const noexcept;
-    /// 이번 틱에 키가 떼졌는가
-    [[nodiscard]] bool wasReleased(Key key) const noexcept;
-
     [[nodiscard]] bool isDown(MouseButton button) const noexcept;
+    /// \}
+
+    /// 이번 틱에 키나 마우스 버튼이 눌렸는가. 같은 틱 안에 눌렀다 떼도 true로 처리한다.
+    /// \{
+    [[nodiscard]] bool wasPressed(Key key) const noexcept;
     [[nodiscard]] bool wasPressed(MouseButton button) const noexcept;
+    /// \}
+
+    /// 이번 틱에 키나 마우스 버튼이 떼졌는가.
+    /// \{
+    [[nodiscard]] bool wasReleased(Key key) const noexcept;
     [[nodiscard]] bool wasReleased(MouseButton button) const noexcept;
+    /// \}
 
     /// 마지막으로 인식된 마우스 좌표. 창의 좌상단 픽셀을 기준으로 하며, 카메라를 고려하지 않는다.
     /// 월드 좌표가 필요하다면, Renderer::screenToWorld()를 활용하여 변환한다.
@@ -54,16 +63,21 @@ public:
     /// "jump"와 같은 특정 동작에 여러 키·버튼을 묶는다.
     /// 묶인 것 중 하나라도 눌려 있으면 곧 액션이 눌린 것과 같다.
     /// 등록하지 않은 이름을 묻는 경우에는 false를 반환한다.
-
-    /// ex.  input.bind("jump", meno::Key::Space);
-    ///      input.bind("jump", meno::Key::W);
-    ///      if (input.wasActionPressed("jump")) {...}
-
+    ///
+    /// \code{.cpp}
+    /// input.bind("jump", meno::Key::Space);
+    /// input.bind("jump", meno::Key::W);
+    /// if (input.wasActionPressed("jump")) { ... }
+    /// \endcode
+    ///
     /// 같은 키를 두 번 묶어도 한 번으로 친다.
     /// 이미 눌려 있는 키를 묶으면 isActionDown은 바로 true를 반환하지만,
     /// 이번 틱에 키가 눌린 것은 아니므로 wasActionPressed는 false를 반환한다.
+    /// \{
     void bind(std::string_view action, Key key);
     void bind(std::string_view action, MouseButton button);
+    /// \}
+
     /// 등록된 동작을 제거한다. 묶여 있던 키나 버튼 역시 풀린다.
     void unbind(std::string_view action);
 
@@ -74,11 +88,16 @@ public:
     /// 해당 동작에 묶인 키나 버튼이 모두 떼어진 틱에만 true를 반환한다.
     [[nodiscard]] bool wasActionReleased(std::string_view action) const;
 
+    /// 새 프레임을 시작한다. 이벤트를 넣기 전에 프레임마다 한 번 호출한다.
+    ///
     /// Window::pollEvents()가 호출한다. 직접 호출하는 경우는 테스트나 입력 재생 등, 창 없이 Input을
     /// 구동할 때이다.
-
-    /// 새 프레임을 시작한다. 이벤트를 넣기 전에 프레임마다 한 번 호출한다.
     void beginFrame() noexcept;
+
+    /// 이벤트 하나를 입력 상태에 반영한다.
+    ///
+    /// Window::pollEvents()가 호출한다. 직접 호출하는 경우는 테스트나 입력 재생 등, 창 없이 Input을
+    /// 구동할 때이다.
     void handleEvent(const Event& event);
 
 private:
