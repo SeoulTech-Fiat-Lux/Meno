@@ -44,7 +44,7 @@ renderer.draw(texture, {.position = {100.f, 50.f},           // 옵션 지정
 renderer.endFrame();
 ```
 
-`SpriteParams` / `ShapeParams` / `TextParams`는 전부 기본값을 가지므로 필요한 필드만 쓴다.
+`SpriteParams` / `ShapeParams` / `LineParams` / `TextParams`는 전부 기본값을 가지므로 필요한 필드만 쓴다.
 
 ### 색상 리터럴
 

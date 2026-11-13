@@ -1,6 +1,6 @@
-#include "meno/graphics/DrawParams.hpp"
 #include <meno/graphics/Renderer.hpp>
 
+#include <meno/graphics/DrawParams.hpp>
 #include <meno/window/Window.hpp>
 #include <meno/graphics/Font.hpp>
 #include <meno/graphics/Texture.hpp>
@@ -210,7 +210,7 @@ void Renderer::drawLine(Vec2f from, Vec2f to, const LineParams& params) {
     }
 
     // 두께 있는 선은 회전시킨 사각형으로 그린다. VertexArray의 Lines는
-    // 두께를 지원하지 않아서 thickness 인자가 무시되기 때문이다.
+    // 선 두께를 지원하지 않기 때문이다.
     sf::RectangleShape shape{sf::Vector2f{length, params.thickness}};
     shape.setFillColor(backend::toSf(params.color));
     shape.setOrigin(sf::Vector2f{0.f, params.thickness / 2.f});
