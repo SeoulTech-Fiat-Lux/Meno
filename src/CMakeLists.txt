@@ -65,8 +65,9 @@ target_compile_features(meno PUBLIC cxx_std_20)
 if(MSVC)
     target_compile_options(meno PRIVATE /W4 /permissive-)
     # 소스와 실행 문자셋을 UTF-8로 고정한다. 한글 주석·문자열 리터럴이 깨지거나
-    # C4819 경고가 쏟아지는 것을 막는다.
-    target_compile_options(meno PRIVATE /utf-8)
+    # C4819 경고가 쏟아지는 것을 막는다. drawText는 UTF-8을 받으므로 사용자 코드의
+    # 한글 리터럴도 UTF-8이어야 한다. 그래서 meno를 링크하는 타깃에도 전파한다.
+    target_compile_options(meno PUBLIC $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
 else()
     target_compile_options(meno PRIVATE -Wall -Wextra -Wpedantic)
 endif()
