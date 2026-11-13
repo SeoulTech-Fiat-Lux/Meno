@@ -3,22 +3,13 @@
 #include <meno/scene/Component.hpp>
 
 #include "check.hpp"
+#include "display.hpp"
 
 #include <chrono>
-#include <cstdlib>
 #include <stdexcept>
-#include <string_view>
 #include <type_traits>
 
 namespace {
-
-constexpr int skipReturnCode = 77;
-
-bool displayTestsEnabled() {
-    const char* value = std::getenv("MENO_DISPLAY_TESTS");
-    return value != nullptr && *value != '\0' && std::string_view{value} != "0";
-}
-
 static_assert(std::is_base_of_v<meno::Application, meno::Game>);
 static_assert(!std::is_copy_constructible_v<meno::Game>);
 static_assert(!std::is_move_constructible_v<meno::Game>);
@@ -138,8 +129,8 @@ private:
 } // namespace
 
 int main() {
-    if (!displayTestsEnabled()) {
-        return skipReturnCode;
+    if (meno::test::skipWithoutDisplay()) {
+        return meno::test::kSkipReturnCode;
     }
 
     using namespace std::chrono_literals;

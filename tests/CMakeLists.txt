@@ -40,8 +40,8 @@ set(MENO_SKIP_RETURN_CODE 77)
 function(meno_add_test name)
     add_executable(meno_test_${name} test_${name}.cpp ${ARGN})
         target_include_directories(meno_test_${name} PRIVATE
-            ${CMAKE_SOURCE_DIR}/include
-            ${CMAKE_SOURCE_DIR}/tests   # check.hpp
+            ${PROJECT_SOURCE_DIR}/include
+            ${PROJECT_SOURCE_DIR}/tests   # check.hpp
     )
     target_compile_features(meno_test_${name} PRIVATE cxx_std_20)
     target_compile_definitions(meno_test_${name} PRIVATE MENO_SKIP_RETURN_CODE=${MENO_SKIP_RETURN_CODE})
@@ -93,7 +93,7 @@ file(GLOB_RECURSE meno_test_sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR
 get_property(meno_registered_tests GLOBAL PROPERTY MENO_REGISTERED_TESTS)
 foreach(source IN LISTS meno_test_sources)
     if(NOT source IN_LIST meno_registered_tests)
-        file(RELATIVE_PATH relative ${CMAKE_SOURCE_DIR} ${source})
+        file(RELATIVE_PATH relative ${PROJECT_SOURCE_DIR} ${source})
         message(FATAL_ERROR
                 "${relative}가 등록되지 않았다. "
                 "같은 디렉터리의 CMakeLists.txt에 meno_add_test를 추가할 것.")

@@ -14,15 +14,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# clangd / VS Code IntelliSense가 참조하는 compile_commands.json 생성
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# 아래 기본값은 meno를 직접 빌드할 때만 적용.
+# 다른 프로젝트가 add_subdirectory나 FetchContent로 가져가면 해당 빌드 타입은 건드리지 않는다.
+if(PROJECT_IS_TOP_LEVEL)
+    # clangd / VS Code IntelliSense가 참조하는 compile_commands.json 생성
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+    if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+        set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+    endif()
 endif()
 
-option(MENO_BUILD_EXAMPLES "예제 실행 파일을 빌드한다" ON)
-option(MENO_BUILD_TESTS    "테스트를 빌드한다"        ON)
+option(MENO_BUILD_EXAMPLES "예제 실행 파일을 빌드한다." ${PROJECT_IS_TOP_LEVEL})
+option(MENO_BUILD_TESTS "테스트를 빌드한다." ${PROJECT_IS_TOP_LEVEL})
 
 # ---------------------------------------------------------------------------
 # 의존성: SFML
@@ -32,7 +36,9 @@ include(FetchContent)
 set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(SFML_BUILD_DOC      OFF CACHE BOOL "" FORCE)
 set(SFML_BUILD_NETWORK  OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
+
+# SFML 3.1 기준, 캐시로 쓰면 meno를 가져다 쓰는 프로젝트의 설정까지 바뀌므로 일반 변수 활용.
+set(BUILD_SHARED_LIBS   OFF)
 
 FetchContent_Declare(
         SFML
