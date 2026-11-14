@@ -64,7 +64,7 @@ Release로 빌드하므로, `NDEBUG`가 정의되면 사라지는 `assert()`는 
 
 | 검사 | 확인하는 것 | 위치 |
 |---|---|---|
-| 헤더 독립 컴파일 | 공개 헤더마다 그 헤더 하나만 include해도 컴파일되는지 | `tests/CMakeLists.txt`의 `meno_header_checks` |
+| 헤더 독립 컴파일 | 공개 헤더마다(통합 헤더 `Meno.hpp` 포함) 그 헤더 하나만 include해도 컴파일되는지 | `tests/CMakeLists.txt`의 `meno_header_checks` |
 | 설명서 코드 | 사용자 설명서, README, 사이트 첫 쪽의 C++ 코드 블록이 컴파일되는지 | `tests/guide/` |
 | 테스트 등록 | `tests/` 아래 `test_*.cpp`가 모두 `meno_add_test`로 등록되었는지 | `tests/CMakeLists.txt` |
 | SFML 유출 | 공개 헤더가 SFML 헤더를 include하거나 `sf::`를 쓰지 않는지 | `tools/check_headers.py` |
@@ -72,12 +72,11 @@ Release로 빌드하므로, `NDEBUG`가 정의되면 사라지는 `assert()`는 
 
 ## 기능별 테스트
 
-`ctest`에 등록된 테스트는 22개입니다. 빌드 열은 앞에서 본 세 방식(헤더, 구현, SFML)을 가리키며,
+`ctest`에 등록된 테스트는 21개입니다. 빌드 열은 앞에서 본 세 방식(헤더, 구현, SFML)을 가리키며,
 "창"이 붙은 테스트는 창을 엽니다.
 
 | 모듈 | 테스트 | 빌드 | 검사하는 내용 |
 |---|---|---|---|
-| 통합 헤더 | `umbrella` | 헤더 | `<meno/Meno.hpp>` 하나만 include해도 컴파일과 링크가 되는지 |
 | math | `math` | 헤더 | Vec2의 길이와 정규화(정수 벡터와 영벡터 포함), Rect의 `contains`(오른쪽·아래 경계 제외)와 `findIntersection`, Color 변환, 컴파일 시간 계산 |
 | | `angle` | 헤더 | `toRadians()`의 변환, `wrapDegrees()`가 각도를 [0, 360)으로 접는 규칙(음수, 아주 큰 각도, NaN, 무한대 포함) |
 | | `camera` | 헤더 | Camera2D의 기본값, 줌·회전·Letterbox·Stretch 계산, 분할 뷰포트 사이에 틈이나 겹침이 없는지, 잘못된 값에서 NaN이 나오지 않는지, 월드 좌표와 화면 좌표의 왕복 변환 |

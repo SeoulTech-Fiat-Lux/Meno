@@ -43,7 +43,8 @@ static_assert(!std::is_copy_assignable_v<Renderer>);
 static_assert(!std::is_move_constructible_v<Renderer>);
 static_assert(!std::is_move_assignable_v<Renderer>);
 
-// Texture/Font는 ResourceManager가 컨테이너에 옮겨 담을 수 있어야 한다.
+// Texture와 Font는 복사할 수 없고 이동만 할 수 있다. loadFromFile()이 돌려준 optional에서 꺼내
+// shared_ptr이나 Sprite로 옮기며, 사용자가 std::vector에 담을 수도 있다.
 // noexcept가 빠지면 std::vector가 재할당할 때 강한 예외 보장을 지키지 못한다.
 static_assert(!std::is_copy_constructible_v<Texture>);
 static_assert(std::is_nothrow_move_constructible_v<Texture>);

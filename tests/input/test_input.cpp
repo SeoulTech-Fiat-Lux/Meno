@@ -445,6 +445,10 @@ void testStepFlagClearedAfterException() {
     Input input;
     frame(input, {ev::KeyPressed{Key::A}});
     MENO_CHECK(input.wasPressed(Key::A));
+    // 표시가 남아 있으면 update가 실행되지 않는 동안 틱이 바뀌지 않아, 다음 프레임에도 true가
+    // 된다. 위 검사는 표시가 남아 있어도 통과하므로 이 검사가 실제로 표시를 확인한다.
+    frame(input, {});
+    MENO_CHECK(!input.wasPressed(Key::A));
 }
 
 } // namespace

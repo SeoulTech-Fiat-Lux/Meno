@@ -45,7 +45,7 @@ private:
     bool busy_{false};
     void applyPending();
     // Game의 마지막 소멸 방어선. 파생 Game이 이미 소멸한 시점이므로
-    // 사용자 onExit 콜백은 호출하지 않고 소유한 Scene만 폐기한다.
+    // exit 핸들러는 호출하지 않고 소유한 Scene만 폐기한다.
     void discard() noexcept;
 
 public:

@@ -73,10 +73,7 @@ function(meno_display_test name)
     set_tests_properties(${name} PROPERTIES SKIP_RETURN_CODE ${MENO_SKIP_RETURN_CODE})
 endfunction()
 
-# 통합 헤더가 컴파일되는지만 확인한다. 검사할 동작이 없으므로 main은 0을 돌려주기만 한다.
-meno_add_test(umbrella)
-
-# 공개 헤더마다 독립된 번역 단위를 생성해 필수 include 누락을 검사한다.
+# 공개 헤더마다(통합 헤더 Meno.hpp 포함) 독립된 번역 단위를 생성해 필수 include 누락을 검사한다.
 # SFML이나 meno를 링크하지 않고 공개 include 경로만 제공한다.
 file(GLOB_RECURSE meno_public_headers CONFIGURE_DEPENDS
         RELATIVE "${PROJECT_SOURCE_DIR}/include"
