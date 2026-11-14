@@ -117,8 +117,10 @@ jobs:
           key: deps-${{ matrix.cache-id }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
           restore-keys: deps-${{ matrix.cache-id }}-sfml3.1.0-
 
+      # 설명서와 README의 C++ 코드 블록도 함께 컴파일한다(tests/guide). 이 옵션은 Python이 없으면
+      # 저절로 꺼지므로, 러너에서 검사가 조용히 빠지지 않도록 명시적으로 켠다.
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake-args }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMENO_BUILD_GUIDE_CODE=ON ${{ matrix.cmake-args }}
 
       - name: Build
         run: cmake --build build --config Release
@@ -167,14 +169,14 @@ jobs:
           restore-keys: deps-ubuntu-asan-sfml3.1.0-
 
       # -fno-sanitize-recover=undefined가 없으면 UBSan은 경고만 찍고 테스트는 통과한다.
-      # 예제는 일반 빌드 잡이 이미 컴파일하므로 여기서는 끈다.
+      # 예제와 설명서 코드는 일반 빌드 잡이 이미 컴파일하므로 여기서는 끈다.
       - name: Configure
         env:
           SAN_FLAGS: -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-            -DMENO_BUILD_EXAMPLES=OFF \
+            -DMENO_BUILD_EXAMPLES=OFF -DMENO_BUILD_GUIDE_CODE=OFF \
             "-DCMAKE_C_FLAGS=$SAN_FLAGS" \
             "-DCMAKE_CXX_FLAGS=$SAN_FLAGS" \
             "-DCMAKE_EXE_LINKER_FLAGS=$SAN_FLAGS"

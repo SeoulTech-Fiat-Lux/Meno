@@ -32,7 +32,8 @@ src/meno/         구현부; 사용자에게 배포되지 않는다. SFML은 여
 examples/         예제 및 데모 게임
 tests/            테스트 (consumer/는 하위 프로젝트 빌드 검사)
 tools/            check_headers.py — 공개 헤더 SFML 유출 검사
-docs/             설계 문서, API 레퍼런스 사이트의 첫 쪽·모듈 목록·테마
+                  extract_guide_code.py — 설명서 코드 블록 추출
+docs/             사용자 설명서(guide/), API 레퍼런스 사이트의 첫 쪽·모듈 목록·테마, 설계 문서
 ```
 
 각 모듈은 위 목록에서 자기보다 위에 있는 모듈만 참조하며, 순환 의존 관계가 아니다.
@@ -70,6 +71,19 @@ Doxygen은 CI와 같은 1.15.0을 쓴다.
   쓰지 않는다.
 - 새 공개 헤더는 namespace 본문을 `/// \addtogroup <폴더 이름>`과 `/// \{` ... `/// \}`로 감싸
   모듈에 싣는다([docs/groups.dox](docs/groups.dox) 참고).
+
+## 설명서 코드
+
+사용자 설명서(`docs/guide/`), README, `docs/mainpage.md`의 ` ```cpp ` 블록은 테스트 빌드에서
+컴파일된다(`tests/guide/`). 블록을 뽑는 데 Python 3가 필요하며, Python이 없으면
+`MENO_BUILD_GUIDE_CODE` 옵션이 꺼져 이 검사만 건너뛴다. CI는 이 검사를 항상 켠다.
+
+- `int main(`이 있는 블록은 완성 프로그램으로 보고, meno와 링크까지 한다.
+- 나머지 블록은 조각으로 보고 함수 안에 넣어 컴파일만 한다. 조각은 `game`, `renderer`, `play`,
+  `player`, `font`, `position`, `velocity`, `fixedDeltaTime`이 이미 있다고 가정할 수 있다. 다른
+  이름이 필요하면 `tools/extract_guide_code.py`의 `FRAGMENT_PROLOGUE`에 더한다.
+- 컴파일 오류는 Markdown 파일의 줄을 가리킨다.
+- 컴파일되지 않는 코드를 일부러 보여 줄 때는 ` ```cpp ` 대신 ` ```text `처럼 다른 언어로 표시한다.
 
 ## 작업 방식
 
