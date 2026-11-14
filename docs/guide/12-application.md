@@ -1,8 +1,8 @@
 # 12장. Game 없이 루프 직접 돌리기
 
 `Game`은 창, 렌더러, 리소스 캐시, Scene을 묶어 루프의 흐름을 정해 둡니다. 이 장에서는 그 아래층인
-`Application`을 직접 상속해 게임 루프의 각 단계를 손수 채웁니다. Scene 없이 작은 도구나 실험용
-프로그램을 만들 때, 또는 `Game`이 정한 흐름과 다르게 그려야 할 때 씁니다.
+`Application`을 직접 상속해 게임 루프의 각 단계를 손수 채웁니다. 이 방식은 Scene이 필요 없는 작은
+도구나 실험용 프로그램을 만들 때, 또는 `Game`이 정한 흐름과 다르게 그려야 할 때 씁니다.
 
 ## 완성 코드
 
@@ -67,8 +67,8 @@ int main() {
 | 루프 단계 | 정해져 있어 재정의할 수 없음 | 각 단계를 재정의함 |
 | 게임 규칙 | Scene의 핸들러에 붙임 | `update()`에 직접 씀 |
 
-`Game`도 `Application`을 상속한 클래스입니다. 따라서 고정 시간 간격, 프레임 제한, 한 번에 하나만
-실행할 수 있다는 규칙은 두 방식에 똑같이 적용됩니다.
+`Game`도 `Application`을 상속한 클래스입니다. 따라서 고정 시간 간격과 프레임 제한, 그리고 한 번에
+하나만 실행할 수 있다는 규칙은 두 방식에 똑같이 적용됩니다.
 
 ## 루프의 각 단계
 
@@ -84,12 +84,12 @@ int main() {
 | `onStop()` | `stop()`으로 루프가 끝난 뒤 한 번 | 정리 |
 
 `onStart()`에서 걸린 시간은 게임 시간에 들어가지 않으므로, 로딩이 길어도 첫 프레임에 update가
-한꺼번에 몰리지 않습니다. 창이 닫혔을 때 `stop()`을 부르는 것은 직접 해야 합니다. 부르지 않으면 창이
+한꺼번에 몰리지 않습니다. 창이 닫혔을 때 `stop()`을 부르는 일도 직접 해야 합니다. 부르지 않으면 창이
 닫힌 뒤에도 루프가 계속 돕니다.
 
 `render()`에서는 화면을 지우는 `beginFrame()`과 화면에 표시하는 `endFrame()`을 직접 부릅니다.
 `beginFrame()`은 지금의 창 크기에 맞춰 카메라를 다시 적용하므로, 그보다 먼저 `pollEvents()`가 창
-크기 변경을 반영해 두어야 합니다. 위의 단계 순서를 따르면 저절로 지켜집니다.
+크기 변경을 반영해 두어야 합니다. 위 표의 순서대로 구현하면 이 조건은 저절로 지켜집니다.
 
 ## 보간으로 부드럽게 그리기
 
@@ -117,14 +117,14 @@ alpha만큼 섞은 위치에 그리면 움직임이 부드러워집니다. 보�
 
 `Application`에서도 4장의 "이번 틱" 규칙이 그대로 적용됩니다. `update()` 안에서는 update 한 번이 한
 틱이고, `processEvents()`나 `render()`처럼 update 밖에서는 `pollEvents()`부터 다음
-`pollEvents()`까지가 한 틱입니다. 위 예제가 Esc를 `processEvents()`에서 확인하는 것도 이 규칙 덕분에
+`pollEvents()`까지가 한 틱입니다. 위 예제는 Esc를 `processEvents()`에서 확인하는데, 이 규칙 덕분에
 프레임마다 정확히 한 번만 판정됩니다.
 
 ## 가짜 시계로 테스트하기
 
 `run(clock)`에 `Clock`을 넘기면 그 시계로 시간을 잽니다. 시각 함수와 대기 함수를 주입한 가짜 시계를
-쓰면 실제로 기다리지 않고 원하는 만큼 시간을 진행시킬 수 있어, 루프의 동작을 자동 테스트로 확인할 때
-씁니다.
+쓰면 실제로 기다리지 않고 원하는 만큼 시간을 진행시킬 수 있습니다. 루프의 동작을 자동 테스트로
+확인할 때 유용합니다.
 
 ```cpp
 meno::Clock::TimePoint now{};
@@ -153,7 +153,7 @@ const double seconds = clock.restart(); // 0.016
   [Window](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_window.html),
   [Renderer](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_renderer.html)
 
-이로써 사용자 설명서를 마칩니다. 각 클래스와 함수의 자세한 규칙은 [API
-레퍼런스](https://seoultech-fiat-lux.github.io/Meno/topics.html)에서 모듈별로 찾을 수 있습니다.
+이로써 사용자 설명서를 마칩니다. 각 클래스와 함수의 자세한 규칙은
+[API 레퍼런스](https://seoultech-fiat-lux.github.io/Meno/topics.html)에서 모듈별로 찾을 수 있습니다.
 
 이전 장: [11장. 스프라이트 애니메이션](11-animation.md)

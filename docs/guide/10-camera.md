@@ -95,7 +95,7 @@ int main() {
 
 ## Camera2D
 
-`Camera2D`는 필드를 다음 순서로 지정하는 값 타입입니다.
+`Camera2D`는 다음 필드를 가진 값 타입이며, 지정 초기화는 이 순서대로 씁니다.
 
 | 필드 | 기본값 | 의미 |
 |---|---|---|
@@ -136,8 +136,8 @@ const meno::Vec2f worldPoint = game.renderer().screenToWorld(mouse);
 ```
 
 반대로 월드의 한 점이 창의 어디에 그려지는지는 `worldToScreen()`으로 구합니다. `Letterbox`의 띠
-위에서 클릭하면 보이는 영역 밖의 월드 좌표가 나오므로, 필요하면 `meno::viewportPixels(camera,
-renderer.framebufferSize()).contains(mouse)`로 먼저 확인합니다.
+위에서 클릭하면 보이는 영역 밖의 월드 좌표가 나오므로, 필요하면
+`meno::viewportPixels(camera, renderer.framebufferSize()).contains(mouse)`로 먼저 확인합니다.
 
 ## 보이는 것만 그리기
 
@@ -187,9 +187,8 @@ Scene이 자동으로 그리는 GameObject는 그 시점의 카메라 하나로�
   [render_basics](https://github.com/SeoulTech-Fiat-Lux/Meno/blob/v0.2.0/examples/render_basics/main.cpp)
   (월드 카메라와 미니맵을 함께 보여 줍니다)
 - API: [Camera2D](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_camera2_d.html),
-  [Renderer](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_renderer.html), [수학
-  모듈](https://seoultech-fiat-lux.github.io/Meno/group__math.html)(`CameraFit`, `viewportPixels`,
-  `screenToWorld` 등)
+  [Renderer](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_renderer.html),
+  [수학 모듈](https://seoultech-fiat-lux.github.io/Meno/group__math.html)(`CameraFit`,
+  `viewportPixels`, `screenToWorld` 등)
 
-이전 장: [9장. 리소스 관리](09-resources.md) · 다음 장: [11장. 스프라이트
-애니메이션](11-animation.md)
+이전 장: [9장. 리소스 관리](09-resources.md) · 다음 장: [11장. 스프라이트 애니메이션](11-animation.md)

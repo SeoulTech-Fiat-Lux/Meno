@@ -99,25 +99,25 @@ Scene이 소유하며, 모든 GameObject는 두 가지 기본 컴포넌트를 �
 | `Sprite` | `object.sprite()` | 그림(텍스처)과 그리기 옵션(`offset`, `origin`, `tint` 등) |
 
 `transform().position`은 GameObject의 왼쪽 위 꼭짓점(로컬 원점)이 놓일 위치입니다. 배율과 회전도 이
-점을 중심으로 적용되며, 배율 `scale`은 가로와 세로에 똑같이 적용되는 값 하나입니다.
+점을 중심으로 적용됩니다. `scale`은 가로와 세로에 함께 쓰이는 값 하나입니다.
 
 Sprite는 텍스처가 있을 때만 그려집니다. `sprite().setTexture()`에는
 `ResourceManager::loadTexture()`가 돌려준 `shared_ptr`을 넘깁니다. 위 예제처럼 코드로 만든 텍스처를
-여러 GameObject가 함께 쓰게 하려면 `std::make_shared`로 감싸 넘깁니다.
+여러 GameObject가 함께 쓰게 하려면 `std::make_shared`로 감싸서 넘깁니다.
 
 ## 그리는 순서와 레이어
 
-Scene은 GameObject를 다음 순서로 그린 뒤 draw 핸들러를 부릅니다.
+Scene은 GameObject를 다음 순서로 그린 뒤에 draw 핸들러를 부릅니다.
 
 1. 레이어가 작은 것부터 그립니다. 레이어의 기본값은 0이며 `scene.setLayer(id, layer)`로 바꿉니다.
 2. 레이어가 같으면 먼저 만든 것(ID가 작은 것)부터 그립니다.
 
-나중에 그린 것이 위에 놓이므로, 레이어가 큰 GameObject가 앞에 보입니다. draw 핸들러에서 그린 것은
-모든 GameObject보다 위에 놓이므로, 점수 같은 UI를 그리기에 알맞습니다.
+나중에 그린 것이 위에 놓이므로, 레이어가 큰 GameObject가 앞에 보입니다. draw 핸들러는 GameObject를
+모두 그린 뒤에 불리므로, 점수와 같은 UI는 여기서 그립니다.
 
 ## 컴포넌트 붙이기
 
-위치와 그림 말고 다른 데이터는 `meno::Component`를 상속한 구조체로 정의해 붙입니다.
+위치와 그림 외의 데이터는 `meno::Component`를 상속한 구조체로 정의하여 붙입니다.
 
 ```cpp
 struct Health : meno::Component {
@@ -138,8 +138,8 @@ if (Health* health = player.getComponent<Health>()) {
 - 컴포넌트는 타입마다 하나씩만 붙습니다. 같은 타입을 다시 붙이면 이전 컴포넌트는 파괴됩니다.
 - 붙인 컴포넌트는 GameObject가 소유하며, 떼어 내는 함수는 없습니다.
 
-meno의 컴포넌트에는 매 프레임 불리는 함수가 없습니다. 컴포넌트는 데이터를 담고, 그 데이터로 하는
-일은 Scene의 update 핸들러에서 처리합니다. 위 예제의 `Velocity`도 update 핸들러가 꺼내 위치에
+meno의 컴포넌트에는 매 프레임마다 불리는 함수가 없습니다. 컴포넌트는 데이터만 담고, 그 데이터를 쓰는
+동작은 Scene의 update 핸들러에서 처리합니다. 위 예제에서도 update 핸들러가 `Velocity`를 꺼내 위치에
 더합니다.
 
 ## GameObject 목록 관리하기

@@ -226,8 +226,8 @@ int main() {
 - 예제:
   [input_demo](https://github.com/SeoulTech-Fiat-Lux/Meno/blob/v0.2.0/examples/input_demo/main.cpp)
   (키보드, 마우스, 동작 묶기를 한 화면에서 보여 줍니다)
-- API: [Input](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_input.html), [입력
-  모듈](https://seoultech-fiat-lux.github.io/Meno/group__input.html)(`Key`, `MouseButton`),
+- API: [Input](https://seoultech-fiat-lux.github.io/Meno/classmeno_1_1_input.html),
+  [입력 모듈](https://seoultech-fiat-lux.github.io/Meno/group__input.html)(`Key`, `MouseButton`),
   [Rect](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_rect.html),
   [Vec2](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_vec2.html)
 

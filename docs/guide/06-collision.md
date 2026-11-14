@@ -1,7 +1,7 @@
 # 6장. 충돌 판정
 
 이 장에서는 GameObject에 콜라이더를 붙여 서로 겹치는지 판정하고, 겹쳤을 때 막거나 줍는 처리를
-만듭니다.
+구현합니다.
 
 ## 완성 코드
 
@@ -119,8 +119,8 @@ int main() {
 
 ## 콜라이더 붙이기
 
-콜라이더는 GameObject에 붙이는 컴포넌트입니다. 사각형인 `BoxCollider`와 원인 `CircleCollider` 두
-가지가 있습니다.
+콜라이더는 GameObject에 붙이는 컴포넌트입니다. 사각형 콜라이더 `BoxCollider`와 원형 콜라이더
+`CircleCollider` 두 가지가 있습니다.
 
 | 콜라이더 | 생성자 | `offset`이 가리키는 곳 |
 |---|---|---|
@@ -128,12 +128,12 @@ int main() {
 | `CircleCollider` | `CircleCollider(offset, radius)` | 원의 중심 |
 
 `offset`과 크기는 GameObject의 로컬 좌표로 지정합니다. 로컬 좌표의 원점은 GameObject의 왼쪽 위
-꼭짓점이므로, 32×32 텍스처를 쓰는 GameObject에 같은 크기의 BoxCollider를 붙이려면 `offset`을 `{0,
-0}`, `size`를 `{32, 32}`로 둡니다. 16×16 동전의 중심은 `{8, 8}`입니다.
+꼭짓점이므로, 32×32 텍스처를 쓰는 GameObject에 같은 크기의 BoxCollider를 붙이려면 `offset`을
+`{0, 0}`, `size`를 `{32, 32}`로 지정합니다. 16×16 동전의 중심은 `{8, 8}`입니다.
 
 콜라이더는 GameObject의 Transform을 따릅니다. `transform().scale`을 키우면 콜라이더도 함께 커지고,
-`rotation`을 주면 BoxCollider도 함께 회전합니다. 그래서 텍스처를 4배로 키운 GameObject라도 콜라이더
-크기는 텍스처의 원래 픽셀 크기로 적습니다.
+`rotation`을 주면 BoxCollider도 함께 회전합니다. 따라서 텍스처를 4배로 키운 GameObject라도
+콜라이더의 크기는 텍스처의 원래 픽셀 크기로 지정합니다.
 
 ## 겹치는지 판정하기
 
@@ -154,11 +154,11 @@ GameObject 없이 사각형 두 개만 비교할 때는 4장의 퐁처럼 `Rectf
 
 ## 겹쳤을 때 처리하기
 
-meno는 겹치는지만 판정합니다. 겹친 물체를 밀어내거나 속도를 바꾸는 처리는 게임 코드에서 합니다. 자주
-쓰는 처리는 다음과 같습니다.
+meno는 겹침 여부만 판정합니다. 겹친 물체를 밀어내거나 속도를 바꾸는 처리는 게임 코드가 맡습니다.
+자주 쓰는 방법은 다음과 같습니다.
 
-- **막기:** 위 예제처럼 움직인 뒤 겹치면 이동을 되돌립니다. x축과 y축을 따로 검사하면 벽에 붙어서도
-  벽을 따라 미끄러지듯 움직일 수 있습니다.
+- **막기:** 위 예제처럼 움직인 뒤 겹치면 이동을 되돌립니다. x축과 y축을 따로 검사하면 벽에 닿은
+  채로도 벽을 따라 미끄러지듯 움직일 수 있습니다.
 - **착지:** 떨어지던 물체가 바닥과 겹치면 바닥 위로 위치를 맞추고 세로 속도를 0으로 둡니다. 이번
   update에서 움직이기 전에 바닥보다 위에 있었는지도 함께 확인하면, 옆에서 부딪힌 것을 착지로
   오인하지 않습니다.
@@ -172,11 +172,12 @@ meno는 겹치는지만 판정합니다. 겹친 물체를 밀어내거나 속도
 
 - `intersects()`는 `BoxCollider`와 `CircleCollider`만 검사합니다. `Collider`를 상속해 직접 만든
   타입은 판정에 쓰이지 않습니다.
-- 크기나 반지름이 0 이하인 콜라이더, 배율이 0인 GameObject의 콜라이더는 어떤 것과도 겹치지 않습니다.
+- 크기나 반지름이 0 이하인 콜라이더와 배율이 0인 GameObject에 붙은 콜라이더는 어떤 것과도 겹치지
+  않습니다.
 - `getComponent<meno::Collider>()`로는 BoxCollider나 CircleCollider를 찾을 수 없습니다.
   `getComponent<meno::BoxCollider>()`처럼 정확한 타입으로 찾습니다.
-- 움직임이 아주 빠르면 한 update 사이에 얇은 벽을 건너뛸 수 있습니다. 속도를 줄이거나 벽을 두껍게
-  만듭니다.
+- 물체가 아주 빠르면 update 한 번 사이에 얇은 벽을 통째로 건너뛸 수 있습니다. 속도를 줄이거나 벽을
+  두껍게 만듭니다.
 
 ## 관련 예제와 API
 
@@ -189,5 +190,4 @@ meno는 겹치는지만 판정합니다. 겹친 물체를 밀어내거나 속도
   [씬 모듈](https://seoultech-fiat-lux.github.io/Meno/group__scene.html)(`intersects`),
   [Rect](https://seoultech-fiat-lux.github.io/Meno/structmeno_1_1_rect.html)
 
-이전 장: [5장. GameObject와 컴포넌트](05-gameobjects.md) · 다음 장: [7장. 씬 전환과 씬
-상태](07-scenes.md)
+이전 장: [5장. GameObject와 컴포넌트](05-gameobjects.md) · 다음 장: [7장. 씬 전환과 씬 상태](07-scenes.md)
