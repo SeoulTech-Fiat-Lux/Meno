@@ -1,4 +1,12 @@
-// 기존 공개 API만 사용한다. 중력과 착지 반응은 이 예제의 게임 로직이다.
+// 바닥 위를 오가며 저절로 점프하는 상자 예제.
+//
+// 바닥과 상자를 각각 GameObject로 만들고 둘 다 BoxCollider를 붙인다. 상자는 입력 없이 바닥의 양
+// 끝에서 방향을 바꾸고, 착지하면 잠깐 쉬었다가 다시 점프한다. 텍스처는 코드로 만들며, 창을 닫으면
+// 종료한다.
+//
+// meno는 두 콜라이더가 겹치는지만 판정한다. 중력, 점프, 착지 처리는 모두 이 예제의 update
+// 핸들러가 맡는 게임 로직이며, meno가 물리 엔진을 제공하지는 않는다.
+
 #include <meno/Meno.hpp>
 #include <meno/scene/SceneManager.hpp>
 
@@ -18,10 +26,12 @@ constexpr float crateSize = cratePixels * scale;
 constexpr float floorWidth = floorWidthPixels * scale;
 constexpr float floorX = 96.f;
 constexpr float floorY = 432.f;
-constexpr float speed = 180.f;
-constexpr float gravity = 1400.f;
-constexpr float jumpSpeed = 620.f;
-constexpr double jumpPause = 0.18;
+
+// 움직임은 아래 네 값으로 조절한다.
+constexpr float speed = 180.f;     // 가로 속도(픽셀/초)
+constexpr float gravity = 1400.f;  // 중력 가속도(픽셀/초²)
+constexpr float jumpSpeed = 620.f; // 점프할 때의 위쪽 속도(픽셀/초)
+constexpr double jumpPause = 0.18; // 착지한 뒤 다음 점프까지 쉬는 시간(초)
 
 meno::Texture makeTexture(bool floor) {
     const unsigned int width = floor ? floorWidthPixels : cratePixels;
@@ -65,7 +75,8 @@ public:
                 .clearColor = meno::Color::fromRgb(0x182331)}) {}
 
 private:
-    meno::GameObject* floor_ = nullptr; // 소유자는 Scene이다.
+    // 두 GameObject는 Scene이 소유하므로 여기서는 포인터만 둔다.
+    meno::GameObject* floor_ = nullptr;
     meno::GameObject* crate_ = nullptr;
     float direction_ = 1.f;
     float verticalSpeed_ = 0.f;
@@ -86,7 +97,7 @@ private:
         crate_->transform().position = {floorX + 32.f, floorY - crateSize};
         crate_->transform().scale = scale;
         crate_->sprite().setTexture(makeTexture(false));
-        // Collider도 텍스처와 같은 로컬 크기. Transform 배율은 intersects가 적용한다.
+        // 콜라이더도 텍스처와 같은 로컬 크기다. Transform의 배율(4배)은 intersects()가 적용한다.
         crate_->addComponent<meno::BoxCollider>(
             meno::Vec2f{},
             meno::Vec2f{static_cast<float>(cratePixels), static_cast<float>(cratePixels)});
@@ -115,13 +126,14 @@ private:
             if (pause_ > 0.0)
                 return;
             grounded_ = false;
-            verticalSpeed_ = -jumpSpeed; // 화면에서는 위쪽이 음수다.
+            verticalSpeed_ = -jumpSpeed; // y는 아래로 갈수록 커지므로 위쪽 속도는 음수다.
         }
 
         const float previousBottom = position.y + crateSize;
         verticalSpeed_ += gravity * step;
         position.y += verticalSpeed_ * step;
-        // intersects는 겹침만 검사한다. 위치 보정과 속도 변경은 게임에서 처리한다.
+        // intersects()는 겹치는지만 판정하므로 위치 보정과 속도 변경은 게임이 직접 한다. 움직이기
+        // 전에 바닥보다 위에 있었는지도 확인해, 옆에서 부딪힌 것을 착지로 보지 않는다.
         if (verticalSpeed_ > 0.f && previousBottom <= floorY &&
             meno::intersects(*crate_, *floor_)) {
             position.y = floorY - crateSize;

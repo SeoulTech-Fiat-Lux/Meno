@@ -1,5 +1,8 @@
-// Scene -> GameObject -> Sprite 순서로 구성하는 정적인 예제.
-// 상자 텍스처를 코드로 만들어 외부 이미지 파일 없이 실행할 수 있다.
+// 창 가운데에 상자 하나를 그리는 정적인 예제.
+//
+// Scene에 GameObject를 만들고 기본 컴포넌트인 Transform과 Sprite만 설정한다. 그리기는 Game이
+// 맡으므로, 활성 Scene의 GameObject는 프레임마다 저절로 그려진다. 상자 텍스처는 코드로 만들므로
+// 에셋 파일이나 실행 경로를 따로 준비하지 않아도 된다. 창의 닫기 버튼을 누르면 종료한다.
 
 #include <meno/Meno.hpp>
 
