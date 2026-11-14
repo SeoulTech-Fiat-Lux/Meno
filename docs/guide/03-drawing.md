@@ -56,11 +56,12 @@ int main() {
 
 - 단위는 픽셀이고 원점은 창의 왼쪽 위입니다. x는 오른쪽으로, **y는 아래쪽으로** 갈수록 커집니다.
 - 각도는 도(degree) 단위이며 **시계 방향**이 양수입니다. 0도는 오른쪽 방향입니다.
-- 그리기 함수를 호출한 순서대로 그리므로 나중에 그린 것이 위에 놓입니다. 따라서 배경을 먼저,
+- 그리기 함수를 호출한 순서대로 그려지므로 나중에 그린 것이 위에 놓입니다. 따라서 배경을 먼저,
   캐릭터와 UI를 나중에 그립니다.
 
-카메라를 쓰면 그리기 좌표를 "월드 좌표"로 해석해, 화면에 보이는 영역을 옮기거나 확대할 수 있습니다.
-카메라를 정하지 않으면 위의 화면 좌표를 그대로 씁니다. 카메라는 [10장](10-camera.md)에서 다룹니다.
+카메라를 쓰면 그리기 좌표가 "월드 좌표"로 해석되어, 화면에 보이는 영역을 옮기거나 확대할 수
+있습니다. 카메라를 정하지 않으면 위의 화면 좌표를 그대로 씁니다. 카메라는 [10장](10-camera.md)에서
+다룹니다.
 
 ## 도형
 
@@ -82,8 +83,8 @@ int main() {
 | `origin` | `{0, 0}` | `position`에 놓일 점이자 회전 중심 |
 | `rotation` | 0 | 회전 각도(도) |
 
-`origin`의 기준은 도형마다 다릅니다. 사각형과 다각형은 로컬 원점(사각형은 왼쪽 위 꼭짓점)에서, 원과
-부채꼴은 중심에서 잽니다. 사각형을 중심 기준으로 배치하고 회전하려면 `origin`을 크기의 절반으로
+`origin`의 기준은 도형마다 다릅니다. 사각형과 다각형은 로컬 원점(사각형은 왼쪽 위 꼭짓점)이, 원과
+부채꼴은 중심이 기준입니다. 사각형을 중심 기준으로 배치하고 회전하려면 `origin`을 크기의 절반으로
 지정합니다.
 
 ```cpp
@@ -122,7 +123,7 @@ play.setDrawHandler([&](meno::Renderer& renderer) {
 ```
 
 `loadFont()`는 실패하면 빈 `shared_ptr`을 돌려주므로, 사용하기 전에 `if (font)`로 확인합니다.
-`TextParams`는 `characterSize`(기본 24), `color`, `origin`, `rotation`, `outlineThickness`,
+`TextParams`의 필드는 `characterSize`(기본 24), `color`, `origin`, `rotation`, `outlineThickness`,
 `outlineColor` 순서로 지정합니다.
 
 글자를 가운데 정렬하려면 `measureTextBounds()`로 글자가 실제로 차지하는 영역을 구한 뒤, 그 중심을
@@ -149,17 +150,17 @@ play.setDrawHandler([&](meno::Renderer& renderer) {
 });
 ```
 
-`SpriteParams`는 `position`, `origin`, `scale`, `rotation`, `tint`, `source`, `flipX`, `flipY`
-순서로 지정합니다.
+`SpriteParams`의 필드는 `position`, `origin`, `scale`, `rotation`, `tint`, `source`, `flipX`,
+`flipY` 순서로 지정합니다.
 
 - `origin`은 텍스처 픽셀 단위의 기준점입니다. 기본값 `{0, 0}`이면 텍스처의 왼쪽 위 꼭짓점이
   `position`에 놓입니다.
 - `tint`는 텍스처 색에 곱해지는 색입니다. 흰색이면 원본 그대로이며, `withAlpha()`로 불투명도를
   낮추면 반투명하게 그려집니다.
 - 좌우를 뒤집을 때는 음수 `scale` 대신 `flipX`를 씁니다. 그러면 그려지는 위치가 바뀌지 않습니다.
-- `source`로 텍스처의 일부만 그릴 수 있으며, 스프라이트 시트와 애니메이션에 씁니다.
+- `source`로 텍스처의 일부만 그릴 수 있으며, 스프라이트 시트와 애니메이션에 이 필드를 씁니다.
 
-픽셀 아트를 확대할 때 흐려지지 않게 하려면 보간을 끈 상태(기본값)로 둡니다. 부드럽게 확대하려면
+픽셀 아트를 흐려지지 않게 확대하려면 보간을 끈 상태(기본값)로 둡니다. 부드럽게 확대하려면
 `loadTexture(path, {.smooth = true})`로 읽습니다.
 
 파일 없이 픽셀 배열로 텍스처를 만들 때는 `meno::Texture::fromPixels()`를 씁니다. 위 완성 코드의

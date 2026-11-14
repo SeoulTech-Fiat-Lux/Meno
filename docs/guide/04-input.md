@@ -31,13 +31,14 @@ play.setUpdateHandler([&](double fixedDeltaTime) {
 | `wasReleased(key)` | 뗀 순간 한 번 |
 
 세 함수 모두 `meno::Key`와 `meno::MouseButton`을 인자로 받을 수 있습니다. 키를 누르고 있을 때
-운영체제가 보내는 반복 입력은 무시하므로, `wasPressed()`는 한 번 누를 때마다 한 번만 true가 됩니다.
+운영체제가 보내는 반복 입력은 무시되므로, `wasPressed()`는 한 번 누를 때마다 한 번만 true를
+돌려줍니다.
 
 ## "이번 틱" 규칙
 
 `wasPressed()`, `wasReleased()`, `mouseWheelDelta()`, `text()`는 **이번 틱**에 일어난 일만 알려
 줍니다. 동작 이름으로 묻는 `wasActionPressed()`와 `wasActionReleased()`도 마찬가지입니다. update
-핸들러 안에서는 update 한 번이 한 틱입니다. 한 프레임에서 update가 여러 번 실행되더라도, 한 번 누른
+핸들러 안에서는 update 한 번이 한 틱입니다. 한 프레임에서 update가 여러 번 호출되더라도, 한 번 누른
 키는 그 뒤 처음 실행되는 update에서만 `wasPressed()`가 true입니다. 따라서 점프가 두 번 일어나거나
 입력을 놓치는 일이 없습니다.
 
@@ -55,7 +56,7 @@ const float wheel = input.mouseWheelDelta(); // 이번 틱에 굴린 양. 위로
 ```
 
 `mousePosition()`은 정수 벡터(`Vec2i`)를 돌려주므로, `Vec2f`와 함께 계산하려면 위처럼 변환합니다. 이
-좌표는 창을 기준으로 하므로 카메라를 쓰면 월드 좌표와 달라지며, 이때는
+좌표는 창을 기준으로 한 값이어서 카메라를 쓰면 월드 좌표와 달라집니다. 이때는
 `game.renderer().screenToWorld()`로 변환합니다([10장](10-camera.md)).
 
 ## 동작 이름으로 묶기

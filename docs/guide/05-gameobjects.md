@@ -91,7 +91,7 @@ int main() {
 ## GameObject의 기본 구성
 
 `scene.createGameObject()`는 GameObject를 만들어 Scene에 넣고, 그 참조를 돌려줍니다. GameObject는
-Scene이 소유하며, 모든 GameObject는 두 가지 기본 컴포넌트를 가집니다.
+Scene이 소유합니다. 모든 GameObject는 다음 두 가지 기본 컴포넌트를 가집니다.
 
 | 기본 컴포넌트 | 접근 | 내용 |
 |---|---|---|
@@ -99,7 +99,7 @@ Scene이 소유하며, 모든 GameObject는 두 가지 기본 컴포넌트를 �
 | `Sprite` | `object.sprite()` | 그림(텍스처)과 그리기 옵션(`offset`, `origin`, `tint` 등) |
 
 `transform().position`은 GameObject의 왼쪽 위 꼭짓점(로컬 원점)이 놓일 위치입니다. 배율과 회전도 이
-점을 중심으로 적용됩니다. `scale`은 가로와 세로에 함께 쓰이는 값 하나입니다.
+꼭짓점을 중심으로 적용됩니다. `scale`은 가로와 세로에 함께 쓰이는 값 하나입니다.
 
 Sprite는 텍스처가 있을 때만 그려집니다. `sprite().setTexture()`에는
 `ResourceManager::loadTexture()`가 돌려준 `shared_ptr`을 넘깁니다. 위 예제처럼 코드로 만든 텍스처를
@@ -112,8 +112,8 @@ Scene은 GameObject를 다음 순서로 그린 뒤에 draw 핸들러를 호출�
 1. 레이어가 작은 것부터 그립니다. 레이어의 기본값은 0이며 `scene.setLayer(id, layer)`로 바꿉니다.
 2. 레이어가 같으면 먼저 만든 것(ID가 작은 것)부터 그립니다.
 
-나중에 그린 것이 위에 놓이므로, 레이어가 큰 GameObject가 앞에 보입니다. draw 핸들러는 GameObject를
-모두 그린 뒤에 호출되므로, 점수와 같은 UI는 여기서 그립니다.
+나중에 그린 것이 위에 놓이기 때문에 레이어가 큰 GameObject가 앞에 보입니다. draw 핸들러는
+GameObject를 모두 그린 뒤에 호출되므로, 점수와 같은 UI는 여기서 그립니다.
 
 ## 컴포넌트 붙이기
 
@@ -134,7 +134,7 @@ if (Health* health = player.getComponent<Health>()) {
 
 - `addComponent<T>(인자...)`는 T를 만들어 붙이고 그 참조를 돌려줍니다. 인자는 T의 생성자에 그대로
   전달됩니다.
-- `getComponent<T>()`는 붙어 있는 T를 찾아 포인터로 돌려주며, 없으면 `nullptr`입니다.
+- `getComponent<T>()`는 붙어 있는 T의 포인터를, T가 없으면 `nullptr`을 돌려줍니다.
 - 컴포넌트는 타입마다 하나씩만 붙습니다. 같은 타입을 다시 붙이면 이전 컴포넌트는 파괴됩니다.
 - 붙인 컴포넌트는 GameObject가 소유하며, 떼어 내는 함수는 없습니다.
 
@@ -144,8 +144,8 @@ meno의 컴포넌트에는 매 프레임마다 호출되는 함수가 없습니�
 
 ## GameObject 목록 관리하기
 
-Scene은 GameObject 목록을 돌려주는 함수를 제공하지 않습니다. 여러 GameObject를 함께 다루려면 위
-예제의 `flakes`처럼 ID를 직접 모아 두고, `scene.getGameObject(id)`로 꺼내 씁니다.
+Scene은 GameObject 목록을 돌려주는 함수를 제공하지 않습니다. 따라서 여러 GameObject를 함께 다루려면
+위 예제의 `flakes`처럼 ID를 직접 모아 두고, `scene.getGameObject(id)`로 꺼내 씁니다.
 `getGameObject()`는 그 ID의 GameObject가 없으면 `nullptr`을 돌려주므로, 이미 지운 객체를 실수로 쓰는
 일을 막을 수 있습니다.
 
@@ -168,10 +168,11 @@ update 안에서 지운 GameObject는 그 update가 끝날 때까지 남아 있�
 
 - `getComponent<T>()`는 정확히 같은 타입만 찾습니다. 예를 들어 `BoxCollider`를 붙였다면
   `getComponent<meno::Collider>()`는 `nullptr`을 돌려줍니다.
-- 같은 타입의 컴포넌트를 다시 붙이면 이전 컴포넌트는 파괴되므로, 이전에 받아 둔 참조를 쓰면 안
+- 같은 타입의 컴포넌트를 다시 붙이면 이전 컴포넌트는 파괴되므로, 앞서 받아 둔 참조를 써서는 안
   됩니다.
-- `Transform`과 `Sprite`는 `addComponent()`로 붙일 수 없습니다. `transform()`과 `sprite()`로 씁니다.
-- GameObject의 참조나 포인터를 오래 들고 있어야 한다면 ID를 대신 저장하고, 쓸 때마다
+- `Transform`과 `Sprite`는 `addComponent()`로 붙일 수 없으며, `transform()`과 `sprite()`로
+  접근합니다.
+- GameObject의 참조나 포인터를 오래 보관해야 한다면 대신 ID를 저장하고, 쓸 때마다
   `getGameObject()`로 꺼냅니다.
 
 ## 관련 예제와 API
