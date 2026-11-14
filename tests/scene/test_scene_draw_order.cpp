@@ -143,7 +143,7 @@ int main() {
     MENO_CHECK(scene.deleteGameObject(immediate));
     checkOrder({afterException});
 
-    // 객체 변경은 씬 전환의 exit/enter보다 먼저 반영한다.
+    // 객체 변경은 Scene 전환의 exit·enter 핸들러보다 먼저 반영한다.
     auto& next = manager.createScene();
     meno::GameObject::GameObjectID beforeExit = 0;
     scene.setUpdateHandler([&](double) {
@@ -160,7 +160,8 @@ int main() {
     manager.update(0.1);
     MENO_CHECK(manager.activeScene() == &next);
 
-    // draw 핸들러는 GameObject를 모두 그린 뒤 한 번 불린다. GameObject ID는 1부터라 0을 표시로 쓴다.
+    // draw 핸들러는 GameObject를 모두 그린 뒤 한 번 호출된다. GameObject ID는 1부터이므로
+    // 0을 표시로 쓴다.
     constexpr meno::GameObject::GameObjectID kDrawHandler = 0;
     scene.setUpdateHandler({});
     scene.setExitHandler({});

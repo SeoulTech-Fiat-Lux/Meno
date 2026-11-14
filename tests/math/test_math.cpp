@@ -1,6 +1,6 @@
 // 공용 값 타입(Vec2, Rect, Color) 검사.
 //
-// SFML에 의존할 필요 없이 헤더만으로 성립하므로, SFML 빌드 없이 돌아간다.
+// 헤더만으로 성립하므로 SFML 빌드 없이 실행된다.
 // 렌더러와 충돌 판정이 함께 쓰는 타입이라, 시그니처를 바꾸면 여기서 먼저 걸린다.
 
 #include <meno/math/Color.hpp>
@@ -53,19 +53,19 @@ bool near(float a, float b) { return std::fabs(a - b) < 1e-5f; }
 
 int main() {
     // --- Vec2 ---------------------------------------------------------------
-    // 정수 벡터에서 길이가 잘리면 안 된다.
+    // 정수 벡터에서 길이가 잘려서는 안 된다.
     check(near(Vec2i{1, 1}.length(), 1.4142135f), "Vec2i{1,1}.length() == 1.414...");
     check(near(Vec2i{3, 4}.length(), 5.f), "Vec2i{3,4}.length() == 5");
     check(near(Vec2f{3.f, 4.f}.length(), 5.f), "Vec2f{3,4}.length() == 5");
 
-    // 정수 나눗셈으로 방향이 사라지면 안 된다.
+    // 정수 나눗셈으로 방향이 사라져서는 안 된다.
     const Vec2f dir = Vec2i{3, 4}.normalized();
     check(near(dir.x, 0.6f) && near(dir.y, 0.8f), "Vec2i{3,4}.normalized() == {0.6, 0.8}");
 
     const Vec2f dirNeg = Vec2i{-3, 4}.normalized();
     check(near(dirNeg.x, -0.6f) && near(dirNeg.y, 0.8f), "Vec2i{-3,4}.normalized() 부호 유지");
 
-    // 0 벡터는 0으로 나누지 않는다.
+    // 영벡터에서는 0으로 나누지 않는다.
     check(Vec2f{0.f, 0.f}.normalized() == Vec2f{0.f, 0.f}, "Vec2f{0,0}.normalized() == {0,0}");
     check(Vec2i{0, 0}.normalized() == Vec2f{0.f, 0.f}, "Vec2i{0,0}.normalized() == {0,0}");
 
@@ -84,15 +84,15 @@ int main() {
     check(!a.intersects(far), "떨어진 사각형");
 
     // 경계 규칙: 왼쪽/위는 포함, 오른쪽/아래는 제외.
-    // 이게 지켜져야 인접 타일이 한 점을 동시에 소유하지 않는다.
+    // 이 규칙이 지켜져야 인접 타일이 한 점을 동시에 소유하지 않는다.
     check(a.contains(Vec2f{0.f, 0.f}), "좌상단 모서리는 포함");
     check(!a.contains(Vec2f{10.f, 5.f}), "우측 경계는 제외");
     check(!a.contains(Vec2f{5.f, 10.f}), "하단 경계는 제외");
 
     const auto hit = a.findIntersection(b);
-    check(hit.has_value(), "교집합이 존재");
+    check(hit.has_value(), "교집합이 있다");
     check(hit && hit->position == Vec2f{5.f, 5.f} && hit->size == Vec2f{5.f, 5.f},
-          "교집합 영역이 정확");
+          "교집합 영역이 정확하다");
     check(!a.findIntersection(far).has_value(), "겹치지 않으면 nullopt");
 
     check(a.center() == Vec2f{5.f, 5.f}, "중심점");
@@ -100,10 +100,10 @@ int main() {
     // --- Color --------------------------------------------------------------
     const Color c = Color::fromRgba(0x2E3440FF);
     check(c.r == 0x2E && c.g == 0x34 && c.b == 0x40 && c.a == 0xFF, "fromRgba 바이트 분해");
-    check(colors::White == Color{255, 255, 255, 255}, "기본값은 불투명 흰색");
+    check(colors::White == Color{255, 255, 255, 255}, "colors::White는 불투명 흰색");
     check(c.withAlpha(128).a == 128 && c.withAlpha(128).r == c.r, "withAlpha는 alpha만 바꾼다");
 
-    // 6자리 리터럴은 fromRgb로 읽으며, 알파는 불투명(255)로 채운다.
+    // 6자리 리터럴은 fromRgb로 읽으며, 알파는 불투명(255)으로 채운다.
     const Color rgb = Color::fromRgb(0x2E3440);
     check(rgb.r == 0x2E && rgb.g == 0x34 && rgb.b == 0x40 && rgb.a == 0xFF, "fromRgb 바이트 분해");
     check(Color::fromRgb(0x1E2430) == Color::fromRgba(0x1E2430FF),
@@ -114,17 +114,16 @@ int main() {
     constexpr std::array<std::uint32_t, 2> kPalette{0xFF0000u, 0x1E2430u};
     std::size_t index = 1; // const가 아니므로 kPalette[index]는 상수식이 아니다.
     check(Color::fromRgb(kPalette[index]) == Color{0x1E, 0x24, 0x30},
-          "fromRgb는 런타임 값을 받는다.");
+          "fromRgb는 런타임 값을 받는다");
 
-    // 런타임에 매개변수로 Hex코드 6자리를 넘는 값이 들어오면 프로그램을 멈추지 않고, 마젠타를
-    // 반환값으로 내보낸다.
+    // 런타임에 6자리를 넘는 16진수 값이 들어오면 프로그램을 멈추지 않고 마젠타를 돌려준다.
     std::uint32_t typo = 0x1E2430FF;
     check(Color::fromRgb(typo) == colors::Magenta,
-          "fromRgb에 런타임 8자리 값을 넣으면 마젠타 색상을 돌려준다.");
+          "fromRgb에 런타임 8자리 값을 넣으면 마젠타를 돌려준다");
 
-    // fromRgba는 8자리 리터럴만 받는다.
+    // fromRgba는 8자리 리터럴용이다.
     // 6자리 리터럴을 넣으면 0x001E2430으로 읽혀 R=0x00, G=0x1E, B=0x24, A=0x30이 된다.
-    // fromRgb를 따로 둔 이유이므로 동작을 고정해둔다.
+    // fromRgb를 따로 둔 이유이므로 동작을 고정해 둔다.
     const Color shifted = Color::fromRgba(0x1E2430);
     check(shifted.r == 0x00 && shifted.a == 0x30,
           "fromRgba()에 6자리 리터럴을 넣으면 색이 한 칸씩 밀린다");

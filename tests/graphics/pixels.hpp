@@ -18,7 +18,7 @@
 
 namespace meno::test {
 
-// 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 불러야 한다.
+// 지금까지 그린 백 버퍼를 읽는다. endFrame(= display)으로 버퍼를 바꾸기 전에 호출해야 한다.
 [[nodiscard]] inline sf::Image capture(Window& window) {
     sf::RenderWindow& native = backend::WindowAccess::native(window);
     sf::Texture texture{native.getSize()};
@@ -26,8 +26,8 @@ namespace meno::test {
     return texture.copyToImage();
 }
 
-// 점 point가 들어 있는 픽셀의 색이 color인지를 확인. 창 밖의 점은 늘 false다.
-// getPixel은 범위를 넘으면 Debug에서는 assert로 죽고, Release에서는 엉뚱한 메모리를 읽는다.
+// 점 point가 들어 있는 픽셀의 색이 color인지 확인한다. 창 밖의 점은 늘 false다.
+// getPixel은 범위를 넘으면 Debug에서는 assert로 중단되고, Release에서는 엉뚱한 메모리를 읽는다.
 [[nodiscard]] inline bool isColor(const sf::Image& image, Vec2f point, Color color) {
     const sf::Vector2u size = image.getSize();
     if (!(point.x >= 0.f && point.y >= 0.f && point.x < static_cast<float>(size.x) &&
@@ -39,7 +39,7 @@ namespace meno::test {
     return image.getPixel(pixel) == backend::toSf(color);
 }
 
-// 픽셀 좌표로 묻는 판. 범위 검사는 위 함수가 한다.
+// 픽셀 좌표를 받는 오버로드. 범위 검사는 위 함수가 한다.
 [[nodiscard]] inline bool isColor(const sf::Image& image, unsigned int x, unsigned int y,
                                   Color color) {
     return isColor(image, Vec2f{static_cast<float>(x), static_cast<float>(y)}, color);

@@ -13,7 +13,7 @@ if(NOT MENO_BUILD_GUIDE_CODE)
 endif()
 if(NOT Python3_FOUND)
     message(FATAL_ERROR "MENO_BUILD_GUIDE_CODE에는 Python 3가 필요하다. "
-            "Python을 설치하거나 -DMENO_BUILD_GUIDE_CODE=OFF로 끌 것.")
+            "Python을 설치하거나 -DMENO_BUILD_GUIDE_CODE=OFF로 꺼야 한다.")
 endif()
 
 file(GLOB meno_guide_docs CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/docs/guide/*.md")

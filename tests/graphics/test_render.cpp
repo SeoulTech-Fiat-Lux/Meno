@@ -6,7 +6,7 @@
 // sf::Texture는 기본 생성만 해도(sf::GlResource) 공유 GL 컨텍스트를 만들며,
 // 글자 크기를 재려면 글리프를 GPU 텍스처(폰트 아틀라스)에 올려야 한다.
 // 디스플레이가 없으면 SFML은 프로세스를 abort하므로, MENO_DISPLAY_TESTS=1일 때만
-// 실제로 돌고 아니면 "건너뜀"으로 끝난다(tests/display.hpp).
+// 실제로 실행되고, 아니면 "건너뜀"으로 끝난다(tests/display.hpp).
 // 아래 static_assert는 컴파일 타임 검사라서 건너뛰더라도 빌드할 때 항상 검사된다.
 
 //     MENO_DISPLAY_TESTS=1 ctest --test-dir build -R render --output-on-failure
@@ -36,7 +36,7 @@ using namespace meno;
 // --- 컴파일 타임 검사 -------------------------------------------------------
 
 // Renderer는 Window를 빌려 쓰는 타입이므로 복사와 이동을 막는다.
-// 이동다한 Renderer(impl_ == nullptr)가 생길 수 없어야, 맴버 함수들이 검사 없이 역참조해도
+// 이동당한 Renderer(impl_ == nullptr)가 생길 수 없어야 멤버 함수들이 검사 없이 역참조해도
 // 안전하다.
 static_assert(!std::is_copy_constructible_v<Renderer>);
 static_assert(!std::is_copy_assignable_v<Renderer>);
@@ -44,7 +44,7 @@ static_assert(!std::is_move_constructible_v<Renderer>);
 static_assert(!std::is_move_assignable_v<Renderer>);
 
 // Texture/Font는 ResourceManager가 컨테이너에 옮겨 담을 수 있어야 한다.
-// noexcept가 빠지면 std::vector가 재할당할 때 이동 대신 복사를 시도하다 컴파일 에러가 난다.
+// noexcept가 빠지면 std::vector가 재할당할 때 강한 예외 보장을 지키지 못한다.
 static_assert(!std::is_copy_constructible_v<Texture>);
 static_assert(std::is_nothrow_move_constructible_v<Texture>);
 static_assert(std::is_nothrow_move_assignable_v<Texture>);
@@ -68,7 +68,7 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return near(a.x, b.x, tolerance) && near(a.y, b.y, tolerance);
 }
 
-// 경계 위의 점도 포함으로 본다. Rect::contains는 오른쪽/아래 경계를 제외하는데,
+// 경계 위의 점도 포함한다. Rect::contains는 오른쪽/아래 경계를 제외하는데,
 // 회전된 화면의 모서리는 정확히 그 경계 위에 떨어지기 때문이다.
 bool containsInclusive(const Rectf& rect, Vec2f point, float tolerance = 0.5f) {
     return point.x >= rect.left() - tolerance && point.x <= rect.right() + tolerance &&
@@ -99,17 +99,17 @@ std::optional<Font> loadTestFont() {
 // --- 이동당한 객체 -----------------------------------------------------------
 
 void checkMovedFrom(Renderer& renderer) {
-    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 행동한다.
-    // 예제가 checker.size()를 부르는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이 {0, 0}이어야
-    // 한다.
+    // 이동당한 Texture는 조회해도 크래시 없이 빈 텍스처처럼 동작한다.
+    // 예제가 checker.size()를 호출하는 실제 경로라, 빈 텍스처의 size()도 널 역참조 없이
+    // {0, 0}이어야 한다.
     Texture texture;
     Texture keepTexture = std::move(texture);
-    check(texture.size() == Vec2u{0u, 0u}, "이동당한 Texture의 size()는 {0,0}");
+    check(texture.size() == Vec2u{0u, 0u}, "이동당한 Texture의 size()는 {0,0}이다");
     texture.setSmooth(true); // 무시되어야 한다
-    check(!texture.isSmooth(), "이동당한 Texture의 setSmooth()는 무시되고 isSmooth()는 false");
+    check(!texture.isSmooth(), "이동당한 Texture의 setSmooth()는 무시되고 isSmooth()는 false다");
 
     // 빈 껍데기에 새 Texture를 이동 대입하면 다시 쓸 수 있다.
-    // 이번엔 keepTexture가 빈 껍데기가 된다.
+    // 이번에는 keepTexture가 빈 껍데기가 된다.
     texture = std::move(keepTexture);
     texture.setSmooth(true);
     check(texture.isSmooth(), "이동당한 Texture에 이동 대입하면 다시 쓸 수 있다");
@@ -123,10 +123,10 @@ void checkMovedFrom(Renderer& renderer) {
     renderer.drawText(font, "moved", {10.f, 10.f});
     renderer.endFrame();
 
-    check(renderer.measureText(font, "moved") == Vec2f{0.f, 0.f}, "이동당한 Font로 재면 {0,0}");
+    check(renderer.measureText(font, "moved") == Vec2f{0.f, 0.f}, "이동당한 Font로 재면 {0,0}이다");
     const Rectf bounds = renderer.measureTextBounds(font, "moved");
     check(bounds.position == Vec2f{0.f, 0.f} && bounds.size == Vec2f{0.f, 0.f},
-          "이동당한 Font로 measureTextBounds하면 빈 사각형");
+          "이동당한 Font로 measureTextBounds하면 빈 사각형이다");
 }
 
 // --- 텍스트 측정 -------------------------------------------------------------
@@ -152,7 +152,7 @@ void checkText(const Renderer& renderer, const Font& font) {
     // 바운드 원점은 {0,0}이 아니다(글자 위 여백). measureText만으로 정렬하면 이만큼 틀어진다.
     check(a.position.y > 0.f, "바운드 원점에 윗여백이 있다 (measureTextBounds가 필요한 이유)");
 
-    // origin과 rotation은 적용 전의 로컬 좌표로 잰다.
+    // origin과 rotation을 적용하기 전의 로컬 좌표로 잰다.
     TextParams transformed = outlined;
     transformed.origin = {50.f, 10.f};
     transformed.rotation = 30.f;
@@ -160,7 +160,7 @@ void checkText(const Renderer& renderer, const Font& font) {
     check(c.position == b.position && c.size == b.size,
           "origin/rotation은 측정 결과에 영향을 주지 않는다");
 
-    check(renderer.measureText(font, "", plain) == Vec2f{0.f, 0.f}, "빈 문자열의 크기는 {0,0}");
+    check(renderer.measureText(font, "", plain) == Vec2f{0.f, 0.f}, "빈 문자열의 크기는 {0,0}이다");
 }
 
 // --- 카메라 -----------------------------------------------------------------
@@ -168,16 +168,16 @@ void checkText(const Renderer& renderer, const Font& font) {
 void checkCamera(Renderer& renderer) {
     const auto screen = static_cast<Vec2f>(renderer.framebufferSize());
 
-    // 회전이 없으면 center 기준으로 화면 크기 / zoom.
+    // 회전이 없으면 보이는 영역은 center를 중심으로 한 화면 크기 / zoom이다.
     renderer.setCamera({.center = {100.f, 50.f}, .zoom = 2.f});
     const Rectf flat = renderer.visibleWorldBounds();
     check(near(flat.size, screen / 2.f) && near(flat.center(), Vec2f{100.f, 50.f}),
           "회전 없는 카메라: 보이는 영역 = 화면 / zoom");
 
-    // 90도 돌리면 월드에서 보이는 폭과 높이가 뒤바뀐다.
+    // 90도 회전하면 월드에서 보이는 폭과 높이가 뒤바뀐다.
     renderer.setCamera({.rotation = 90.f});
     const Rectf quarter = renderer.visibleWorldBounds();
-    check(near(quarter.size, Vec2f{screen.y, screen.x}, 0.01f), "90도 회전: 폭과 높이가 바뀐다");
+    check(near(quarter.size, Vec2f{screen.y, screen.x}, 0.01f), "90도 회전: 폭과 높이가 뒤바뀐다");
 
     // 45도: 화면 네 모서리에 비치는 월드 좌표가 모두 영역 안에 있어야 한다.
     // 회전을 무시한 사각형을 돌려주면 모서리가 영역 밖으로 빠지고,
@@ -210,7 +210,7 @@ int main() {
     checkCamera(renderer);
 
     const std::optional<Font> font = loadTestFont();
-    check(font.has_value(), "테스트 폰트를 찾았다. (없으면 MENO_TEST_FONT로 경로를 지정)");
+    check(font.has_value(), "테스트 폰트를 찾았다 (없으면 MENO_TEST_FONT로 경로를 지정한다)");
     if (font) {
         checkText(renderer, *font);
     }

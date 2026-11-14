@@ -3,14 +3,12 @@
 // 좌표 계산의 규칙은 tests/math/test_camera.cpp가, 그 규칙을 SFML이 따르는지는
 // test_camera_parity.cpp가 본다. 그러나 위 두 검사로는 아래 사안을 확인할 수 없으므로,
 // test_render_resize.cpp를 따로 둔다:
-//   1. 크키가 재설정된 Renderer가 여전히 기존 규칙을 잘 따르는가 (카메라 보관, beginFrame마다
-//   재적용)
+//   1. 창 크기가 바뀐 뒤에도 Renderer가 같은 규칙을 따르는가 (카메라 보관, beginFrame마다 재적용)
 //   2. GPU가 그린 픽셀이 실제로 해당 위치에 있는가 (레터박스 띠, 3등분 화면의 틈, 빈 뷰포트)
 
-// 이 테스트를 위해서는 창과 GL 컨텍스트가 필요하기 때문에, test_render와 같이
-// MENO_DISPLAY_TESTS=1일 때만 돈다. 창 크기를 바꾸고 픽셀을 읽기 위해 내부
-// 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼낸다. 렌더링 자체는 공개 API(Renderer)로만
-// 한다.
+// 이 테스트는 창과 GL 컨텍스트가 필요하므로, test_render처럼 MENO_DISPLAY_TESTS=1일 때만
+// 실행된다. 창 크기를 바꾸고 픽셀을 읽기 위해 내부 헤더(sfml_backend/Access.hpp)로
+// sf::RenderWindow를 꺼낸다. 렌더링 자체는 공개 API(Renderer)로만 한다.
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_resize --output-on-failure
 
@@ -49,7 +47,7 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
     return std::fabs(a.x - b.x) < tolerance && std::fabs(a.y - b.y) < tolerance;
 }
 
-// 창 크기를 바꾸고, SFML이 Resized 이벤트를 받아 크기를 갱신할 때까지 pollEvents를 돌린다.
+// 창 크기를 바꾸고, SFML이 Resized 이벤트를 받아 크기를 갱신할 때까지 pollEvents를 호출한다.
 // SFML은 pollEvent 안에서 getSize()를 새 값으로 바꾼다. Renderer가 별도의 통지 없이 리사이즈를
 // 따라가는 근거다.
 bool resize(Window& window, Renderer& renderer, Vec2u size) {
@@ -68,12 +66,12 @@ bool resize(Window& window, Renderer& renderer, Vec2u size) {
     return window.size() == size;
 }
 
-// --- 화면 좌표(resetCamera)는 창 크기를 따라간다 ----------------------------
+// --- 창 크기를 따라가는 화면 좌표(resetCamera) ------------------------------
 
 void checkScreenCoordinates(Window& window, Renderer& renderer) {
-    // 처음 만든 Renderer와 resetCamera() 뒤는 화면 좌표 상태이며 camera()가 비어 있다.
+    // Renderer는 처음 만들었을 때와 resetCamera() 뒤에 화면 좌표 상태이며, camera()가 비어 있다.
     check(!renderer.camera().has_value(),
-          "처음 만든 Renderer는 화면 좌표 상태 (camera() == nullopt)");
+          "처음 만든 Renderer는 화면 좌표 상태다 (camera() == nullopt)");
 
     // 리사이즈 전 SFML 기본 뷰(320x180)가 남아 있으면 화면이 두 배로 늘어난다.
     // 그러면 (100, 100)의 20x20 사각형은 (200, 200)의 40x40으로 그려지고,
@@ -94,7 +92,7 @@ void checkScreenCoordinates(Window& window, Renderer& renderer) {
           "screenToWorld는 정수로 자르지 않는다");
 }
 
-// --- 리사이즈 전에 설정한 카메라도 새 크기로 다시 적용된다 -----------------
+// --- 리사이즈 뒤에도 새 크기로 다시 적용되는 카메라 -------------------------
 
 void checkCameraKeptAcrossResize(Window& window, Renderer& renderer) {
     // size {0,0} 카메라는 1픽셀 = 1월드유닛이어야 한다. 크기는 setCamera 시점이 아니라 그리는
@@ -110,7 +108,7 @@ void checkCameraKeptAcrossResize(Window& window, Renderer& renderer) {
         return;
     }
 
-    // 다시 setCamera하지 않고 그대로 그린다. beginFrame이 새 크기로 다시 적용해야 한다.
+    // 다시 setCamera하지 않고 그대로 그린다. beginFrame이 카메라를 새 크기로 다시 적용해야 한다.
     renderer.beginFrame(kClear);
     // 월드 x 380 = 화면 x 780. 새 크기(800)에서만 창 안에 들어온다.
     renderer.drawRect({{370.f, -10.f}, {20.f, 20.f}}, {.fill = kInk});
@@ -133,7 +131,8 @@ void checkCameraKeptAcrossResize(Window& window, Renderer& renderer) {
 // --- 뷰포트가 그리는 픽셀 ---------------------------------------------------
 
 void checkLetterbox(Window& window, Renderer& renderer) {
-    // 정사각형 설계 해상도를 800x400 창에: 400x400이 가운데 오고 좌우 200픽셀은 띠로 남는다.
+    // 정사각형 설계 해상도를 800x400 창에 맞추면 400x400이 가운데에 오고, 좌우 200픽셀은 띠로
+    // 남는다.
     renderer.beginFrame(kClear);
     renderer.setCamera({.size = {100.f, 100.f}, .fit = CameraFit::Letterbox});
     renderer.drawRect(kEverywhere, {.fill = kInk});
@@ -149,7 +148,7 @@ void checkLetterbox(Window& window, Renderer& renderer) {
 }
 
 void checkSplitScreen(Window& window, Renderer& renderer) {
-    // 640 폭을 3등분. 비율을 SFML에 그대로 넘기면 426열이 비고, 모서리를 반올림하면 틈이 없다.
+    // 640 폭을 3등분한다. 비율을 SFML에 그대로 넘기면 426열이 비고, 모서리를 반올림하면 틈이 없다.
     const bool resized = resize(window, renderer, {640u, 480u});
     check(resized, "창 크기를 640x480으로 바꿨다");
     if (!resized) {

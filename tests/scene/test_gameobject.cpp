@@ -102,7 +102,7 @@ int main() {
     MENO_CHECK(params.source->size == meno::Vec2i{16, 16});
     MENO_CHECK(params.flipX && params.flipY);
 
-    // 변환을 캐싱하지 않아 다음 프레임에 변경된 위치가 반영되어야 한다.
+    // 변환을 캐싱하지 않으므로, 바꾼 위치가 다음 프레임에 그대로 반영되어야 한다.
     object.transform().position = {56.f, 78.f};
     MENO_CHECK(object.sprite().drawParams().position == meno::Vec2f{56.f, 78.f});
 

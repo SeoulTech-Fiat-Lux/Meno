@@ -172,10 +172,10 @@ int main() {
         NormalGame game(normalDestroyed, normalDependenciesAlive, exited);
         int calls = 0;
         // 시각을 읽을 때마다 20ms씩 흐른다. onStart() 시간은 첫 프레임에서 빠지므로
-        // 이후 프레임마다 시간이 흘러야 update()가 돈다.
+        // 이후 프레임마다 시간이 흘러야 update()가 호출된다.
         meno::Clock clock([&] { return meno::Clock::TimePoint{} + 20ms * calls++; },
                           [](meno::Clock::Duration) {});
-        // Application 참조로 실행해도 가상 dispatch를 통해 Game의 정리 경로를 탄다.
+        // Application 참조로 실행해도 가상 dispatch로 Game의 정리 경로를 거친다.
         meno::Application& application = game;
         application.run(clock);
         MENO_CHECK(exited);
@@ -248,8 +248,8 @@ int main() {
                                                              discardDependenciesAlive);
         scene.setExitHandler([&] { exitCalledFromDestructor = true; });
         MENO_CHECK(game.scenes().changeScene(scene.id()));
-        // run()하지 않은 Game도 소유 Scene을 폐기해야 하지만, 이 시점의
-        // 파생 멤버는 이미 파괴됐을 수 있으므로 onExit은 호출하지 않는다.
+        // run()하지 않은 Game도 소유한 Scene을 폐기해야 하지만, 이 시점에는 파생 클래스의
+        // 멤버가 이미 파괴됐을 수 있으므로 exit 핸들러는 호출하지 않는다.
     }
     MENO_CHECK(discarded);
     MENO_CHECK(discardDependenciesAlive);
