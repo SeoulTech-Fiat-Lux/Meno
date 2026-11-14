@@ -4,7 +4,7 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
-    <tab type="pages" visible="yes" title="" intro=""/>
+    <tab type="pages" visible="yes" title="사용자 설명서" intro="사용자 설명서의 장 목록입니다. 1부부터 순서대로 읽기를 권합니다."/>
     <tab type="topics" visible="yes" title="모듈" intro="다음은 모든 모듈에 대한 목록입니다. (간략한 설명만을 보여줍니다) :"/>
     <tab type="modules" visible="yes" title="" intro="">
       <tab type="modulelist" visible="yes" title="" intro=""/>

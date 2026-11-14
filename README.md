@@ -15,6 +15,8 @@
 </p>
 
 <p align="center">
+  <a href="https://seoultech-fiat-lux.github.io/Meno/guide.html">설명서</a>
+  ·
   <a href="https://seoultech-fiat-lux.github.io/Meno/">API 레퍼런스</a>
   ·
   <a href="examples">예제</a>
@@ -119,9 +121,14 @@ Visual Studio 생성기(Windows의 기본값)를 쓰면 실행 파일은 `build/
 
 ## 문서
 
+- [사용자 설명서](https://seoultech-fiat-lux.github.io/Meno/guide.html): 설치와 첫 게임부터
+  GameObject, 충돌 판정, 씬 전환, 오디오, 카메라까지 게임을 만드는 순서에 따라 설명합니다. 원문은
+  [docs/guide](docs/guide)에 있습니다.
 - [API 레퍼런스](https://seoultech-fiat-lux.github.io/Meno/): 클래스·함수마다 동작, 주의할 점, 예제를
   적었습니다. 게임, 씬, 그래픽, 입력 같은 모듈별로 찾아볼 수 있습니다.
 - [예제](examples): 실행해 볼 수 있는 작은 데모 게임입니다.
+- [테스트와 CI](https://seoultech-fiat-lux.github.io/Meno/md_docs_2testing.html): 기능별 테스트와
+  실행 방법, CI 구성을 정리했습니다. 원문은 [docs/testing.md](docs/testing.md)에 있습니다.
 
 ## 한계
 

@@ -14,6 +14,7 @@
 #   tests/resources/ -- Texture, Font 캐시
 #   tests/scene/     -- Scene, SceneManager, GameObject, Component, Collider
 #   tests/app/       -- Game
+#   tests/guide/     -- 설명서, README, 사이트 첫 쪽의 C++ 코드 블록(컴파일만 한다)
 
 # 테스트를 추가할 때는 대상 코드가 무엇에 의존하는지에 따라 아래 셋 중 하나를 고른다.
 # 가능한 한 위쪽을 고른다. SFML 빌드 없이 돌고, 실패했을 때 원인도 좁아진다.
@@ -102,6 +103,7 @@ add_subdirectory(app)
 add_subdirectory(audio)
 add_subdirectory(core)
 add_subdirectory(graphics)
+add_subdirectory(guide)
 add_subdirectory(input)
 add_subdirectory(math)
 add_subdirectory(resources)

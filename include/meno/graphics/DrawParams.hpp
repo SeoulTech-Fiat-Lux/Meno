@@ -30,14 +30,14 @@ struct SpriteParams {
 
     /// 회전과 배율의 기준점입니다. 배율을 적용하기 전의 텍스처 픽셀 단위입니다.
     ///
-    /// {0, 0}이면 좌상단(source를 쓰면 그 영역의 좌상단)이고, 그리는 영역 크기의 절반이면
-    /// 중심을 기준으로 돕니다.
+    /// {0, 0}이면 좌상단(source를 쓰면 그 영역의 좌상단)을, 그리는 영역 크기의 절반이면 중심을
+    /// 기준으로 회전합니다.
     Vec2f origin{0.f, 0.f};
 
-    /// 가로·세로 배율입니다. 뒤집을 때는 음수 배율 대신 flipX·flipY를 쓰면 origin이 그대로입니다.
+    /// 가로·세로 배율입니다. 음수 배율 대신 flipX·flipY로 뒤집으면 origin이 그대로입니다.
     Vec2f scale{1.f, 1.f};
 
-    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
+    /// 회전 각도(도 단위)입니다. 시계 방향이 양수이며, origin을 중심으로 회전합니다.
     float rotation{0.f};
 
     /// 텍스처 색에 곱해지는 색입니다. 흰색이면 원본 그대로이고, alpha를 낮추면 반투명해집니다.
@@ -68,10 +68,10 @@ struct ShapeParams {
 
     /// position에 놓일 점이자 회전 중심입니다. 기준은 도형마다 다릅니다.
     ///
-    /// drawRect()와 drawPolygon()은 도형의 로컬 원점(사각형은 좌상단)에서 재고, drawCircle()과
-    /// drawSector()는 중심에서 잽니다.
+    /// drawRect()와 drawPolygon()에서는 도형의 로컬 원점(사각형은 좌상단)이, drawCircle()과
+    /// drawSector()에서는 중심이 기준입니다.
     Vec2f origin{0.f, 0.f};
-    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
+    /// 회전 각도(도 단위)입니다. 시계 방향이 양수이며, origin을 중심으로 회전합니다.
     float rotation{0.f};
 };
 
@@ -97,9 +97,9 @@ struct TextParams {
     Color color{colors::White};
 
     /// position에 놓일 점이자 회전 중심입니다. 텍스트 상자의 좌상단에서 잽니다.
-    /// 가운데 정렬은 Renderer::measureTextBounds()의 중심을 넣습니다.
+    /// 가운데 정렬하려면 Renderer::measureTextBounds()의 중심을 넣습니다.
     Vec2f origin{0.f, 0.f};
-    /// 회전 각도(도). 시계 방향이 양수이며 origin을 중심으로 돕니다.
+    /// 회전 각도(도 단위)입니다. 시계 방향이 양수이며, origin을 중심으로 회전합니다.
     float rotation{0.f};
 
     /// 외곽선 두께입니다. 0이면 외곽선이 없습니다.

@@ -13,6 +13,9 @@ ctest --test-dir build --output-on-failure
 > 첫 빌드는 SFML과 그 의존성(freetype·harfbuzz·SheenBidi)을
 > 함께 빌드하기 때문에 조금 오래 걸린다.
 
+창을 여는 테스트의 실행 방법과 기능별 테스트 목록, CI 구성은
+[docs/testing.md](docs/testing.md)에 있다.
+
 ## 저장소 구조
 
 ```
@@ -32,16 +35,24 @@ src/meno/         구현부; 사용자에게 배포되지 않는다. SFML은 여
 examples/         예제 및 데모 게임
 tests/            테스트 (consumer/는 하위 프로젝트 빌드 검사)
 tools/            check_headers.py — 공개 헤더 SFML 유출 검사
-docs/             설계 문서, API 레퍼런스 사이트의 첫 쪽·모듈 목록·테마
+                  extract_guide_code.py — 설명서 코드 블록 추출
+docs/             사용자 설명서(guide/), 테스트 문서(testing.md), API 레퍼런스 사이트의 첫 쪽·모듈
+                  목록·테마
 ```
 
 각 모듈은 위 목록에서 자기보다 위에 있는 모듈만 참조하며, 순환 의존 관계가 아니다.
 
-`include/`와 `src/`가 나뉜 게 핵심이다. CMake에서 `include/`는 `PUBLIC`,
-`src/`는 `PRIVATE`으로 지정해 **SFML이 사용자 빌드로 새지 않게** 한다.
-자세한 근거는 [docs/render-api.md](docs/render-api.md)에 있다.
+`include/`와 `src/`가 나뉜 것이 핵심이다. CMake에서 `include/`는 `PUBLIC`, `src/`는 `PRIVATE`으로
+지정해 **SFML이 사용자 빌드로 새지 않게** 한다. 이 경계는 다음 세 장치가 함께 지키므로, 하나라도
+빠지면 경계가 샌다. 리뷰할 때는 이 세 가지를 확인한다.
 
-검사는 자동화되어 있다:
+| 장치 | 위치 | 역할 |
+|---|---|---|
+| pimpl | `Texture`, `Font`, `Renderer`, `Window`, `SoundBuffer`, `Sound`, `Music` | SFML 객체를 `std::unique_ptr<Impl>` 뒤에 숨긴다 |
+| `backend::*Access` | `src/meno/sfml_backend/Access.hpp` | 구현 파일끼리 내부 SFML 객체를 꺼내는 통로(friend)다 |
+| `target_link_libraries(meno PRIVATE SFML::Graphics SFML::Audio)` | `src/CMakeLists.txt` | SFML의 헤더 경로가 사용자 타깃에 전파되지 않게 한다 |
+
+공개 헤더에 SFML이 나오지 않는지는 다음 스크립트가 검사하며, CI도 같은 검사를 한다.
 
 ```bash
 python tools/check_headers.py
@@ -70,6 +81,19 @@ Doxygen은 CI와 같은 1.15.0을 쓴다.
   쓰지 않는다.
 - 새 공개 헤더는 namespace 본문을 `/// \addtogroup <폴더 이름>`과 `/// \{` ... `/// \}`로 감싸
   모듈에 싣는다([docs/groups.dox](docs/groups.dox) 참고).
+
+## 설명서 코드
+
+사용자 설명서(`docs/guide/`), README, `docs/mainpage.md`의 ` ```cpp ` 블록은 테스트 빌드에서
+컴파일된다(`tests/guide/`). 블록을 뽑는 데 Python 3가 필요하며, Python이 없으면
+`MENO_BUILD_GUIDE_CODE` 옵션이 꺼져 이 검사만 건너뛴다. CI는 이 검사를 항상 켠다.
+
+- `int main(`이 있는 블록은 완성 프로그램으로 보고, meno와 링크까지 한다.
+- 나머지 블록은 조각으로 보고 함수 안에 넣어 컴파일만 한다. 조각은 `game`, `renderer`, `play`,
+  `player`, `font`, `position`, `velocity`, `fixedDeltaTime`이 이미 있다고 가정할 수 있다. 다른
+  이름이 필요하면 `tools/extract_guide_code.py`의 `FRAGMENT_PROLOGUE`에 더한다.
+- 컴파일 오류는 Markdown 파일의 줄을 가리킨다.
+- 컴파일되지 않는 코드를 일부러 보여 줄 때는 ` ```cpp ` 대신 ` ```text `처럼 다른 언어로 표시한다.
 
 ## 작업 방식
 

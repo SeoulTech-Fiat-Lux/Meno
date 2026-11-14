@@ -11,8 +11,8 @@ class GameObject;
 /// 모든 컴포넌트의 기반 구조체입니다. 상속해서 새 컴포넌트를 만들고 GameObject::addComponent()로
 /// 붙입니다.
 ///
-/// 컴포넌트에는 매 프레임 불리는 함수가 없습니다. 동작은 Scene의 update 핸들러에서
-/// GameObject::getComponent()로 꺼내 처리합니다.
+/// 컴포넌트에는 매 프레임 호출되는 함수가 없습니다. 동작은 Scene의 update 핸들러에서
+/// GameObject::getComponent()로 컴포넌트를 꺼내서 처리합니다.
 ///
 /// \code{.cpp}
 /// struct Health : meno::Component {

@@ -16,9 +16,9 @@ struct TimeAccess;
 // Time은 전역 상태이므로, 한 번에 하나의 Application만 실행하도록 Application이 막는다.
 /// Application 루프가 관리하는 게임 시간입니다. 어디서든 정적 함수로 읽으며 단위는 초입니다.
 ///
-/// 게임 시간(elapsedTime)은 fixed update가 진행된 만큼만 흐릅니다. 프레임이 밀려 시간을 버리면
-/// 실제 시간(realElapsedTime)보다 느려집니다. Application::run()이 시작되면 fixedDeltaTime()을
-/// 뺀 값은 0부터 다시 셉니다.
+/// 게임 시간(elapsedTime)은 fixed update가 진행된 만큼만 흐릅니다. 프레임이 밀려 시간이
+/// 버려지면 실제 시간(realElapsedTime)보다 느려집니다. Application::run()이 시작되면
+/// fixedDeltaTime() 외의 값은 0부터 다시 셉니다.
 ///
 /// \code{.cpp}
 /// // 3초가 지나면 안내 문구를 숨깁니다.

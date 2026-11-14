@@ -16,7 +16,7 @@ namespace meno {
 /// Input에 넣는 입력 이벤트입니다.
 ///
 /// 보통은 Window::pollEvents()가 만들어 넣으므로 직접 다룰 일이 없습니다. 테스트나 입력 재생처럼
-/// 창 없이 Input을 구동할 때는 직접 만들어 Input::handleEvent()에 넘깁니다. 좌표는 모두 창 좌상단
+/// 창 없이 Input을 구동할 때는 직접 만들어서 Input::handleEvent()에 넘깁니다. 좌표는 모두 창 좌상단
 /// 기준의 픽셀 좌표입니다.
 ///
 /// \code{.cpp}
@@ -62,7 +62,7 @@ struct MouseMoved {
     Vec2i position; ///< 새 위치
 };
 
-/// 세로 휠을 굴렸습니다. 가로 휠은 오지 않습니다.
+/// 세로 휠을 굴렸습니다. 가로 휠 이벤트는 오지 않습니다.
 struct MouseWheelScrolled {
     /// 굴린 양입니다. 위로 굴리면 양수, 아래로 굴리면 음수이며, 정밀 휠은 소수점 값을 보냅니다.
     float delta = 0.f;

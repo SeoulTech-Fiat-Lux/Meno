@@ -13,7 +13,7 @@ namespace meno {
 /// GameObject의 위치, 배율, 회전입니다. 모든 GameObject가 기본으로 가집니다.
 ///
 /// GameObject의 로컬 원점(좌상단)이 position에 놓이고, 배율과 회전은 그 점을 중심으로
-/// 적용합니다. Sprite와 Collider의 offset도 이 변환을 따릅니다.
+/// 적용됩니다. Sprite와 Collider의 offset도 이 변환을 따릅니다.
 ///
 /// \see GameObject::transform
 struct Transform : public Component {

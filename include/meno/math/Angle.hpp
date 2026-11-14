@@ -11,8 +11,8 @@ namespace meno {
 
 /// 도(degree)를 라디안으로 바꿉니다.
 ///
-/// meno의 각도는 전부 "도(degree), 시계 방향"입니다. 라디안은 std::sin 같은 삼각함수에 넣을
-/// 때만 씁니다. 각도 범위는 접지 않으므로, 필요하면 먼저 wrapDegrees()로 접습니다.
+/// meno의 각도는 전부 "도(degree), 시계 방향"입니다. 라디안은 std::sin과 같은 삼각함수에 넣을
+/// 때만 씁니다. 이 함수는 각도 범위를 접지 않으므로, 필요하면 먼저 wrapDegrees()로 접습니다.
 [[nodiscard]] constexpr float toRadians(float degrees) noexcept {
     return degrees * (std::numbers::pi_v<float> / 180.f);
 }

@@ -1,4 +1,10 @@
-// 외부 에셋 없이 두 Scene을 3초마다 전환한다.
+// 두 Scene을 3초마다 번갈아 전환하는 예제.
+//
+// Game을 상속하고 onStart()에서 파란 Scene과 주황 Scene을 만든다. 각 Scene에서는 그 색의 사각형이
+// 좌우로 오가며 회전하고, 3초가 지나면 update 핸들러가 다음 Scene으로의 전환을 요청한다. enter와
+// exit 핸들러는 호출될 때마다 콘솔에 Scene 이름을 출력한다. 에셋 파일 없이 실행되며, 창을 닫으면
+// 종료한다.
+
 #include <meno/app/Game.hpp>
 #include <meno/graphics/Renderer.hpp>
 #include <meno/graphics/Texture.hpp>
@@ -51,8 +57,8 @@ private:
             object.transform().rotation = static_cast<float>(direction * elapsed_ * 90.0);
 
             if (elapsed_ >= sceneDuration) {
-                // 콜백 실행 중에는 예약만 한다. update()가 콜백을 마친 뒤
-                // 기존 Scene의 onExit, 다음 Scene의 onEnter를 호출한다.
+                // 핸들러 안에서는 전환이 예약만 된다. 이 update 핸들러가 끝나면 바로 SceneManager가
+                // 이전 Scene의 exit 핸들러와 다음 Scene의 enter 핸들러를 차례로 호출한다.
                 if (!scenes().changeScene(next)) {
                     throw std::runtime_error("Next scene does not exist");
                 }

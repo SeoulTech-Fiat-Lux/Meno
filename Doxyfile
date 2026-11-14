@@ -11,16 +11,32 @@ PROJECT_BRIEF          = "SFML 기반 C++20 2D 게임 개발 라이브러리"
 OUTPUT_DIRECTORY       = build-docs
 OUTPUT_LANGUAGE        = Korean
 
-# 사이드바와 상단 탭에 나오는 순서대로 적는다. 첫 쪽은 docs/mainpage.md, 모듈 목록은
-# docs/groups.dox에 있다.
+# 사이드바와 상단 탭에 나오는 순서대로 적는다. 첫 쪽은 docs/mainpage.md, 사용자 설명서 목차는
+# docs/guide/guide.dox, 모듈 목록은 docs/groups.dox에 있다.
 INPUT                  = docs/mainpage.md \
+                         docs/guide/guide.dox \
+                         docs/guide/01-setup.md \
+                         docs/guide/02-first-game.md \
+                         docs/guide/03-drawing.md \
+                         docs/guide/04-input.md \
+                         docs/guide/05-gameobjects.md \
+                         docs/guide/06-collision.md \
+                         docs/guide/07-scenes.md \
+                         docs/guide/08-audio.md \
+                         docs/guide/09-resources.md \
+                         docs/guide/10-camera.md \
+                         docs/guide/11-animation.md \
+                         docs/guide/12-application.md \
+                         docs/testing.md \
                          docs/groups.dox \
                          include/meno
 USE_MDFILE_AS_MAINPAGE = docs/mainpage.md
 FILE_PATTERNS          = *.hpp
 RECURSIVE              = YES
 # 문서에 <meno/graphics/Renderer.hpp>처럼 사용자가 실제로 쓰는 include 경로로 보이게 한다.
-STRIP_FROM_PATH        = include
+# "."은 설명서 쪽의 이름을 저장소 기준 경로(md_docs_2guide_2...)로 만들어, 어느 컴퓨터에서
+# 빌드해도 guide.dox의 \subpage 이름과 맞게 한다.
+STRIP_FROM_PATH        = include .
 STRIP_FROM_INC_PATH    = include
 
 # 공개 API만 싣는다. private 멤버, meno::detail, meno::backend(SFML 접근 통로)는 구현 세부라
@@ -55,6 +71,7 @@ HTML_EXTRA_STYLESHEET  = docs/theme/doxygen-awesome-css/doxygen-awesome.css \
                          docs/theme/meno.css
 HTML_EXTRA_FILES       = docs/theme/logo/meno-logo-on-dark.svg
 PROJECT_ICON           = docs/theme/logo/meno-favicon.svg
-# Doxygen 1.15의 기본 배치에서 한국어로 번역되지 않은 "Topics" 탭의 이름과 안내 문장만 바꿨다.
+# Doxygen 1.15의 기본 배치에서 바꾼 곳: 번역되지 않은 "Topics" 탭과 "관련 페이지" 탭의 이름과
+# 안내 문장. "관련 페이지" 탭을 숨기면 사이드바에서 설명서 목차도 사라지므로 이름만 바꾼다.
 # Doxygen 버전을 올리면 `doxygen -l`로 새 기본 배치를 받아 같은 곳만 다시 고친다.
 LAYOUT_FILE            = docs/DoxygenLayout.xml

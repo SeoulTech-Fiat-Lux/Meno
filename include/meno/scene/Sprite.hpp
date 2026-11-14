@@ -16,11 +16,11 @@ namespace meno {
 class Renderer;
 class Texture;
 
-/// GameObject의 그림입니다. 모든 GameObject가 기본으로 가지며, 텍스처가 있을 때만 그립니다.
+/// GameObject의 그림입니다. 모든 GameObject가 기본으로 가지며, 텍스처가 있을 때만 그려집니다.
 ///
 /// 텍스처는 shared_ptr로 공유하므로 여러 GameObject가 같은 텍스처를 써도 한 번만 로드됩니다.
-/// 파일은 ResourceManager::loadTexture()로 읽어 setTexture()에 넘깁니다. 위치, 회전, 배율은 부모
-/// GameObject의 Transform을 따릅니다.
+/// 파일은 ResourceManager::loadTexture()로 읽어서 setTexture()에 넘깁니다. 위치, 회전, 배율은
+/// 부모 GameObject의 Transform을 따릅니다.
 ///
 /// \code{.cpp}
 /// player.sprite().setTexture(resources.loadTexture("assets/player.png"));
@@ -52,7 +52,7 @@ public:
     /// 텍스처 없는 Sprite를 만듭니다.
     Sprite() = default;
 
-    /// 텍스처를 넘겨받아 이 Sprite만 씁니다. 복사하지 않습니다.
+    /// 텍스처를 넘겨받아 이 Sprite에서만 씁니다. 복사하지 않습니다.
     void setTexture(Texture&& texture);
     /// 텍스처를 공유합니다. nullptr을 넘기면 그리기를 멈추고 기존 텍스처를 놓습니다.
     void setTexture(std::shared_ptr<const Texture> texture) noexcept {
@@ -69,7 +69,7 @@ public:
     [[nodiscard]] SpriteParams drawParams() const;
 
     /// 텍스처를 그립니다. 텍스처가 없으면 아무것도 하지 않습니다. 보통은 Scene::drawScene()이
-    /// 부릅니다.
+    /// 호출합니다.
     void draw(Renderer& renderer) const;
 };
 

@@ -24,13 +24,13 @@ class Scene;
 /// Scene에 놓이는 게임 객체입니다. 위치(Transform)와 그림(Sprite)을 기본으로 가집니다.
 ///
 /// Scene::createGameObject()로만 만들며 Scene이 소유합니다. 다른 기능은 addComponent()로 붙이고,
-/// 붙인 컴포넌트는 GameObject가 소유합니다. 컴포넌트는 타입마다 하나씩만 가질 수 있고, 떼어 내는
-/// 함수는 없습니다. 복사도 이동도 할 수 없습니다.
+/// 붙인 컴포넌트는 GameObject가 소유합니다. 컴포넌트는 타입마다 하나씩만 붙일 수 있고, 떼어 내는
+/// 함수는 없습니다. GameObject는 복사도 이동도 할 수 없습니다.
 ///
 /// 주의할 점:
 /// - getComponent()는 정확히 같은 타입만 찾습니다. BoxCollider를 붙였다면
 ///   getComponent<Collider>()는 nullptr입니다.
-/// - 같은 타입을 다시 addComponent()하면 이전 컴포넌트는 파괴되므로, 이전 참조를 쓰면 안 됩니다.
+/// - 같은 타입을 다시 addComponent()하면 이전 컴포넌트는 파괴되므로, 이전 참조를 써서는 안 됩니다.
 ///
 /// \code{.cpp}
 /// meno::GameObject& player = scene.createGameObject();
@@ -82,7 +82,7 @@ public:
     const Sprite& sprite() const noexcept { return sprite_; }
     /// \}
 
-    /// Sprite를 현재 Transform으로 그립니다. 보통은 Scene::drawScene()이 부릅니다.
+    /// Sprite를 현재 Transform으로 그립니다. 보통은 Scene::drawScene()이 호출합니다.
     void draw(Renderer& renderer) const { sprite_.draw(renderer); }
     /// 이 GameObject의 ID입니다. Scene::getGameObject()로 다시 찾을 때 씁니다.
     [[nodiscard]] GameObjectID id() const noexcept { return id_; }
@@ -90,7 +90,7 @@ public:
     [[nodiscard]] int layer() const noexcept { return layer_; }
 
     /// T 타입 컴포넌트를 만들어 붙이고, 그 참조를 돌려줍니다. args는 T의 생성자에 그대로
-    /// 넘깁니다.
+    /// 전달됩니다.
     ///
     /// 같은 타입이 이미 있으면 이전 컴포넌트를 파괴하고 새것으로 바꿉니다. Transform과 Sprite는
     /// 기본 컴포넌트이므로 붙일 수 없습니다(컴파일 오류).

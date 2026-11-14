@@ -1,15 +1,17 @@
 // 키보드·마우스 입력 예제.
 //
-//   WASD / 방향키        공 이동 (액션 "left" "right" "up" "down")
-//   Space / 마우스 오른쪽  대시 (액션 "dash". 한 번 누르면 한 번만 발동한다)
-//   마우스 왼쪽           클릭한 곳으로 순간 이동
-//   마우스 휠             공 크기
-//   Enter                글자 입력 모드를 켜고 끈다. 켜져 있으면 타자로 글자를 쓰고
-//                        Backspace로 지운다(이동은 멈춘다)
-//   Esc                  종료
+//   WASD / 방향키          공 이동(동작 "left", "right", "up", "down")
+//   Space / 마우스 오른쪽  대시(동작 "dash". 한 번 누르면 한 번만 발동한다)
+//   마우스 왼쪽            클릭한 곳으로 순간 이동
+//   마우스 휠              공 크기 조절
+//   Enter                  글자 입력 모드를 켜고 끈다. 입력 모드에서는 이동과 대시가 멈추고,
+//                          키보드로 글자를 입력하며 Backspace로 지운다.
+//   Esc                    종료
 //
-// 게임 로직은 고정 간격 update에서 입력을 읽는다. 한 프레임에 update가 몇 번 돌든
-// wasPressed 계열은 한 번 누를 때 정확히 한 번만 true다. 화면 왼쪽 위의 대시 횟수로 확인할 수 있다.
+// Game 대신 Application을 상속해 루프의 각 단계를 직접 구현한다. 입력은 고정 간격으로 호출되는
+// update()에서 읽는다. 한 프레임에 update()가 몇 번 호출되든 wasPressed()와 wasActionPressed()는
+// 한 번 누를 때마다 한 번만 true를 돌려준다. 이는 화면 왼쪽 위의 대시 횟수로 확인할 수 있다.
+// 글자는 시스템 폰트로 그리며, 폰트가 없으면 글자만 그리지 않는다.
 
 #include <meno/core/Application.hpp>
 #include <meno/graphics/Font.hpp>
@@ -27,7 +29,8 @@
 
 namespace {
 
-/// 한글 글리프가 있는 시스템 폰트를 찾아본다. 없으면 글자 없이 실행한다.
+// 후보 경로에서 시스템 폰트를 찾고, 모두 없으면 nullopt를 돌려준다. 마지막 후보인 DejaVu Sans에는
+// 한글 글리프가 없다.
 std::optional<meno::Font> findSystemFont() {
     const std::array<const char*, 4> candidates{
         "C:/Windows/Fonts/malgun.ttf",
@@ -45,7 +48,7 @@ std::optional<meno::Font> findSystemFont() {
     return std::nullopt;
 }
 
-/// UTF-8 문자열의 마지막 글자를 지운다. 한글은 3바이트이므로 바이트 하나만 지우면 깨진다.
+// UTF-8 문자열의 마지막 글자를 지운다. 한글은 3바이트이므로 바이트 하나만 지우면 글자가 깨진다.
 void popLastCharacter(std::string& text) {
     while (!text.empty()) {
         const auto byte = static_cast<unsigned char>(text.back());
@@ -75,7 +78,7 @@ public:
 private:
     void processEvents() override {
         window_.pollEvents();
-        // update 밖이므로 "이번 프레임에 눌렸는가"로 판정한다.
+        // update() 밖이므로 wasPressed()는 "이번 프레임에 눌렸는가"를 판정한다.
         if (!window_.isOpen() || window_.input().wasPressed(meno::Key::Escape)) {
             stop();
         }
@@ -86,8 +89,8 @@ private:
         const auto dt = static_cast<float>(deltaTime);
         previous_ = position_;
 
-        // text()에는 이동 키로 친 글자까지 모두 들어온다. 글자를 받을 때와 조작할 때는
-        // 게임이 나눠야 하므로, 여기서는 Enter로 입력 모드를 켜고 끈다.
+        // text()에는 이동 키로 입력한 글자까지 모두 들어온다. 글자 입력과 조작은 게임이 구분해야
+        // 하므로, 여기서는 Enter로 입력 모드를 켜고 끈다.
         if (input.wasPressed(meno::Key::Enter)) {
             typing_ = !typing_;
         }
