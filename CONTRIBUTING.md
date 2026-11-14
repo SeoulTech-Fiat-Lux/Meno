@@ -36,16 +36,23 @@ examples/         예제 및 데모 게임
 tests/            테스트 (consumer/는 하위 프로젝트 빌드 검사)
 tools/            check_headers.py — 공개 헤더 SFML 유출 검사
                   extract_guide_code.py — 설명서 코드 블록 추출
-docs/             사용자 설명서(guide/), API 레퍼런스 사이트의 첫 쪽·모듈 목록·테마, 설계 문서
+docs/             사용자 설명서(guide/), 테스트 문서(testing.md), API 레퍼런스 사이트의 첫 쪽·모듈
+                  목록·테마
 ```
 
 각 모듈은 위 목록에서 자기보다 위에 있는 모듈만 참조하며, 순환 의존 관계가 아니다.
 
-`include/`와 `src/`가 나뉜 게 핵심이다. CMake에서 `include/`는 `PUBLIC`,
-`src/`는 `PRIVATE`으로 지정해 **SFML이 사용자 빌드로 새지 않게** 한다.
-자세한 근거는 [docs/render-api.md](docs/render-api.md)에 있다.
+`include/`와 `src/`가 나뉜 것이 핵심이다. CMake에서 `include/`는 `PUBLIC`, `src/`는 `PRIVATE`으로
+지정해 **SFML이 사용자 빌드로 새지 않게** 한다. 이 경계는 다음 세 장치가 함께 지키므로, 하나라도
+빠지면 경계가 샌다. 리뷰할 때는 이 세 가지를 확인한다.
 
-검사는 자동화되어 있다:
+| 장치 | 위치 | 역할 |
+|---|---|---|
+| pimpl | `Texture`, `Font`, `Renderer`, `Window`, `SoundBuffer`, `Sound`, `Music` | SFML 객체를 `std::unique_ptr<Impl>` 뒤에 숨긴다 |
+| `backend::*Access` | `src/meno/sfml_backend/Access.hpp` | 구현 파일끼리 내부 SFML 객체를 꺼내는 통로(friend)다 |
+| `target_link_libraries(meno PRIVATE SFML::Graphics SFML::Audio)` | `src/CMakeLists.txt` | SFML의 헤더 경로가 사용자 타깃에 전파되지 않게 한다 |
+
+공개 헤더에 SFML이 나오지 않는지는 다음 스크립트가 검사하며, CI도 같은 검사를 한다.
 
 ```bash
 python tools/check_headers.py
