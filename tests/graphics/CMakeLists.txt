@@ -7,13 +7,14 @@ target_include_directories(meno_test_camera_parity PRIVATE ${PROJECT_SOURCE_DIR}
 target_link_libraries(meno_test_camera_parity PRIVATE SFML::Graphics)
 
 # 렌더 계층 테스트.
-# meno 라이브러리(=SFML)를 링크하지만 공개헤더만 include한다.
-# 런타임 검사는 창과 GL 컨텍스트가 필요하다. 컴파일 타임 검사(static_assert)는 빌드할 때 항상 돈다.
+# meno 라이브러리(=SFML)를 링크하지만 공개 헤더만 include한다.
+# 런타임 검사는 창과 GL 컨텍스트가 필요하다.
+# 컴파일 타임 검사(static_assert)는 빌드할 때 항상 실행된다.
 meno_add_test(render)
 target_link_libraries(meno_test_render PRIVATE meno::meno)
 meno_display_test(render)
 
-# 창 크기를 바꾼 뒤의 Renderer와 뷰포트가 실제로 그린 픽셀. render와 같이 디스플레이가 필요하다.
+# 창 크기를 바꾼 뒤의 Renderer와, 뷰포트가 실제로 그린 픽셀. render와 같이 디스플레이가 필요하다.
 # 창 크기를 바꾸고 픽셀을 읽으려고 내부 헤더(sfml_backend/Access.hpp)로 sf::RenderWindow를 꺼내므로,
 # 내부 헤더 경로와 SFML을 직접 연결한다. 그리기는 공개 API(Renderer)로만 한다.
 meno_add_test(render_resize)

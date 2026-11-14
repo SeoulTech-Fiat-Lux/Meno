@@ -4,8 +4,8 @@
 // worldToScreen 같은 좌표 계산은 SFML을 거치지 않고 math 함수로 한다.
 // 둘이 한 픽셀이라도 어긋나면 마우스로 고른 물체와 화면에 보이는 물체가 달라진다.
 
-// 창 없이 크기만 가진 가짜 렌더 타깃으로 SFML의 좌표 변환 함수를 직접 부른다.
-// sf::RenderTarget의 좌표 변환은 GL 컨텍스트를 쓰지 않으므로 디스플레이 없이 돈다.
+// 창 없이 크기만 가진 가짜 렌더 타깃으로 SFML의 좌표 변환 함수를 직접 호출한다.
+// sf::RenderTarget의 좌표 변환은 GL 컨텍스트를 쓰지 않으므로 디스플레이 없이 실행된다.
 
 #include <meno/math/Camera2D.hpp>
 
@@ -39,7 +39,7 @@ private:
     sf::Vector2u size_;
 };
 
-// 재현 가능한 의사 난수. 실패하면 같은 시드로 다시 돌려 볼 수 있어야 한다.
+// 재현 가능한 의사 난수. 실패하면 같은 시드로 다시 실행해 볼 수 있어야 한다.
 class Random {
 public:
     explicit Random(std::uint32_t seed) : state_(seed * 2654435761u + 1u) {}
@@ -128,7 +128,7 @@ int main() {
             continue;
         }
 
-        // 허용치: 픽셀 단위. float의 상대 오차는 좌표의 크기에 비례하므로, 월드 좌표의 크기와
+        // 허용치: 픽셀 단위. float의 반올림 오차는 좌표의 크기에 비례하므로, 월드 좌표의 크기와
         // 월드 1유닛이 차지하는 픽셀 수(배율)를 곱해 둔다. 규칙이 어긋나면 수 픽셀 이상 틀리므로
         // 구분된다.
         const Vec2f viewSize = viewRect(camera, framebuffer).size;
@@ -187,7 +187,7 @@ int main() {
     // --- 고정 사례 ------------------------------------------------------------
 
     // 3등분 화면. SFML에 비율을 그대로 넘기면 위치와 크기를 따로 반올림해서 426열이 빈다.
-    // toSfView는 모서리를 반올림한 픽셀을 넘기므로 SFML 쪽에서도 틈이 없다.
+    // toSfView는 모서리를 반올림한 픽셀 사각형을 비율로 바꿔 넘기므로 SFML 쪽에서도 틈이 없다.
     {
         constexpr Vec2u kOdd{640u, 480u};
         const FakeTarget target{kOdd};

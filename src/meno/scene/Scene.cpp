@@ -97,7 +97,8 @@ void Scene::onUpdate(double dt) {
         error = std::current_exception();
     }
     updating_ = false;
-    // 씬 전환/exit보다 먼저 반영하며, 콜백 예외 시에도 예약을 남기지 않는다.
+    // Scene 전환과 exit 핸들러보다 먼저 반영하며, update 핸들러가 예외를 던져도 예약을 남기지
+    // 않는다.
     applyObjectChanges();
     if (error)
         std::rethrow_exception(error);

@@ -1,6 +1,6 @@
 // 카메라 수학(Camera2D와 그 자유 함수들) 검사.
 //
-// 헤더만으로 성립하므로 SFML 빌드도 창도 없이 돈다.
+// 헤더만으로 성립하므로 SFML 빌드도 창도 없이 실행된다.
 // Renderer의 카메라 계열 함수는 전부 이 함수들에 위임하므로, 회전·줌·뷰포트·리사이즈의 규칙은
 // 여기서 검사한다. 같은 규칙으로 SFML이 실제로 그리는지는 tests/graphics/test_camera_parity.cpp가
 // 맞춰 본다.
@@ -44,7 +44,7 @@ bool near(Vec2f a, Vec2f b, float tolerance = 1e-3f) {
 bool same(const Rectf& a, const Rectf& b) { return a.position == b.position && a.size == b.size; }
 bool finite(Vec2f v) { return std::isfinite(v.x) && std::isfinite(v.y); }
 
-// 경계 위의 점도 포함으로 본다. Rect::contains는 오른쪽/아래 경계를 제외하는데,
+// 경계 위의 점도 포함한다. Rect::contains는 오른쪽/아래 경계를 제외하는데,
 // 회전된 화면의 모서리는 정확히 그 경계 위에 떨어지기 때문이다.
 bool containsInclusive(const Rectf& rect, Vec2f point, float tolerance = 1e-2f) {
     return point.x >= rect.left() - tolerance && point.x <= rect.right() + tolerance &&
@@ -70,7 +70,7 @@ void checkDefaults() {
               near(screenToWorld(screen, kScreen, {799.f, 599.f}), Vec2f{799.f, 599.f}),
           "화면 좌표 카메라: 픽셀 좌표 == 월드 좌표");
 
-    // 정수로 자르지 않는다. static_cast<int>로 자르면 0 방향으로 잘려 -0.5가 0이 된다.
+    // 정수로 자르지 않는다. static_cast<int>로 바꾸면 0 방향으로 잘려 -0.5가 0이 된다.
     check(near(screenToWorld(screen, kScreen, {-0.5f, 10.25f}), Vec2f{-0.5f, 10.25f}),
           "screenToWorld는 소수와 음수를 그대로 유지한다 (-0.5 -> -0.5)");
     check(near(worldToScreen(screen, kScreen, {0.25f, -3.75f}), Vec2f{0.25f, -3.75f}),
@@ -88,7 +88,7 @@ void checkSizeAndZoom() {
               near(viewRect(fixed, {1920u, 1080u}).size, Vec2f{320.f, 180.f}),
           "size를 정하면 창 크기와 상관없이 같은 영역이 보인다");
 
-    // zoom은 size 위에 곱해진다. 보이는 영역 = size / zoom.
+    // zoom은 size에 더해 적용된다. 보이는 영역 = size / zoom.
     check(near(viewRect({.size = {320.f, 180.f}, .zoom = 2.f}, kScreen).size, Vec2f{160.f, 90.f}),
           "zoom 2: 보이는 영역이 절반 (size / zoom)");
     check(near(viewRect({.zoom = 0.5f}, kScreen).size, Vec2f{1600.f, 1200.f}),
@@ -101,7 +101,7 @@ void checkSizeAndZoom() {
     }
     check(zoomGuarded, "zoom이 0 이하, NaN, 무한대이면 1로 본다");
 
-    // 한 축만 0이거나 음수, NaN인 size는 정하지 않은 것({0,0})과 같다.
+    // size의 한 축만 0, 음수, NaN이어도 정하지 않은 것({0,0})과 같다.
     bool sizeGuarded = true;
     for (const Vec2f size : {Vec2f{320.f, 0.f}, Vec2f{-320.f, 180.f}, Vec2f{NAN, 180.f}}) {
         sizeGuarded = sizeGuarded && same(viewRect({.size = size}, kScreen), viewRect({}, kScreen));
@@ -125,16 +125,16 @@ void checkRotation() {
         check(near(screenToWorld({.rotation = c.rotation}, kScreen, up), c.direction), c.what);
     }
 
-    // 카메라를 시계 방향으로 돌리면 월드는 화면에서 반시계 방향으로 돈다.
-    // 월드 +x(회전 전엔 화면 오른쪽)는 90도에서 화면 위쪽으로 간다. 시계 방향이었다면 아래쪽으로
-    // 갔다.
+    // 카메라를 시계 방향으로 돌리면 월드는 화면에서 반시계 방향으로 회전한다.
+    // 월드 +x(회전 전에는 화면 오른쪽)는 90도에서 화면 위쪽으로 간다. 월드가 시계 방향으로
+    // 회전했다면 아래쪽으로 갔을 것이다.
     const Vec2f rightOfCenter = worldToScreen({.rotation = 90.f}, kScreen, {1.f, 0.f});
     check(near(rightOfCenter, Vec2f{400.f, 299.f}),
-          "카메라 +90: 월드 +x가 화면 위쪽으로 (월드는 반시계로 돈다)");
+          "카메라 +90: 월드 +x가 화면 위쪽으로 (월드는 반시계로 회전한다)");
 
-    // 90도 돌리면 월드에서 보이는 폭과 높이가 뒤바뀐다.
+    // 90도 회전하면 월드에서 보이는 폭과 높이가 뒤바뀐다.
     check(near(visibleWorldBounds({.rotation = 90.f}, kScreen).size, Vec2f{600.f, 800.f}, 1e-2f),
-          "90도 회전: 보이는 폭과 높이가 바뀐다");
+          "90도 회전: 보이는 폭과 높이가 뒤바뀐다");
 
     // 45도면 두 축 모두 (w + h) / √2. 정사각형일 때만 정확히 √2배다.
     const float diagonal = (800.f + 600.f) / std::sqrt(2.f);
@@ -160,7 +160,7 @@ void checkRotation() {
     check(cornersInside,
           "모든 회전 각도에서 화면 모서리의 월드 좌표가 visibleWorldBounds 안에 있다");
 
-    // 몇 바퀴를 돌았든 같은 결과. 접지 않고 라디안으로 바꾸면 1e7도 근처에서 몇 픽셀씩 어긋난다.
+    // 몇 바퀴 회전했든 결과가 같다. 접지 않고 라디안으로 바꾸면 1e7도 근처에서 몇 픽셀씩 어긋난다.
     // 10000170 = 360 * 27778 + 90. float로 정확히 표현되는 정수다.
     const Vec2f probe{123.f, -45.f};
     check(worldToScreen({.rotation = 10000170.f}, kScreen, probe) ==
@@ -234,7 +234,7 @@ void checkViewport() {
               finite(viewRect(empty, kScreen).size),
           "빈 뷰포트: NaN이나 무한대가 나오지 않는다");
 
-    // 잘못된 뷰포트(NaN, 음수 크기)도 빈 사각형이 되어 아무것도 그리지 않는다.
+    // 잘못된 뷰포트(NaN, 음수 크기)도 빈 사각형이 되어 아무것도 그려지지 않는다.
     check(viewportPixels({.viewport = {NAN, 0.f, 1.f, 1.f}}, kScreen).size == Vec2f{0.f, 0.f},
           "NaN 뷰포트는 빈 사각형");
     check(viewportPixels({.viewport = {0.5f, 0.f, -0.5f, 1.f}}, kScreen).size.x == 0.f,
@@ -251,20 +251,20 @@ void checkLetterbox() {
     // 16:9 설계 해상도를 정사각형 창에: 위아래에 띠가 생긴다. (레터박스)
     const Camera2D wide{.size = {320.f, 180.f}, .fit = CameraFit::Letterbox};
     check(same(viewportPixels(wide, {800u, 800u}), Rectf{0.f, 175.f, 800.f, 450.f}),
-          "Letterbox: 가로가 긴 화면은 위아래에 띠");
+          "Letterbox: 가로가 긴 설계 해상도는 위아래에 띠");
 
     // 세로로 긴 설계 해상도를 가로로 긴 창에: 좌우에 띠가 생긴다. (필러박스)
     const Camera2D tall{.size = {100.f, 200.f}, .fit = CameraFit::Letterbox};
     check(same(viewportPixels(tall, kScreen), Rectf{250.f, 0.f, 300.f, 600.f}),
-          "Letterbox: 세로가 긴 화면은 좌우에 띠");
+          "Letterbox: 세로가 긴 설계 해상도는 좌우에 띠");
 
-    // 띠 안쪽에서는 비율이 유지된다. 월드 1유닛이 가로세로 같은 픽셀 수.
+    // 띠 안쪽에서는 비율이 유지된다. 월드 1유닛은 가로세로 같은 픽셀 수다.
     const Vec2f origin = worldToScreen(wide, {800u, 800u}, {0.f, 0.f});
     const Vec2f unit = worldToScreen(wide, {800u, 800u}, {1.f, 1.f}) - origin;
     check(near(unit.x, unit.y) && near(origin, Vec2f{400.f, 400.f}),
-          "Letterbox: 종횡비가 유지되고 center는 가운데");
+          "Letterbox: 종횡비가 유지되고 center가 가운데에 온다");
 
-    // 기본값은 Letterbox다. size만 정해도 fit을 따로 쓰지 않고 비율이 유지된다.
+    // 기본값은 Letterbox다. fit을 따로 정하지 않고 size만 정해도 비율이 유지된다.
     check(same(viewportPixels({.size = {320.f, 180.f}}, {800u, 800u}),
                Rectf{0.f, 175.f, 800.f, 450.f}),
           "기본값(Letterbox): size만 정해도 비율이 유지된다");
@@ -290,7 +290,7 @@ void checkLetterbox() {
         same(viewportPixels({.fit = CameraFit::Letterbox}, kScreen), Rectf{0.f, 0.f, 800.f, 600.f}),
         "Letterbox + size {0,0} == Stretch");
 
-    // 뷰포트 안에서 레터박스한다. 미니맵처럼 창 일부에 고정 비율로 그릴 때.
+    // 뷰포트 안에서 레터박스한다. 미니맵처럼 창 일부에 고정 비율로 그릴 때 쓴다.
     const Camera2D minimap{
         .size = {100.f, 100.f}, .viewport = {0.75f, 0.f, 0.25f, 0.5f}, .fit = CameraFit::Letterbox};
     check(same(viewportPixels(minimap, kScreen), Rectf{600.f, 50.f, 200.f, 200.f}),
@@ -320,7 +320,7 @@ void checkRoundTrip() {
             roundTrip = roundTrip && near(back, world, 1e-2f);
         }
     }
-    check(roundTrip, "worldToScreen -> screenToWorld 왕복이 원래 값으로 돌아온다");
+    check(roundTrip, "worldToScreen -> screenToWorld로 왕복하면 원래 값으로 돌아온다");
 }
 
 } // namespace

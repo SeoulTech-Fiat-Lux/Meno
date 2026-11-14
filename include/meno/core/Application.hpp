@@ -66,8 +66,8 @@ public:
 
     /// 루프를 실행합니다. stop()으로 루프가 끝나면 onStop()을 호출한 뒤에 반환합니다.
     ///
-    /// 시간은 실제 시계로 재며 ApplicationConfig::framerateLimit을 적용합니다. 콜백에서 던진
-    /// 예외는 실행 상태를 정리한 뒤에 그대로 다시 던집니다. 이때 onStop()은 호출되지 않습니다.
+    /// 시간은 실제 시계로 재며 ApplicationConfig::framerateLimit을 적용합니다. 재정의한 함수에서
+    /// 던진 예외는 실행 상태를 정리한 뒤에 그대로 다시 던집니다. 이때 onStop()은 호출되지 않습니다.
     ///
     /// \throws std::logic_error 이미 실행 중인 Application이 있을 때(자기 자신 포함)
     virtual void run();
@@ -102,7 +102,7 @@ protected:
     /// interpolationAlpha는 다음 update()까지 진행된 비율(0 이상 1 미만)입니다. 이전 상태와 현재
     /// 상태를 보간하여 움직임을 부드럽게 할 때 쓰며, 보간하지 않으면 무시해도 됩니다.
     virtual void render(double interpolationAlpha);
-    /// stop()으로 루프가 끝난 뒤에 한 번 호출됩니다. 콜백이 예외로 끝나면 호출되지 않습니다.
+    /// stop()으로 루프가 끝난 뒤에 한 번 호출됩니다. 루프가 예외로 끝나면 호출되지 않습니다.
     virtual void onStop();
 
 private:

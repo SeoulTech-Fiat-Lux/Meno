@@ -1,10 +1,11 @@
-# meno를 하위 프로젝트로 포함하는 사용자 프로젝트의 최소 전형.
+# meno를 하위 프로젝트로 포함하는 최소한의 사용자 프로젝트.
 # 점검의 목적이 다르므로 tests/CMakeLists.txt는 이 디렉터리를 포함하지 않는다.
 #
 #     cmake -S tests/consumer -B build-consumer
 #     cmake --build build-consumer --target game
 #
-# FetchContent_MakeAvailable(meno)도 안에서 add_subdirectory를 부르므로, 이 경로 하나로 둘 다 검사된다.
+# FetchContent_MakeAvailable(meno)도 안에서 add_subdirectory를 호출하므로, 이 경로 하나로
+# 둘 다 검사된다.
 cmake_minimum_required(VERSION 3.28)
 project(meno_consumer LANGUAGES CXX)
 

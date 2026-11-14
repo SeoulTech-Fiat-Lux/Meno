@@ -4,9 +4,9 @@
 // SFML의 래스터화 자체는 검사하지 않는다. 각 도형이 Renderer.hpp와 DrawParams.hpp의 약속대로
 // 놓이는지만 본다.
 
-// 이 테스트를 위해서는 창과 GL 컨텍스트가 필요하기 때문에, test_render와 같이
-// MENO_DISPLAY_TESTS=1일 때만 돈다. 픽셀은 pixels.hpp로 읽는다(내부 헤더로 sf::RenderWindow를
-// 꺼낸다). 렌더링 자체는 공개 API(Renderer)로만 한다.
+// 이 테스트는 창과 GL 컨텍스트가 필요하므로, test_render처럼 MENO_DISPLAY_TESTS=1일 때만
+// 실행된다. 픽셀은 pixels.hpp로 읽는다(내부 헤더로 sf::RenderWindow를 꺼낸다). 렌더링 자체는
+// 공개 API(Renderer)로만 한다.
 
 //     MENO_DISPLAY_TESTS=1 xvfb-run -a ctest --test-dir build -R render_shapes --output-on-failure
 
@@ -72,7 +72,7 @@ void checkRect(Window& window, Renderer& renderer) {
           "drawRect: 사각형 바깥은 그대로다");
 
     // origin은 rect.position에 놓일 로컬 점이자 회전 중심이다. 가운데를 주면 rect.position이 중심이
-    // 된다. 40x20을 가운데 기준으로 90도 돌리면 20x40이 된다.
+    // 된다. 가운데를 기준으로 90도 회전하면 40x20이 20x40이 된다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawRect({kCenter, {40.f, 20.f}},
                           {.fill = kInk, .origin = {20.f, 10.f}, .rotation = 90.f});
@@ -80,10 +80,10 @@ void checkRect(Window& window, Renderer& renderer) {
     check(isColor(image, kCenter + Vec2f{0.f, -17.f}, kInk) &&
               isColor(image, kCenter + Vec2f{0.f, 17.f}, kInk) &&
               isColor(image, kCenter + Vec2f{17.f, 0.f}, kClear),
-          "drawRect: origin을 축으로 돈다");
+          "drawRect: origin을 축으로 회전한다");
 
-    // 외곽선은 양수면 바깥쪽, 음수면 안쪽으로 그려진다(ShapeParams). 왼쪽 변의 바로 바깥과 안쪽
-    // 2픽셀을 본다.
+    // 외곽선은 두께가 양수면 바깥쪽, 음수면 안쪽으로 그려진다(ShapeParams). 왼쪽 변에서 바깥쪽과
+    // 안쪽으로 2픽셀 떨어진 점을 본다.
     const Rectf box{{140.f, 70.f}, {40.f, 40.f}};
     const Vec2f leftEdge{box.left(), box.center().y};
     image = drawAndCapture(window, renderer, [&] {
@@ -92,14 +92,14 @@ void checkRect(Window& window, Renderer& renderer) {
     });
     check(isColor(image, leftEdge - Vec2f{2.f, 0.f}, kInk) &&
               isColor(image, leftEdge + Vec2f{2.f, 0.f}, kClear),
-          "drawRect: 양수 외곽선은 바깥쪽");
+          "drawRect: 양수 외곽선은 바깥쪽으로 그려진다");
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawRect(box,
                           {.fill = colors::Transparent, .outline = kInk, .outlineThickness = -4.f});
     });
     check(isColor(image, leftEdge - Vec2f{2.f, 0.f}, kClear) &&
               isColor(image, leftEdge + Vec2f{2.f, 0.f}, kInk),
-          "drawRect: 음수 외곽선은 안쪽");
+          "drawRect: 음수 외곽선은 안쪽으로 그려진다");
 }
 
 // --- 원 ---------------------------------------------------------------------
@@ -108,7 +108,7 @@ void checkCircle(Window& window, Renderer& renderer) {
     constexpr float r = 30.f;
 
     // center는 원의 중심이다. sf::CircleShape는 바운딩 박스의 왼쪽 위가 기준이라 drawCircle이
-    // 반지름만큼 옮긴다.
+    // 기준점을 반지름만큼 옮긴다.
     sf::Image image =
         drawAndCapture(window, renderer, [&] { renderer.drawCircle(kCenter, r, {.fill = kInk}); });
     bool round = true;
@@ -119,8 +119,8 @@ void checkCircle(Window& window, Renderer& renderer) {
     check(round, "drawCircle: center를 중심으로 반지름만큼 칠한다");
 
     // params.origin은 원의 중심 기준 로컬 점이며 center에 놓인다. 그래서 원의 중심은 center -
-    // origin으로 간다. rotation은 center를 축으로 돈다. origin {30, 0}이면 중심이 왼쪽 30에,
-    // 90도(시계 방향) 돌리면 위쪽 30에 놓인다.
+    // origin으로 간다. rotation은 center를 축으로 회전한다. origin {30, 0}이면 중심이 왼쪽 30에,
+    // 90도(시계 방향) 회전하면 위쪽 30에 놓인다.
     constexpr float small = 15.f;
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawCircle(kCenter, small, {.fill = kInk, .origin = {30.f, 0.f}});
@@ -133,9 +133,9 @@ void checkCircle(Window& window, Renderer& renderer) {
     });
     check(isColor(image, kCenter - Vec2f{0.f, 30.f}, kInk) &&
               isColor(image, kCenter - Vec2f{30.f, 0.f}, kClear),
-          "drawCircle: rotation은 center를 축으로 돈다");
+          "drawCircle: rotation은 center를 축으로 회전한다");
 
-    // 반지름이 0 이하·무한대·NaN이면 외곽선까지 아무것도 그리지 않는다
+    // 반지름이 0 이하·무한대·NaN이면 외곽선까지 아무것도 그리지 않는다.
     // 시간에 따라 줄어드는 반지름이 마지막 프레임에 음수가 되어도 원이 다시 나타나지 않는다.
     image = drawAndCapture(window, renderer, [&] {
         const ShapeParams loud{.fill = kInk, .outline = kInk, .outlineThickness = 4.f};
@@ -161,7 +161,8 @@ void checkLine(Window& window, Renderer& renderer) {
     check(isColor(image, {97.f, 90.f}, kClear) && isColor(image, {223.f, 90.f}, kClear),
           "drawLine: from에서 시작해 to에서 끝난다");
 
-    // 방향은 atan2로 구해 사각형을 돌린다. 아래에서 위로 긋는 세로선도 from에서 to로 뻗어야 한다.
+    // atan2로 방향을 구해 사각형을 회전시킨다. 아래에서 위로 긋는 세로선도 from에서 to로 뻗어야
+    // 한다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawLine({160.f, 140.f}, {160.f, 40.f}, {.color = kInk, .thickness = 4.f});
     });
@@ -173,10 +174,10 @@ void checkLine(Window& window, Renderer& renderer) {
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawLine(kCenter, kCenter, {.color = kInk, .thickness = 10.f});
     });
-    check(isColor(image, kCenter, kClear), "drawLine: 길이 0은 그리지 않는다");
+    check(isColor(image, kCenter, kClear), "drawLine: 길이가 0이면 그리지 않는다");
 
     // 두께나 길이가 양의 유한수가 아니면 그리지 않는다. drawCircle의 반지름과 같은 규칙이다.
-    // 음수 두께는 검사하지 않으면 뒤집힌 사각형으로 실제로 칠해진다.
+    // 음수 두께를 걸러 내지 않으면 뒤집힌 사각형이 실제로 칠해진다.
     image = drawAndCapture(window, renderer, [&] {
         for (const float thickness : {0.f, -4.f, std::nanf(""), INFINITY}) {
             renderer.drawLine({100.f, 90.f}, {220.f, 90.f},
@@ -202,24 +203,25 @@ void checkPolygon(Window& window, Renderer& renderer) {
               isColor(image, {5.f, 5.f}, kClear),
           "drawPolygon: 삼각형 바깥은 그대로다");
 
-    // rotation은 position을 축으로 돈다. 오른쪽으로 뻗은 막대를 90도(시계 방향) 돌리면 아래로
-    // 뻗는다. 점을 월드 좌표로만 받는 API였다면 월드 원점을 축으로 돌아 막대가 창 밖으로 나간다.
+    // rotation은 position을 축으로 회전한다. 오른쪽으로 뻗은 막대를 90도(시계 방향) 회전하면
+    // 아래로 뻗는다. 점을 월드 좌표로만 받는 API였다면 월드 원점을 축으로 회전해 막대가 창 밖으로
+    // 나간다.
     const std::array<Vec2f, 4> bar{{{0.f, -3.f}, {40.f, -3.f}, {40.f, 3.f}, {0.f, 3.f}}};
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawPolygon(kCenter, bar, {.fill = kInk, .rotation = 90.f});
     });
     check(isColor(image, kCenter + Vec2f{0.f, 30.f}, kInk) &&
               isColor(image, kCenter + Vec2f{30.f, 0.f}, kClear),
-          "drawPolygon: rotation은 position을 축으로 돈다");
+          "drawPolygon: rotation은 position을 축으로 회전한다");
 
-    // origin은 position에 놓일 로컬 점이다. 막대의 가운데를 주면 가운데를 축으로 돈다.
+    // origin은 position에 놓일 로컬 점이다. 막대의 가운데를 주면 그 점을 축으로 회전한다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawPolygon(kCenter, bar, {.fill = kInk, .origin = {20.f, 0.f}, .rotation = 90.f});
     });
     check(isColor(image, kCenter + Vec2f{0.f, -15.f}, kInk) &&
               isColor(image, kCenter + Vec2f{0.f, 15.f}, kInk) &&
               isColor(image, kCenter + Vec2f{0.f, 25.f}, kClear),
-          "drawPolygon: origin을 축으로 돈다");
+          "drawPolygon: origin을 축으로 회전한다");
 
     // 외곽선만 그린 울퉁불퉁한 10각형(#29 소행성의 운석). 꼭짓점이 36도 간격이고 반지름이 1.0과
     // 0.8을 오가서, 0.8인 꼭짓점은 살짝 안으로 들어간 오목한 꼭짓점이다. 모든 꼭짓점에서 외곽선이
@@ -242,7 +244,7 @@ void checkPolygon(Window& window, Renderer& renderer) {
         outward = outward && isColor(image, polar(kCenter, deg, distance + 1.5f), kInk) &&
                   isColor(image, polar(kCenter, deg, distance - 2.f), kClear);
     }
-    check(outward, "drawPolygon: 오목한 꼭짓점이 있어도 외곽선은 바깥쪽");
+    check(outward, "drawPolygon: 오목한 꼭짓점이 있어도 외곽선은 바깥쪽으로 그려진다");
 
     // 점이 3개 미만이면 외곽선까지 아무것도 그리지 않는다.
     image = drawAndCapture(window, renderer, [&] {
@@ -250,7 +252,7 @@ void checkPolygon(Window& window, Renderer& renderer) {
                              {.fill = kInk, .outline = kInk, .outlineThickness = 5.f});
     });
     check(isColor(image, kCenter + Vec2f{20.f, 20.f}, kClear),
-          "drawPolygon: 점 2개는 그리지 않는다");
+          "drawPolygon: 점이 2개면 그리지 않는다");
 }
 
 // --- 부채꼴 -----------------------------------------------------------------
@@ -358,18 +360,18 @@ void checkSector(Window& window, Renderer& renderer) {
             window, renderer, [&] { renderer.drawSector(kCenter, r, 0.f, sweep, {.fill = kInk}); });
         full = full && isSector(image, kCenter, r, 0.f, 360.f);
     }
-    check(full, "drawSector: |sweepDeg| >= 360은 원");
+    check(full, "drawSector: |sweepDeg| >= 360이면 원을 그린다");
 
-    // 채우기는 직접 그리므로 sf::Shape와 같은 변환을 받는지 따로 본다. 60도 시야를 90도 돌리면
+    // 채우기는 직접 그리므로 sf::Shape와 같은 변환을 받는지 따로 본다. 60도 시야를 90도 회전하면
     // 아래를 본다.
     sf::Image image = drawAndCapture(window, renderer, [&] {
         renderer.drawSector(kCenter, r, -30.f, 60.f, {.fill = kInk, .rotation = 90.f});
     });
-    check(isSector(image, kCenter, r, 60.f, 60.f), "drawSector: rotation을 받으면 함께 돈다");
+    check(isSector(image, kCenter, r, 60.f, 60.f), "drawSector: rotation을 받으면 함께 회전한다");
 
-    // origin과 rotation은 drawCircle과 같은 자리로 옮긴다. 쿨다운이 359도에서 360도(원)로 넘어가도
-    // 튀지 않는다. origin {30, 0}과 rotation 90이면 꼭짓점은 위쪽 30에 놓이고, 시작 방향도 90도
-    // 돈다.
+    // origin과 rotation을 주면 drawCircle과 같은 자리에 놓인다. 쿨다운이 359도에서 360도(원)로
+    // 넘어가도 튀지 않는다. origin {30, 0}과 rotation 90이면 꼭짓점은 위쪽 30에 놓이고, 시작
+    // 방향도 90도 회전한다.
     constexpr float small = 40.f;
     const ShapeParams moved{.fill = kInk, .origin = {30.f, 0.f}, .rotation = 90.f};
     const Vec2f apex = kCenter - Vec2f{0.f, 30.f};
@@ -378,11 +380,11 @@ void checkSector(Window& window, Renderer& renderer) {
     const bool sectorMoved = isSector(image, apex, small, 90.f, 359.f);
     image = drawAndCapture(window, renderer, [&] { renderer.drawCircle(kCenter, small, moved); });
     check(sectorMoved && isSector(image, apex, small, 0.f, 360.f),
-          "drawSector: origin과 rotation은 drawCircle과 같은 자리로 옮긴다");
+          "drawSector: origin과 rotation을 주면 drawCircle과 같은 자리에 놓인다");
 
-    // 외곽선은 양수면 바깥쪽에 그려진다. 앞의 셋(0/270, 35/320, 45/330)은 점을 중심부터 넘기면
-    // sf::Shape가 방향을 거꾸로 읽어 외곽선이 안쪽으로 그려지는 각도다(SFML 3.1.0에서 실측).
-    // 나머지는 대조군이다.
+    // 외곽선은 두께가 양수면 바깥쪽으로 그려진다. 앞의 셋(0/270, 35/320, 45/330)은 점을 중심부터
+    // 넘기면 sf::Shape가 방향을 거꾸로 읽어 외곽선이 안쪽으로 그려지는 각도다(SFML 3.1.0에서
+    // 실측). 나머지는 대조군이다.
     constexpr std::array<Case, 6> outlines{{
         {0.f, 270.f, ""},
         {35.f, 320.f, ""},
@@ -399,15 +401,16 @@ void checkSector(Window& window, Renderer& renderer) {
         });
         const float middle = c.start + c.sweep / 2.f; // 호의 가운데 방향
         char what[96];
-        std::snprintf(what, sizeof what, "drawSector: 외곽선은 바깥쪽 (start %.0f, sweep %.0f)",
-                      c.start, c.sweep);
+        std::snprintf(what, sizeof what,
+                      "drawSector: 외곽선은 바깥쪽으로 그려진다 (start %.0f, sweep %.0f)", c.start,
+                      c.sweep);
         check(isColor(outlined, polar(kCenter, middle, r + 2.f), kInk) &&
                   isColor(outlined, polar(kCenter, middle, r - 2.f), kClear),
               what);
     }
 
-    // 음수 두께는 안쪽이다. 점 순서를 직접 정하므로 sf::RectangleShape처럼 저절로 맞는다고 가정하지
-    // 않는다.
+    // 두께가 음수면 안쪽으로 그려진다. 점 순서를 직접 정하므로 sf::RectangleShape처럼 저절로
+    // 맞는다고 가정하지 않는다.
     image = drawAndCapture(window, renderer, [&] {
         renderer.drawSector(
             kCenter, r, 30.f, 300.f,
@@ -415,12 +418,12 @@ void checkSector(Window& window, Renderer& renderer) {
     });
     check(isColor(image, polar(kCenter, 180.f, r - 2.f), kInk) &&
               isColor(image, polar(kCenter, 180.f, r + 2.f), kClear),
-          "drawSector: 음수 외곽선은 안쪽");
+          "drawSector: 음수 외곽선은 안쪽으로 그려진다");
 
     // 외곽선은 꼭짓점에서도 두께만큼만 나온다.
     // SFML은 볼록한 모서리만 길이를 제한하고 오목한 모서리는 제한하지 않아서,
-    // 중심 꼭짓점이 그대로면 359도에서는 바늘 같은 선이 수백 픽셀 튀어나온다.
-    // 5도처럼 좁은 경우에는, 꼭짓점 뒤로 두께의 10배가 튀어나오게 제한되어 있다.
+    // 중심 꼭짓점이 하나뿐이면 359도에서는 바늘 같은 선이 수백 픽셀 튀어나오고,
+    // 5도처럼 좁은 경우에도 꼭짓점 뒤로 길이 제한(두께의 10배)까지 뻗는다.
     float worst = 0.f;
     float worstSweep = 0.f;
     for (const float sweep : {5.f, 30.f, 60.f, 330.f, 355.f, 359.f, -359.f}) {
@@ -442,7 +445,7 @@ void checkSector(Window& window, Renderer& renderer) {
         worst, worstSweep);
     check(worst <= 7.f, tight);
 
-    // sweepDeg 0이나 NaN, 반지름 0 이하나 무한대·NaN이면 외곽선까지 아무것도 그리지 않는다.
+    // sweepDeg가 0·NaN이거나 반지름이 0 이하·무한대·NaN이면 외곽선까지 아무것도 그리지 않는다.
     // 남은 시간으로 계산한 반지름이 마지막 프레임에 음수로 넘어가도 이상한 도형이 남지 않는다.
     image = drawAndCapture(window, renderer, [&] {
         const ShapeParams loud{.fill = kInk, .outline = kInk, .outlineThickness = 4.f};

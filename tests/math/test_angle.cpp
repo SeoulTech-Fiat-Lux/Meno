@@ -22,7 +22,7 @@ bool near(float a, float b) { return std::fabs(a - b) < 1e-6f; }
 int main() {
     // --- toRadians ---------------------------------------------------------
     check(near(toRadians(180.f), std::numbers::pi_v<float>), "180도 == π");
-    check(near(toRadians(-90.f), -std::numbers::pi_v<float> / 2.f), "음수 각도도 그대로 바꾼다");
+    check(near(toRadians(-90.f), -std::numbers::pi_v<float> / 2.f), "음수 각도도 그대로 변환한다");
 
     // --- wrapDegrees -------------------------------------------------------
     // 아래 값들은 float로 정확히 표현되므로 ==로 비교한다.
@@ -42,10 +42,10 @@ int main() {
     check(wrapDegrees(std::numeric_limits<float>::infinity()) == 0.f, "무한대는 0");
     check(wrapDegrees(-std::numeric_limits<float>::infinity()) == 0.f, "음의 무한대도 0");
 
-    // 몇 바퀴를 돌았든 같은 각도가 나온다.
-    check(wrapDegrees(30.f + 360.f * 1000.f) == wrapDegrees(30.f), "1000바퀴를 돌아도 같은 각도");
-    check(wrapDegrees(10000030.f) == 310.f, "1e7도대도 정확히 접는다");
-    check(wrapDegrees(-10000030.f) == 50.f, "음수 1e7도대도 양수 쪽으로 접는다");
+    // 몇 바퀴 회전했든 같은 각도가 나온다.
+    check(wrapDegrees(30.f + 360.f * 1000.f) == wrapDegrees(30.f), "1000바퀴 회전해도 같은 각도");
+    check(wrapDegrees(10000030.f) == 310.f, "1e7도 근처도 정확히 접는다");
+    check(wrapDegrees(-10000030.f) == 50.f, "-1e7도 근처도 양수 쪽으로 접는다");
 
     return meno::test::report();
 }

@@ -157,7 +157,7 @@ void testExclusiveRun() {
     inner.run(clock);
     MENO_CHECK(innerStarts == 1);
 
-    // 시작/업데이트/종료 콜백의 예외 모두 전역 실행 플래그를 해제해야 한다.
+    // onStart(), update(), onStop() 중 어디에서 예외를 던져도 전역 실행 플래그가 해제되어야 한다.
     for (int phase = 0; phase < 3; ++phase) {
         CallbackApplication failing({.fixedTimeStep = 0.01});
         failing.startHandler = [&] {
@@ -196,7 +196,7 @@ void testSlowStartIsExcluded() {
         if (frames == 1)
             MENO_CHECK(updates == 0);
         if (frames == 2) {
-            MENO_CHECK(updates == 0); // 첫 프레임은 시간이 흐르지 않았다
+            MENO_CHECK(updates == 0); // 첫 프레임에는 시간이 흐르지 않았다
             app.stop();
         }
         now += 10ms;
@@ -207,7 +207,7 @@ void testSlowStartIsExcluded() {
     MENO_CHECK(meno::Time::realElapsedTime() < 0.02); // 로딩 1초가 빠졌다
 }
 
-// 0 이하뿐 아니라 NaN과 무한대도 거부해야 한다. 통과시키면 update()가 영영 불리지 않는다.
+// 0 이하뿐 아니라 NaN과 무한대도 거부해야 한다. 통과시키면 update()가 한 번도 호출되지 않는다.
 void testRejectsInvalidTiming() {
     const auto rejects = [](meno::ApplicationConfig config) {
         try {
@@ -267,7 +267,7 @@ int main() {
     using namespace std::chrono_literals;
     using TimePoint = meno::Clock::TimePoint;
 
-    // 생성 시 0초, 이후 프레임은 5ms, 12ms, 100ms가 흐른다.
+    // 생성 시와 onStart() 직후는 0초이고, 이후 세 프레임에 5ms, 12ms, 100ms가 흐른다.
     const std::vector<TimePoint> times{TimePoint{}, TimePoint{}, TimePoint{} + 5ms,
                                        TimePoint{} + 17ms, TimePoint{} + 117ms};
     std::size_t nextTime = 0;

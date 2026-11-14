@@ -22,9 +22,9 @@ using meno::backend::fromSf;
 namespace ev = meno::event;
 
 void testKeys() {
-    // Key.hpp에서 Unknow 이하의 키는 sf::Keyboard::Key와 meno::Key의 순서가 동일하다.
-    // 따라서 반환 결과의 번호가 "SFML 번호 + 1"이라면 모든 키가 알맞게 짝지어진 것이다.
-    // 해당 테스트는 이웃한 두 키가 뒤바귄 경우까지 잡도록 설게되어 있다.
+    // Unknown을 뺀 키(A~Pause)는 sf::Keyboard::Key와 meno::Key(Key.hpp)의 순서가 같다.
+    // 따라서 변환 결과의 번호가 "SFML 번호 + 1"이라면 모든 키가 알맞게 짝지어진 것이다.
+    // 이 검사는 이웃한 두 키가 뒤바뀐 경우까지 잡도록 설계되어 있다.
     MENO_CHECK(sf::Keyboard::KeyCount == meno::keyCount - 1);
 
     bool allMatch = true;
@@ -91,7 +91,7 @@ void testEvents() {
     const auto focus = fromSf(sf::Event{sf::Event::FocusLost{}});
     MENO_CHECK(focus.has_value() && std::holds_alternative<ev::FocusLost>(*focus));
 
-    // Input이 다루지 않는 이벤트는 매개변수로 넘기지 않는다.
+    // Input이 다루지 않는 이벤트는 변환하지 않고 std::nullopt를 돌려준다.
     MENO_CHECK(!fromSf(sf::Event{sf::Event::Closed{}}).has_value());
     MENO_CHECK(!fromSf(sf::Event{sf::Event::FocusGained{}}).has_value());
     MENO_CHECK(!fromSf(sf::Event{sf::Event::Resized{{800u, 600u}}}).has_value());

@@ -26,7 +26,8 @@ enum class CameraFit : std::uint8_t {
     /// 종횡비를 유지하면서 카메라가 담는 월드 영역을 뷰포트 안에 최대한 크게 맞춥니다.
     /// Camera2D의 기본값입니다.
     ///
-    /// 남는 영역(띠)은 Renderer::beginFrame()의 clearColor로 채워집니다.
+    /// 남는 영역(띠)은 Renderer::beginFrame()의 clearColor로 채워집니다. 띠와 배경의 색을 다르게
+    /// 하려면 배경을 사각형으로 먼저 그립니다.
     /// size가 {0, 0}이면 맞출 종횡비가 없으므로 Stretch와 똑같이 동작합니다.
     ///
     /// 띠 위의 마우스 좌표를 screenToWorld에 넣으면 보이는 영역 밖의 월드 좌표가 나옵니다.
@@ -44,10 +45,12 @@ enum class CameraFit : std::uint8_t {
 ///
 /// \code{.cpp}
 /// meno::Camera2D camera{.center = {160.f, 90.f}, .size = {320.f, 180.f}};
+/// // UI용 카메라입니다. size가 같고 움직이지 않으므로 UI가 게임 화면에 고정됩니다.
+/// const meno::Camera2D hud{.center = {160.f, 90.f}, .size = {320.f, 180.f}};
 /// camera.center = playerPosition; // 플레이어를 따라갑니다.
 /// renderer.setCamera(camera);
 /// // 월드를 그립니다.
-/// renderer.resetCamera();
+/// renderer.setCamera(hud);
 /// // UI를 그립니다.
 /// \endcode
 ///
@@ -85,6 +88,10 @@ struct Camera2D {
     ///
     /// 기본값 {0, 0, 1, 1}은 창 전체입니다. 화면 분할, 미니맵 등에 씁니다.
     /// 실제 픽셀 영역은 viewportPixels()로 구합니다.
+    ///
+    /// Letterbox는 뷰포트마다 따로 적용되므로, 창을 반씩 나눈 두 화면은 각자 띠를 가집니다.
+    /// Letterbox를 적용한 게임 화면 안을 나누려면 viewportPixels()로 게임 화면의 픽셀 영역을
+    /// 구하고, 그 안에서 비율을 계산합니다.
     ///
     /// \code{.cpp}
     /// .viewport = {0.f, 0.f, 0.5f, 1.f}      // 왼쪽 절반

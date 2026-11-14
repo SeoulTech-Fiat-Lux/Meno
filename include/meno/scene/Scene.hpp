@@ -112,13 +112,15 @@ public:
     /// 도형은 인자로 받은 Renderer로 그립니다.
     ///
     /// 그린 순서대로 쌓이므로 여기서 그린 것은 GameObject보다 위에 보입니다. Game을 쓰면
-    /// 핸들러 안에서 바꾼 카메라는 핸들러가 끝난 뒤 원래대로 돌아오므로, 화면 고정 UI는
-    /// resetCamera() 뒤에 그리면 됩니다. 게임 상태는 update 핸들러에서 바꾸고 여기서는 그리기만
-    /// 합니다. SceneManager::draw()로 그리는 동안에는 Scene 전환이 다음 update()로 미뤄집니다.
+    /// 핸들러 안에서 바꾼 카메라는 핸들러가 끝난 뒤 원래대로 돌아오므로, 화면 고정 UI는 월드
+    /// 카메라와 size가 같고 움직이지 않는 카메라로 바꾼 뒤에 그리면 됩니다. 게임 상태는 update
+    /// 핸들러에서 바꾸고 여기서는 그리기만 합니다. SceneManager::draw()로 그리는 동안에는 Scene
+    /// 전환이 다음 update()로 미뤄집니다.
     ///
     /// \code{.cpp}
+    /// const meno::Camera2D hud{.center = {400.f, 300.f}, .size = {800.f, 600.f}};
     /// play.setDrawHandler([&](meno::Renderer& renderer) {
-    ///     renderer.resetCamera(); // 화면 좌표로 그립니다.
+    ///     renderer.setCamera(hud); // UI를 게임 화면에 고정합니다.
     ///     renderer.drawText(*font, "점수: " + std::to_string(score), {16.f, 16.f});
     /// });
     /// \endcode

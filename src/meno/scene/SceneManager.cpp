@@ -5,7 +5,8 @@
 
 namespace meno {
 namespace {
-// 콜백 안에서 draw()가 불려도 바깥 콜백의 busy 상태를 지우지 않도록 이전 값으로 되돌린다.
+// 핸들러 안에서 draw()가 호출되어도 바깥 핸들러의 busy 상태를 지우지 않도록 이전 값으로
+// 되돌린다.
 struct CallbackGuard {
     bool& busy;
     bool previous;

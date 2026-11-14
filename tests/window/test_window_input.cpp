@@ -22,12 +22,12 @@ int main() {
     meno::Input& input = window.input();
     input.bind("jump", meno::Key::Space);
 
-    // 이벤트가 없어도 pollEvents는 입력 상태를 건드리지 않고 프레임만 넘긴다.
+    // 이벤트가 없으면 pollEvents는 입력 상태를 바꾸지 않고 프레임만 넘긴다.
     window.pollEvents();
     MENO_CHECK(!input.isDown(meno::Key::Space));
     MENO_CHECK(!input.isActionDown("jump"));
 
-    // input()은 부를 때마다 같은 Input을 돌려준다. const 쪽도 같다.
+    // input()은 호출할 때마다 같은 Input을 돌려준다. const 버전도 같다.
     MENO_CHECK(&window.input() == &input);
     const meno::Window& constWindow = window;
     MENO_CHECK(&constWindow.input() == &input);

@@ -1,4 +1,4 @@
-# Input의 상태 판정. Application 루프와 함께 돌려 update 기준 판정까지 SFML 없이 검증한다.
+# Input의 상태 판정. Application 루프와 함께 실행해 update 기준 판정까지 SFML 없이 검증한다.
 meno_add_test(input
         ${PROJECT_SOURCE_DIR}/src/meno/input/Input.cpp
         ${PROJECT_SOURCE_DIR}/src/meno/core/Application.cpp

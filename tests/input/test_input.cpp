@@ -21,7 +21,7 @@ using meno::Vec2i;
 namespace ev = meno::event;
 using namespace std::chrono_literals;
 
-// 창 없이 한 프레임을 흉내낸다. Window::pollEvents가 하는 일과 같다.
+// 창 없이 한 프레임을 흉내 낸다. Window::pollEvents가 하는 일과 같다.
 void frame(Input& input, std::initializer_list<meno::Event> events) {
     input.beginFrame();
     for (const meno::Event& event : events) {
@@ -29,10 +29,10 @@ void frame(Input& input, std::initializer_list<meno::Event> events) {
     }
 }
 
-// 가상시계: 생성 시각은 0이고 이후 restart()마다 frameIntervals를 차례로 더해서 돌려준다.
-// Application::run()은 onStart() 직후 resetLap()으로 시각을 한 번 더 읽으므로, 그 읽기는
-// 시간이 흐르지 않게 0ms를 앞에 끼운다.
-// 준비한 간격보다 프레임이 더 돌 경우, at()이 예외를 던진다.
+// 가상 시계: 생성 시각은 0이고 이후 restart()마다 frameIntervals를 차례로 더해서 돌려준다.
+// Application::run()은 onStart() 직후 resetLap()으로 시각을 한 번 더 읽으므로, 그 읽기에서
+// 시간이 흐르지 않도록 0ms를 앞에 끼운다.
+// 준비한 간격보다 프레임이 더 많이 실행되면 at()이 예외를 던진다.
 meno::Clock simulatedClock(std::vector<std::chrono::milliseconds> frameIntervals) {
     frameIntervals.insert(frameIntervals.begin(), std::chrono::milliseconds{0});
     return meno::Clock(
@@ -61,12 +61,12 @@ void testKeyboard() {
     MENO_CHECK(!input.wasReleased(Key::A));
     MENO_CHECK(!input.isDown(Key::B));
 
-    // 다음 프레임: 키는 계속 눌려 있으나, "눌린 순간"은 지난 상태
+    // 다음 프레임: 키는 계속 눌려 있지만 "눌린 순간"은 지났다.
     frame(input, {});
     MENO_CHECK(input.isDown(Key::A));
     MENO_CHECK(!input.wasPressed(Key::A));
 
-    // OS의 자동 반복으로 같은 키의 KeyPressed을 전달받는 순간. 새로 누르지는 않은 상태.
+    // OS의 자동 반복으로 같은 키의 KeyPressed를 다시 받는다. 새로 누른 것은 아니다.
     frame(input, {ev::KeyPressed{Key::A}});
     MENO_CHECK(input.isDown(Key::A));
     MENO_CHECK(!input.wasPressed(Key::A));
@@ -85,8 +85,8 @@ void testKeyboard() {
     MENO_CHECK(input.wasPressed(Key::Space));
     MENO_CHECK(input.wasReleased(Key::Space));
 
-    // 누른 적 없는 키를 떼는 순간은 무시.
-    // 이때, 창이 열리기 전부터 누르고 있던 키 역시 제외된다.
+    // 누른 적 없는 키를 떼는 순간은 무시한다.
+    // 창이 열리기 전부터 누르고 있던 키도 여기에 해당한다.
     frame(input, {ev::KeyReleased{Key::B}});
     MENO_CHECK(!input.wasReleased(Key::B));
 
@@ -94,7 +94,7 @@ void testKeyboard() {
     MENO_CHECK(!input.isDown(Key::Unknown));
     MENO_CHECK(!input.wasPressed(Key::Unknown));
 
-    // 범위 밖의 값은 무시하며 false를 반환한다.
+    // 범위 밖의 값은 무시하며 false를 돌려준다.
     const auto invalid = static_cast<Key>(250);
     frame(input, {ev::KeyPressed{invalid}});
     MENO_CHECK(!input.isDown(invalid));
@@ -119,7 +119,7 @@ void testMouse() {
     MENO_CHECK(input.wasReleased(MouseButton::Left));
     MENO_CHECK(input.mousePosition() == Vec2i(50, 60));
 
-    // 휠의 값은 한 프레임 동안 이뤄진 것을 합산하며, 다음 프레임에는 초기화한다.
+    // 휠 값은 한 프레임 동안 굴린 양의 합이며, 다음 프레임에는 0으로 초기화된다.
     frame(input, {ev::MouseWheelScrolled{1.f, {70, 80}}, ev::MouseWheelScrolled{-0.25f, {70, 80}}});
     MENO_CHECK(input.mouseWheelDelta() == 0.75f);
     MENO_CHECK(input.mousePosition() == Vec2i(70, 80));
@@ -160,14 +160,14 @@ void testFocusLost() {
     Input input;
     frame(input, {ev::KeyPressed{Key::W}, ev::MouseButtonPressed{MouseButton::Right, {0, 0}}});
 
-    // 포커스를 잃는 순간, 눌려 있던 모든 키를 뗀 것으로 처리한다.
+    // 포커스를 잃는 순간, 눌려 있던 모든 키와 마우스 버튼을 뗀 것으로 처리한다.
     frame(input, {ev::FocusLost{}});
     MENO_CHECK(!input.isDown(Key::W));
     MENO_CHECK(input.wasReleased(Key::W));
     MENO_CHECK(!input.isDown(MouseButton::Right));
     MENO_CHECK(input.wasReleased(MouseButton::Right));
 
-    // 누른 채로 Focus를 잃었다가 다시 돌아올 때, 동일한 키의 KeyPressed가 오면 새로 누른 것으로
+    // 누른 채로 포커스를 잃었다가 돌아온 뒤 같은 키의 KeyPressed가 오면 새로 누른 것으로
     // 간주한다.
     frame(input, {ev::KeyPressed{Key::W}});
     MENO_CHECK(input.wasPressed(Key::W));
@@ -244,7 +244,7 @@ void testActions() {
     MENO_CHECK(!input.wasActionPressed("jump"));
 }
 
-// --- update 안: 틱 = fixed update---------------------------------
+// --- update 안: 틱 = fixed update ---------------------------------
 
 struct Observation {
     bool down = false;
@@ -254,7 +254,7 @@ struct Observation {
     std::string text;
 };
 
-// 프레임마다 정해진 이벤트를 넣고, update와 render에서 본 Space의 상태를 기록한다.
+// 프레임마다 정해진 이벤트를 넣고, update와 render에서 본 Space·휠·글자 입력을 기록한다.
 class ScriptedApplication final : public meno::Application {
 public:
     using Script = std::vector<std::vector<meno::Event>>;
@@ -320,12 +320,12 @@ void testEventsBeforeUpdate() {
     }
 
     // 프레임 0: update가 없다.
-    // 그 사이 쌓인 키 및 글자 입력이나 휠 이동의 여부는 직후 발생하는 첫 update가 한 번에 처리한다.
+    // 프레임 0과 1에 쌓인 키·글자·휠 입력은 프레임 1의 첫 update가 한 번에 처리한다.
     MENO_CHECK(u[0].down && u[0].pressed && !u[0].released);
     MENO_CHECK(u[0].text == "ab");
     MENO_CHECK(u[0].wheel == 3.f);
 
-    // 프레임 2: 세 번의 update 중 어느 것도 이미 본 KeyPressed을 다시 보지 않는다.
+    // 프레임 2: 세 번의 update 중 어느 것도 이미 본 KeyPressed를 다시 보지 않는다.
     for (std::size_t i = 1; i <= 3; ++i) {
         MENO_CHECK(u[i].down && !u[i].pressed && !u[i].released);
         MENO_CHECK(u[i].text.empty());
@@ -342,7 +342,7 @@ void testEventsBeforeUpdate() {
     // 프레임 4: 한 프레임 안에 눌렀다 뗀 것도 update가 놓치지 않는다.
     MENO_CHECK(!u[7].down && u[7].pressed && u[7].released);
 
-    // render: update 밖의 스코프이므로 프레임을 기준으로 판단한다.
+    // render: update 밖이므로 프레임을 기준으로 판정한다.
     MENO_CHECK(r[0].pressed && r[0].text == "a" && r[0].wheel == 1.f);
     MENO_CHECK(!r[1].pressed && r[1].text == "b" && r[1].wheel == 2.f);
     MENO_CHECK(!r[2].pressed && !r[2].released);
@@ -389,7 +389,7 @@ void testEventsInUpdate() {
     MENO_CHECK(r[1].released);
 }
 
-// update 한 번을 수행할 수 있는 프레임을 돈 뒤, 해당 update에서 A가 눌렸는지를 검사한다.
+// update가 한 번 실행되는 프레임 하나를 진행하고, 그 update에서 A가 눌린 횟수를 센다.
 class PressCounter final : public meno::Application {
 public:
     explicit PressCounter(const Input& input)
@@ -419,7 +419,7 @@ void testRunRestart() {
     MENO_CHECK(first.presses == 1);
 
     // run을 다시 시작해도 update 번호를 0부터 다시 매기지 않는다.
-    // 따라서 이전 run에서 본 KeyPressed를 다시 확인하지 않아도 된다.
+    // 따라서 이전 run에서 본 KeyPressed를 다시 보지 않는다.
     PressCounter second(input);
     auto secondClock = simulatedClock({15ms});
     second.run(secondClock);
@@ -440,12 +440,15 @@ void testStepFlagClearedAfterException() {
     } catch (const std::runtime_error&) {
     }
 
-    // update가 예외로 끝날 때 "update 내부" 표시 역시 지운다.
-    // 남아 있을 경우 아래 질의를 update를 기준으로 판정하기 때문에 false를 반환하는 오류가 생기기
-    // 때문이다.
+    // update가 예외로 끝날 때도 "update 내부" 표시를 지운다.
+    // 남아 있으면 update 밖의 질의도 프레임이 아니라 update를 기준으로 판정하게 된다.
     Input input;
     frame(input, {ev::KeyPressed{Key::A}});
     MENO_CHECK(input.wasPressed(Key::A));
+    // 표시가 남아 있으면 update가 실행되지 않는 동안 틱이 바뀌지 않아, 다음 프레임에도 true가
+    // 된다. 위 검사는 표시가 남아 있어도 통과하므로 이 검사가 실제로 표시를 확인한다.
+    frame(input, {});
+    MENO_CHECK(!input.wasPressed(Key::A));
 }
 
 } // namespace
