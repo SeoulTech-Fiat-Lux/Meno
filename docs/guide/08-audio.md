@@ -99,7 +99,7 @@ int main() {
 | `isPlaying()` | 재생 중이면 true. 일시정지나 정지 상태면 false |
 | `setVolume(v)` | 볼륨을 0(무음)~1(최대)로 지정. 범위를 벗어난 값은 범위 안으로 자름 |
 
-`Music::setLooping(true)`를 부르면 음악이 끝난 뒤 처음부터 다시 재생합니다. 기본으로는 반복하지
+`Music::setLooping(true)`를 호출하면 음악이 끝난 뒤 처음부터 다시 재생합니다. 기본으로는 반복하지
 않으며, `Sound`에는 반복 재생 기능이 없습니다.
 
 ## 같은 효과음 겹쳐 내기
@@ -126,7 +126,7 @@ audio.play();
 ```
 
 볼륨은 `AudioSource`가 기억하므로 `setSound()`로 음원을 바꿔도 유지됩니다.
-`AudioSource::loadFromFile()`도 있지만 부를 때마다 파일을 새로 읽으므로, 같은 소리를 여러
+`AudioSource::loadFromFile()`도 있지만 호출할 때마다 파일을 새로 읽으므로, 같은 소리를 여러
 GameObject에서 쓴다면 위처럼 `loadSoundBuffer()`로 읽은 버퍼를 공유합니다.
 
 ## 주의할 점
@@ -136,7 +136,7 @@ GameObject에서 쓴다면 위처럼 `loadSoundBuffer()`로 읽은 버퍼를 공
   바로 멈춥니다.
 - `Music`은 재생하면서 파일을 읽으므로, `Music`이 살아 있는 동안 원본 파일을 옮기거나 지우면 안
   됩니다.
-- `Sound::loadFromFile()`은 부를 때마다 파일을 새로 읽습니다. 같은 효과음을 여러 곳에서 쓴다면
+- `Sound::loadFromFile()`은 호출할 때마다 파일을 새로 읽습니다. 같은 효과음을 여러 곳에서 쓴다면
   `loadSoundBuffer()`로 버퍼를 공유합니다.
 
 ## 관련 예제와 API

@@ -112,14 +112,14 @@ int main() {
 
 ## 카메라를 정하는 곳
 
-`Renderer`는 카메라의 복사본을 저장합니다. 따라서 카메라 값을 바꿨다면 `setCamera()`를 다시 불러야
+`Renderer`는 카메라의 복사본을 저장합니다. 따라서 카메라 값을 바꿨다면 `setCamera()`를 다시 호출해야
 반영됩니다.
 
 - **월드 카메라**는 update 핸들러에서 정합니다. 위 예제처럼 플레이어를 움직인 뒤 `camera.center`를
-  옮기고 `game.renderer().setCamera(camera)`를 부릅니다. 한 번 정한 카메라는 바꿀 때까지 계속
+  옮기고 `game.renderer().setCamera(camera)`를 호출합니다. 한 번 정한 카메라는 바꿀 때까지 계속
   유지됩니다.
-- **UI**는 draw 핸들러에서 `renderer.resetCamera()`를 부른 뒤 그립니다. `Game`은 draw 핸들러가
-  끝나면 카메라를 핸들러가 불리기 전의 상태로 되돌리므로, 다음 프레임의 월드 그리기에는 영향이
+- **UI**는 draw 핸들러에서 `renderer.resetCamera()`를 호출한 뒤 그립니다. `Game`은 draw 핸들러가
+  끝나면 카메라를 핸들러가 호출되기 전의 상태로 되돌리므로, 다음 프레임의 월드 그리기에는 영향이
   없습니다.
 
 GameObject의 Sprite는 draw 핸들러보다 먼저, 그 시점의 월드 카메라로 그려집니다.
@@ -147,7 +147,7 @@ const meno::Vec2f worldPoint = game.renderer().screenToWorld(mouse);
 
 ## 화면 분할과 미니맵
 
-`viewport`를 지정하면 카메라가 창의 일부에만 그립니다. 카메라마다 `setCamera()`를 부른 뒤 월드를
+`viewport`를 지정하면 카메라가 창의 일부에만 그립니다. 카메라마다 `setCamera()`를 호출한 뒤 월드를
 다시 그리면 화면 분할이나 미니맵을 만들 수 있습니다.
 
 ```cpp
@@ -170,11 +170,11 @@ play.setDrawHandler([&](meno::Renderer& renderer) {
 ```
 
 Scene이 자동으로 그리는 GameObject는 그 시점의 카메라 하나로만 그려집니다. 화면 분할에 GameObject를
-함께 쓰려면 draw 핸들러에서 카메라마다 `object.draw(renderer)`를 불러 직접 그립니다.
+함께 쓰려면 draw 핸들러에서 카메라마다 `object.draw(renderer)`를 호출해 직접 그립니다.
 
 ## 주의할 점
 
-- 카메라 값을 바꾼 뒤에는 `setCamera()`를 다시 불러야 화면에 반영됩니다.
+- 카메라 값을 바꾼 뒤에는 `setCamera()`를 다시 호출해야 화면에 반영됩니다.
 - draw 핸들러 안에서 바꾼 카메라는 핸들러가 끝나면 되돌아갑니다. 월드 카메라는 update 핸들러에서
   정합니다.
 - `Camera2D`의 `rotation`은 스프라이트의 `rotation`과 반대로 보입니다. 같은 +45도라도 카메라를
