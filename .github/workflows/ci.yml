@@ -117,18 +117,19 @@ jobs:
           key: deps-${{ matrix.cache-id }}-sfml3.1.0-${{ hashFiles('CMakeLists.txt') }}
           restore-keys: deps-${{ matrix.cache-id }}-sfml3.1.0-
 
-      # 설명서와 README의 C++ 코드 블록도 함께 컴파일한다(tests/guide). 이 옵션은 Python이 없으면
-      # 저절로 꺼지므로, 러너에서 검사가 조용히 빠지지 않도록 명시적으로 켠다.
+      # 설명서, README, 사이트 첫 쪽의 C++ 코드 블록도 함께 컴파일한다(tests/guide). 이 옵션은
+      # Python이 없으면 기본으로 꺼지므로, 러너에서 검사가 조용히 빠지지 않도록 명시적으로 켠다.
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DMENO_BUILD_GUIDE_CODE=ON ${{ matrix.cmake-args }}
 
       - name: Build
         run: cmake --build build --config Release
 
-      # 값 타입 테스트는 창을 열지 않으므로 헤드리스 러너에서도 돈다.
-      # render 테스트는 창과 GL 컨텍스트가 필요해서 MENO_DISPLAY_TESTS = 1일 때만 돈다.
-      # Linux는 xvfb-run으로 가상 디스플레이를 띄워 함께 돌리고, Windows에서는 건너뛴다.
-      # render_resize는 그린 픽셀의 색을 읽어 비교하므로 24비트 색 화면이 필요하다.
+      # 창을 열지 않는 테스트는 헤드리스 러너에서도 실행된다.
+      # 창을 여는 테스트(game, render, render_resize, render_shapes, window_input)는
+      # 창과 GL 컨텍스트가 필요해서 MENO_DISPLAY_TESTS=1일 때만 실행된다.
+      # Linux는 xvfb-run으로 가상 디스플레이를 띄워 함께 실행하고, Windows에서는 건너뛴다.
+      # render_resize와 render_shapes는 그린 픽셀의 색을 읽어 비교하므로 24비트 색 화면이 필요하다.
       # xvfb-run의 기본 화면은 배포판마다 달라서(8비트인 곳도 있다) 명시해 둔다.
       - name: Test (Linux)
         if: runner.os == 'Linux'

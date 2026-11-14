@@ -13,6 +13,9 @@ ctest --test-dir build --output-on-failure
 > 첫 빌드는 SFML과 그 의존성(freetype·harfbuzz·SheenBidi)을
 > 함께 빌드하기 때문에 조금 오래 걸린다.
 
+창을 여는 테스트의 실행 방법과 기능별 테스트 목록, CI 구성은
+[docs/testing.md](docs/testing.md)에 있다.
+
 ## 저장소 구조
 
 ```

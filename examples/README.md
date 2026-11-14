@@ -1,8 +1,8 @@
 # 예제
 
 meno의 기능을 직접 실행해 볼 수 있는 작은 프로그램입니다. 모든 예제는 에셋 파일 없이 실행됩니다.
-텍스처는 코드로 만들고, 글자를 그리는 예제는 시스템 폰트를 찾아 쓰며 폰트가 없으면 글자만 그리지
-않습니다.
+텍스처는 코드로 만들고, 글자를 그리는 예제는 시스템 폰트를 찾아 씁니다. 폰트를 찾지 못하면 글자만
+빼고 그립니다.
 
 | 예제 | 보여 주는 기능 | 관련 장 |
 |---|---|---|
@@ -32,9 +32,9 @@ Visual Studio 생성기(Windows의 기본값)를 쓰면 실행 파일은 `build/
 
 ## 예제 추가하기
 
-`<예제 이름>/main.cpp`를 만들고 [CMakeLists.txt](CMakeLists.txt)에 `meno_add_example(<예제 이름>)`을
-한 줄 추가합니다. 그리고 위 표에도 한 줄을 더합니다. 예제의 설명과 조작 방법은 따로 문서를 두지 않고
-`main.cpp` 맨 위의 주석에 적습니다.
+`<예제 이름>/main.cpp`를 만든 뒤 [CMakeLists.txt](CMakeLists.txt)에
+`meno_add_example(<예제 이름>)`을 한 줄 추가하고, 위 표에도 한 줄을 더합니다. 예제의 설명과 조작
+방법은 따로 문서를 두지 않고 `main.cpp` 맨 위의 주석에 적습니다.
 
 [ch2]: https://seoultech-fiat-lux.github.io/Meno/md_docs_2guide_202-first-game.html
 [ch3]: https://seoultech-fiat-lux.github.io/Meno/md_docs_2guide_203-drawing.html

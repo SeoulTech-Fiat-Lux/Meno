@@ -27,6 +27,7 @@ INPUT                  = docs/mainpage.md \
                          docs/guide/10-camera.md \
                          docs/guide/11-animation.md \
                          docs/guide/12-application.md \
+                         docs/testing.md \
                          docs/groups.dox \
                          include/meno
 USE_MDFILE_AS_MAINPAGE = docs/mainpage.md

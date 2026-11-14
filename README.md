@@ -127,6 +127,8 @@ Visual Studio 생성기(Windows의 기본값)를 쓰면 실행 파일은 `build/
 - [API 레퍼런스](https://seoultech-fiat-lux.github.io/Meno/): 클래스·함수마다 동작, 주의할 점, 예제를
   적었습니다. 게임, 씬, 그래픽, 입력 같은 모듈별로 찾아볼 수 있습니다.
 - [예제](examples): 실행해 볼 수 있는 작은 데모 게임입니다.
+- [테스트와 CI](https://seoultech-fiat-lux.github.io/Meno/md_docs_2testing.html): 기능별 테스트와
+  실행 방법, CI 구성을 정리했습니다. 원문은 [docs/testing.md](docs/testing.md)에 있습니다.
 
 ## 한계
 
