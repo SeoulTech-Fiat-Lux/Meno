@@ -14,8 +14,7 @@ class GameObject;
 /// 충돌 판정에 쓰는 콜라이더의 기반 구조체입니다. GameObject에는 BoxCollider나 CircleCollider를
 /// 붙입니다.
 ///
-/// 지금은 겹치는지만 판정합니다. 겹친 물체를 밀어내는 처리는 직접 합니다. 판정은 intersects()로
-/// 합니다.
+/// 지금은 intersects()로 겹치는지만 판정합니다. 겹친 물체를 밀어내는 처리는 직접 합니다.
 ///
 /// \code{.cpp}
 /// player.addComponent<meno::BoxCollider>(meno::Vec2f{0.f, 0.f}, meno::Vec2f{32.f, 32.f});
@@ -27,7 +26,7 @@ class GameObject;
 ///
 /// \see BoxCollider, CircleCollider, intersects
 struct Collider : public Component {
-    /// 부모 GameObject 좌상단 기준의 로컬 위치입니다. 사각형은 좌상단, 원은 중심을 가리킵니다.
+    /// 부모 GameObject 좌상단 기준의 로컬 위치입니다. 사각형이면 좌상단, 원이면 중심을 가리킵니다.
     Vec2f offset;
 
     /// offset이 {0, 0}인 콜라이더를 만듭니다.
@@ -67,7 +66,7 @@ struct CircleCollider final : public Collider {
 /// 두 GameObject의 콜라이더가 겹치면 true입니다.
 ///
 /// 각 GameObject의 BoxCollider와 CircleCollider를 모든 조합으로 검사해 하나라도 겹치면 true입니다.
-/// Collider를 상속한 다른 타입은 보지 않습니다. 경계만 맞닿은 경우는 겹치지 않는 것으로 봅니다.
+/// Collider를 상속한 다른 타입은 무시합니다. 경계만 맞닿은 경우는 겹치지 않는 것으로 봅니다.
 /// 크기나 반지름이 0 이하이거나, 부모의 배율이 0이거나 유한하지 않은 콜라이더는 겹치지 않습니다.
 bool intersects(const GameObject& a, const GameObject& b);
 

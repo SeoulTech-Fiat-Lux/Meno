@@ -27,11 +27,11 @@ namespace meno {
 ///
 /// "이번 틱" 규칙: wasPressed(), wasReleased(), mouseWheelDelta(), text(), wasActionPressed(),
 /// wasActionReleased()는 이번 틱에 일어난 일만 돌려줍니다. 틱은 읽는 곳에 따라 다릅니다.
-/// - Application::update() 안: 그 update() 한 번입니다. 한 프레임에 update()가 0번 돌든 여러 번
-///   돌든, 한 번 누른 키는 그 뒤 처음 도는 update()에서만 wasPressed()가 true입니다.
+/// - Application::update() 안: 그 update() 한 번입니다. 한 프레임의 update() 실행 횟수가 0번이든
+///   여러 번이든, 한 번 누른 키는 그 뒤 처음 실행되는 update()에서만 wasPressed()가 true입니다.
 /// - 그 밖(render(), 직접 만든 루프 등): pollEvents()부터 다음 pollEvents()까지입니다.
 ///
-/// 창이 포커스를 잃으면 눌려 있던 키와 버튼은 모두 떼어진 것으로 처리합니다.
+/// 창이 포커스를 잃으면 눌려 있던 키와 버튼은 모두 떼어진 것으로 처리됩니다.
 ///
 /// \code{.cpp}
 /// const meno::Input& input = window.input();
@@ -54,14 +54,14 @@ public:
 
     /// 이번 틱에 키나 마우스 버튼을 눌렀으면 true입니다. 같은 틱 안에 눌렀다 떼도 true입니다.
     ///
-    /// OS의 키 반복은 무시하므로, 누르고 있는 동안 다시 true가 되지 않습니다.
+    /// OS의 키 반복은 무시되므로, 누르고 있는 동안 다시 true가 되지 않습니다.
     /// \{
     [[nodiscard]] bool wasPressed(Key key) const noexcept;
     [[nodiscard]] bool wasPressed(MouseButton button) const noexcept;
     /// \}
 
     /// 이번 틱에 키나 마우스 버튼을 뗐으면 true입니다. 창이 포커스를 잃어 떼어진 것으로 처리된
-    /// 경우도 들어갑니다.
+    /// 경우도 포함됩니다.
     /// \{
     [[nodiscard]] bool wasReleased(Key key) const noexcept;
     [[nodiscard]] bool wasReleased(MouseButton button) const noexcept;
@@ -69,19 +69,19 @@ public:
 
     /// 마지막으로 알려진 마우스 위치입니다. 아직 마우스 이벤트가 없으면 {0, 0}입니다.
     ///
-    /// 창 좌상단 기준의 픽셀 좌표이며 카메라를 적용하지 않습니다. 월드 좌표가 필요하면
-    /// renderer.screenToWorld(Vec2f(input.mousePosition()))로 바꿉니다.
+    /// 창 좌상단 기준의 픽셀 좌표로, 카메라를 적용하지 않은 값입니다. 월드 좌표가 필요하면
+    /// renderer.screenToWorld(Vec2f(input.mousePosition()))로 변환합니다.
     [[nodiscard]] Vec2i mousePosition() const noexcept;
     /// 이번 틱에 굴린 세로 휠 양의 합입니다. 위로 굴리면 양수입니다.
     [[nodiscard]] float mouseWheelDelta() const noexcept;
 
     /// 이번 틱에 입력된 문자를 UTF-8로 돌려줍니다.
     ///
-    /// 백스페이스, 엔터, 탭 같은 제어 문자는 빠지므로 wasPressed(Key::Backspace)처럼 따로
-    /// 처리합니다. 값으로 돌려주므로 보관해도 됩니다.
+    /// 백스페이스, 엔터, 탭과 같은 제어 문자는 빠지므로 wasPressed(Key::Backspace)처럼 따로
+    /// 처리합니다. 값으로 돌려주기 때문에 보관해도 됩니다.
     [[nodiscard]] std::string text() const;
 
-    /// "jump" 같은 동작 이름에 키나 마우스 버튼을 묶습니다. 한 동작에 여러 개를 묶을 수 있으며,
+    /// "jump"와 같은 동작 이름에 키나 마우스 버튼을 묶습니다. 한 동작에 여러 개를 묶을 수 있으며,
     /// 하나라도 눌려 있으면 동작이 눌린 것으로 봅니다.
     ///
     /// \code{.cpp}
@@ -92,7 +92,7 @@ public:
     /// }
     /// \endcode
     ///
-    /// 같은 키를 두 번 묶어도 한 번으로 칩니다. 이미 눌려 있는 키를 묶으면 isActionDown()은 바로
+    /// 같은 키를 두 번 묶어도 한 번만 묶입니다. 이미 눌려 있는 키를 묶으면 isActionDown()은 바로
     /// true지만, 이번 틱에 누른 것은 아니므로 wasActionPressed()는 false입니다.
     /// \{
     void bind(std::string_view action, Key key);
@@ -101,29 +101,29 @@ public:
 
     /// 동작을 지우고 묶인 키와 버튼을 모두 풉니다. 등록하지 않은 이름이면 아무 일도 하지 않습니다.
     ///
-    /// 키 하나만 풀 수는 없으므로, 묶인 키를 바꾸려면 unbind()한 뒤 다시 bind()합니다.
+    /// 키 하나만 풀 수는 없으므로, 묶인 키를 바꾸려면 unbind()한 뒤에 다시 bind()합니다.
     void unbind(std::string_view action);
 
     /// 동작에 묶인 키나 버튼이 하나라도 눌려 있으면 true입니다. 등록하지 않은 이름이면 false입니다.
     [[nodiscard]] bool isActionDown(std::string_view action) const;
-    /// 동작이 안 눌린 상태에서 눌린 상태로 바뀐 틱에만 true입니다. 등록하지 않은 이름이면
+    /// 동작이 눌리지 않은 상태에서 눌린 상태로 바뀐 틱에만 true입니다. 등록하지 않은 이름이면
     /// false입니다.
     ///
     /// 예를 들어 Space와 W를 묶은 동작에서 Space를 누른 채 W를 더 눌러도 true가 되지 않습니다.
     [[nodiscard]] bool wasActionPressed(std::string_view action) const;
-    /// 동작에 묶인 키와 버튼이 모두 떼어진 틱에만 true입니다. 등록하지 않은 이름이면 false입니다.
-    /// 창이 포커스를 잃어 떼어진 것으로 처리된 경우도 들어갑니다.
+    /// 동작에 묶인 키와 버튼이 모두 떼어진 틱에만 true입니다. 창이 포커스를 잃어 떼어진 것으로
+    /// 처리된 경우도 포함됩니다. 등록하지 않은 이름이면 false입니다.
     [[nodiscard]] bool wasActionReleased(std::string_view action) const;
 
-    /// 새 프레임을 시작합니다. 이벤트를 넣기 전에 프레임마다 한 번 부릅니다.
+    /// 새 프레임을 시작합니다. 이벤트를 넣기 전에 프레임마다 한 번 호출합니다.
     ///
-    /// Window::pollEvents()가 대신 부릅니다. 직접 부르는 경우는 테스트나 입력 재생처럼 창 없이
+    /// Window::pollEvents()가 대신 호출합니다. 직접 호출하는 경우는 테스트나 입력 재생처럼 창 없이
     /// Input을 구동할 때입니다.
     void beginFrame() noexcept;
 
     /// 이벤트 하나를 입력 상태에 반영합니다.
     ///
-    /// Window::pollEvents()가 대신 부릅니다. 직접 부르는 경우는 테스트나 입력 재생처럼 창 없이
+    /// Window::pollEvents()가 대신 호출합니다. 직접 호출하는 경우는 테스트나 입력 재생처럼 창 없이
     /// Input을 구동할 때입니다.
     void handleEvent(const Event& event);
 

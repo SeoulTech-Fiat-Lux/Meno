@@ -48,7 +48,7 @@ struct Rect {
     [[nodiscard]] constexpr T bottom() const { return position.y + size.y; }
     /// \}
 
-    /// 중심 좌표입니다. 정수 사각형은 크기를 2로 나눈 몫을 씁니다.
+    /// 중심 좌표입니다. 정수 사각형에서는 크기를 2로 나눈 몫을 씁니다.
     /// 예: Recti{0, 0, 5, 5}.center()는 {2, 2}입니다.
     [[nodiscard]] constexpr Vec2<T> center() const {
         return {position.x + size.x / T{2}, position.y + size.y / T{2}};
@@ -80,7 +80,7 @@ struct Rect {
     }
 };
 
-using Rectf = Rect<float>; ///< 월드 좌표의 영역 대부분
+using Rectf = Rect<float>; ///< 대부분의 월드 좌표 영역
 using Recti = Rect<int>;   ///< 텍스처의 일부를 고르는 정수 픽셀 영역
 
 /// \}

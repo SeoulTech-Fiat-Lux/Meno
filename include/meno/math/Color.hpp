@@ -32,16 +32,16 @@ struct Color {
     constexpr Color(std::uint8_t inR, std::uint8_t inG, std::uint8_t inB, std::uint8_t inA = 255)
         : r(inR), g(inG), b(inB), a(inA) {}
 
-    /// 네 채널이 모두 같으면 같습니다.
+    /// 네 채널이 모두 같으면 같은 색입니다.
     constexpr bool operator==(const Color&) const = default;
 
     // 6자리와 8자리 리터럴이 모두 std::uint32_t라 오버로드로는 구분할 수 없어서
     // fromRgb와 이름을 나눴다.
     /// 0xRRGGBBAA(8자리)에서 만듭니다.
     ///
-    /// 웹에서 흔한 6자리(0x1E2430)를 넣으면 0x001E2430으로 읽혀
+    /// 웹에서 흔한 6자리(0x1E2430)를 넣으면 0x001E2430으로 읽혀서
     /// R=0x00, G=0x1E, B=0x24, A=0x30이 됩니다(색이 한 칸씩 밀리고 거의 투명해집니다).
-    /// 6자리는 fromRgb()를 씁니다.
+    /// 6자리 값에는 fromRgb()를 씁니다.
     [[nodiscard]] static constexpr Color fromRgba(std::uint32_t rgba) {
         return Color{static_cast<std::uint8_t>(rgba >> 24 & 0xFF),
                      static_cast<std::uint8_t>(rgba >> 16 & 0xFF),
@@ -51,10 +51,10 @@ struct Color {
 
     /// 0xRRGGBB(6자리)에서 불투명한 색을 만듭니다.
     ///
-    /// 6자리를 넘는 값(8자리를 잘못 넣은 경우 등)은 상수식(constexpr 변수, static_assert)에서는
-    /// 컴파일 에러가 나고, 그 밖에서는 화면에서 바로 눈에 띄도록 마젠타를 돌려줍니다.
-    /// 앞자리가 00인 8자리(0x00000080 등)는 값이 6자리 범위라 어떤 검사로도 잡을 수 없습니다.
-    /// 반투명은 withAlpha()나 fromRgba()로 만듭니다.
+    /// 6자리를 넘는 값(8자리를 잘못 넣은 경우 등)을 넣으면 상수식(constexpr 변수,
+    /// static_assert)에서는 컴파일 에러가 나고, 그 밖에서는 화면에서 바로 눈에 띄도록 마젠타를
+    /// 돌려줍니다. 앞자리가 00인 8자리(0x00000080 등)는 값이 6자리 범위 안에 있으므로 어떤
+    /// 검사로도 잡을 수 없습니다. 반투명한 색은 withAlpha()나 fromRgba()로 만듭니다.
     [[nodiscard]] static constexpr Color fromRgb(std::uint32_t rgb) {
         if (rgb > 0xFFFFFFu) {
             if (std::is_constant_evaluated()) {
@@ -89,7 +89,7 @@ inline constexpr Color Red{255, 0, 0};          ///< 빨간색
 inline constexpr Color Green{0, 255, 0};        ///< 초록색
 inline constexpr Color Blue{0, 0, 255};         ///< 파란색
 inline constexpr Color Yellow{255, 255, 0};     ///< 노란색
-inline constexpr Color Magenta{255, 0, 255};    ///< 자홍색. 잘못된 fromRgb() 입력도 이 색이 됩니다.
+inline constexpr Color Magenta{255, 0, 255};    ///< 자홍색. fromRgb() 오류 시에도 이 색입니다.
 inline constexpr Color Cyan{0, 255, 255};       ///< 청록색
 inline constexpr Color Gray{128, 128, 128};     ///< 회색
 inline constexpr Color Transparent{0, 0, 0, 0}; ///< 완전히 투명한 색

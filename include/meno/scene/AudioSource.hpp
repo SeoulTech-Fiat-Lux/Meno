@@ -19,7 +19,8 @@ namespace meno {
 /// 않습니다.
 ///
 /// 같은 효과음을 여러 GameObject에서 쓰면 loadFromFile()은 파일을 매번 새로 읽습니다. 이때는
-/// ResourceManager::loadSoundBuffer()로 버퍼를 공유해 setSound()에 넘깁니다.
+/// ResourceManager::loadSoundBuffer()로 버퍼를 공유하고, 그 버퍼로 만든 Sound를 setSound()에
+/// 넘깁니다.
 ///
 /// \code{.cpp}
 /// auto& audio = enemy.addComponent<meno::AudioSource>();
@@ -44,12 +45,12 @@ public:
     /// 파일을 읽어 음원을 바꿉니다. 성공하면 true입니다. 실패하면 기존 음원과 재생 상태를
     /// 그대로 두고 false를 돌려줍니다.
     [[nodiscard]] bool loadFromFile(const std::filesystem::path& path);
-    /// sound를 넘겨받아 음원을 바꿉니다. 넘겨받은 소리는 멈춘 상태로 컴포넌트의 볼륨을 적용하며,
-    /// 자동으로 재생하지 않습니다.
+    /// sound를 넘겨받아 음원을 바꿉니다. 넘겨받은 소리는 멈춘 상태로 두고 컴포넌트의 볼륨을
+    /// 적용하며, 자동으로 재생하지 않습니다.
     void setSound(Sound&& sound);
     /// 음원을 지웁니다. 재생 중이던 소리도 멈춥니다.
     void clearSound();
-    /// 음원을 가지고 있으면 true입니다. 그 음원이 제대로 로드되었는지는 뜻하지 않습니다.
+    /// 음원을 가지고 있으면 true입니다. 그 음원이 제대로 로드되었다는 뜻은 아닙니다.
     [[nodiscard]] bool hasSound() const noexcept;
 
     /// 재생합니다. 일시정지 중이면 이어서, 재생 중이면 처음부터 다시 재생합니다.

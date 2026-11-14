@@ -24,7 +24,7 @@ struct GameConfig {
     ApplicationConfig application{};
     /// 창 안쪽(그리기 영역)의 픽셀 크기입니다.
     Vec2u windowSize{800u, 600u};
-    /// 창 제목입니다. UTF-8로 해석합니다.
+    /// 창 제목입니다. UTF-8로 해석됩니다.
     std::string title{"meno"};
     /// 프레임마다 화면을 지울 색입니다.
     Color clearColor{colors::Black};
@@ -32,14 +32,13 @@ struct GameConfig {
 
 /// 창, 렌더러, 리소스, 장면 루프를 한곳에 묶은 게임입니다. 보통의 게임은 이 클래스로 만듭니다.
 ///
-/// 만들면 바로 창이 뜨고, run()을 부르면 창을 닫을 때까지 루프를 돕니다. 프레임마다 입력을
-/// 처리하고(창이 닫히면 멈춤), 활성 Scene의 update 핸들러를 부르고, 활성 Scene을 그립니다
-/// (GameObject의 Sprite, 그다음 draw 핸들러). 이
-/// 흐름은 재정의할 수 없으며, 상속한다면 onStart()에서 Scene을 구성합니다. 각 Game은 자기
-/// SceneManager를 소유합니다.
+/// 만들면 바로 창이 뜨고, run()을 호출하면 창을 닫을 때까지 루프를 실행합니다. 프레임마다 입력을
+/// 처리하고(창이 닫히면 멈춤), 고정 시간 간격에 맞춰 활성 Scene의 update 핸들러를 호출한 뒤에
+/// 활성 Scene을 그립니다(GameObject의 Sprite, 그다음 draw 핸들러). 이 흐름은 재정의할 수 없으며,
+/// 상속한다면 onStart()에서 Scene을 구성합니다. 각 Game은 자기 SceneManager를 소유합니다.
 ///
 /// 주의할 점:
-/// - 점수 같은 텍스트나 도형은 Scene::setDrawHandler()로 정한 draw 핸들러에서 그립니다. 핸들러
+/// - 점수와 같은 텍스트나 도형은 Scene::setDrawHandler()로 정한 draw 핸들러에서 그립니다. 핸들러
 ///   안에서 바꾼 카메라는 핸들러가 끝나면 원래대로 돌아오므로, 월드 카메라는 update 핸들러나
 ///   onStart()에서 renderer().setCamera()로 정합니다.
 /// - 한 번에 하나의 Application(Game 포함)만 실행할 수 있습니다.
@@ -67,8 +66,8 @@ public:
     /// config대로 창과 렌더러를 만듭니다. 창은 이때 바로 뜹니다.
     /// \throws std::invalid_argument config.application이 잘못되었을 때(Application 참고)
     explicit Game(const GameConfig& config = {});
-    /// 남은 Scene을 exit 핸들러 없이 정리한 뒤 파괴합니다. run()이 정상적으로 끝났다면 exit
-    /// 핸들러는 이미 불렸습니다.
+    /// 남은 Scene을 exit 핸들러 없이 정리한 뒤 Game을 파괴합니다. run()이 정상적으로 끝났다면
+    /// exit 핸들러는 이미 호출되었습니다.
     ~Game() noexcept override;
 
     Game(const Game&) = delete;
@@ -76,10 +75,10 @@ public:
     Game(Game&&) = delete;
     Game& operator=(Game&&) = delete;
 
-    /// 게임 루프를 실행합니다. 창을 닫거나 stop()을 부르면 활성 Scene의 exit 핸들러를 부르고
+    /// 게임 루프를 실행합니다. 창을 닫거나 stop()을 호출하면 활성 Scene의 exit 핸들러를 호출하고
     /// 돌아옵니다. Clock을 넘기면 그 시계로 시간을 잽니다(테스트용).
     ///
-    /// 핸들러가 예외를 던지면 Scene을 정리(exit 핸들러 포함)한 뒤 원래 예외를 다시 던집니다.
+    /// 핸들러가 예외를 던지면 Scene을 정리하고(exit 핸들러 호출 포함) 원래 예외를 다시 던집니다.
     ///
     /// \throws std::logic_error 이 Game이 이미 run() 중이거나 다른 Application이 실행 중일 때
     /// \{

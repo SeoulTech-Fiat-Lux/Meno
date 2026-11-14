@@ -30,7 +30,7 @@ enum class CameraFit : std::uint8_t {
     /// size가 {0, 0}이면 맞출 종횡비가 없으므로 Stretch와 똑같이 동작합니다.
     ///
     /// 띠 위의 마우스 좌표를 screenToWorld에 넣으면 보이는 영역 밖의 월드 좌표가 나옵니다.
-    /// 걸러야 하면 viewportPixels(camera, framebuffer).contains(Vec2f(mouse))로 먼저 확인합니다.
+    /// 이를 거르려면 viewportPixels(camera, framebuffer).contains(Vec2f(mouse))로 먼저 확인합니다.
     Letterbox,
 };
 
@@ -39,7 +39,7 @@ enum class CameraFit : std::uint8_t {
 /// 월드의 어느 영역을 창의 어디에 얼마나 크게 비출지 정하는 2D 카메라입니다.
 ///
 /// 값 타입입니다. Renderer::setCamera()는 복사본을 저장하므로, 카메라를 바꾼 뒤에는
-/// setCamera()를 다시 불러야 화면에 반영됩니다. 지정 초기화는 필드 순서(center, size, zoom,
+/// setCamera()를 다시 호출해야 화면에 반영됩니다. 지정 초기화는 필드 순서(center, size, zoom,
 /// rotation, viewport, fit)대로 써야 합니다.
 ///
 /// \code{.cpp}
@@ -62,7 +62,7 @@ struct Camera2D {
     /// 씁니다. 이때 1월드유닛은 1픽셀과 같습니다.
     Vec2f size{0.f, 0.f};
 
-    /// 화면 배율입니다. 보이는 영역은 size / zoom입니다.
+    /// 화면 배율입니다. 보이는 영역의 크기는 size / zoom입니다.
     ///
     /// 1보다 크면 확대(보이는 영역이 좁아짐), 작으면 축소입니다. size는 고정하고 줌 연출은
     /// zoom으로 하면 둘이 섞이지 않습니다. 양의 유한수가 아니면(0 이하, NaN, 무한대) 1로 봅니다.
@@ -71,7 +71,7 @@ struct Camera2D {
     /// 카메라의 회전 각도(도). 시계 방향이 양수이며 범위 제한은 없습니다.
     ///
     /// 카메라가 시계 방향으로 돌면 화면에 비친 월드는 반시계 방향으로 돕니다. 같은 +45라도
-    /// 스프라이트(SpriteParams::rotation)는 시계 방향으로 돌아가니 혼동하지 않도록 주의합니다.
+    /// 스프라이트(SpriteParams::rotation)는 시계 방향으로 회전하므로 혼동하지 않도록 주의합니다.
     ///
     /// 화면 위쪽이 가리키는 월드 방향:
     ///
